@@ -110,6 +110,106 @@ app.put("/api/users/:id/preferences", async (req, res) => {
   } catch { res.status(500).json({ error: "Unable to save notification preferences." }); }
 });
 
+app.get("/api/drop-alerts", async (req, res) => {
+  const { userId, shopId } = req.query;
+  if (!userId) {
+    res.status(400).json({ error: "userId is required." });
+    return;
+  }
+  try {
+    const [rows] = shopId
+      ? await pool.query(
+        "SELECT * FROM drop_alerts WHERE user_id = ? AND shop_id = ? ORDER BY created_at DESC LIMIT 1",
+        [userId, shopId],
+      )
+      : await pool.query(
+        `SELECT a.id, a.user_id, a.shop_id, a.enabled, s.name, s.address
+         FROM drop_alerts a JOIN shops s ON s.id = a.shop_id
+         WHERE a.user_id = ? AND a.shop_id IS NOT NULL AND a.keyword IS NULL
+         ORDER BY a.created_at DESC`,
+        [userId],
+      );
+    res.json({ items: rows });
+  } catch { res.status(500).json({ error: "Unable to load drop alert." }); }
+});
+
+app.put("/api/drop-alerts", async (req, res) => {
+  const { userId, shopId, enabled } = req.body ?? {};
+  if (!userId || !shopId || typeof enabled !== "boolean") {
+    res.status(400).json({ error: "userId, shopId, and a boolean enabled value are required." });
+    return;
+  }
+  try {
+    const [existing] = await pool.query(
+      "SELECT id FROM drop_alerts WHERE user_id = ? AND shop_id = ? ORDER BY created_at DESC LIMIT 1",
+      [userId, shopId],
+    );
+    const alertId = (existing as Array<{ id: string }>)[0]?.id;
+    if (alertId) {
+      await pool.query("UPDATE drop_alerts SET enabled = ? WHERE id = ?", [enabled, alertId]);
+    } else {
+      await pool.query(
+        `INSERT INTO drop_alerts (id, user_id, shop_id, quiet_hours, enabled)
+         VALUES (?, ?, ?, JSON_OBJECT('start', '22:00', 'end', '07:00'), ?)`,
+        [randomUUID(), userId, shopId, enabled],
+      );
+    }
+    res.json({ enabled });
+  } catch { res.status(500).json({ error: "Unable to save drop alert." }); }
+});
+
+app.get("/api/drop-alerts/global", async (req, res) => {
+  const userId = req.query.userId;
+  if (!userId) {
+    res.status(400).json({ error: "userId is required." });
+    return;
+  }
+  try {
+    const [rows] = await pool.query(
+      "SELECT quiet_hours FROM drop_alerts WHERE user_id = ? AND shop_id IS NULL AND keyword = '__global_settings__' ORDER BY created_at DESC LIMIT 1",
+      [userId],
+    );
+    const row = (rows as Array<{ quiet_hours: string | Record<string, unknown> }>)[0];
+    const saved = typeof row?.quiet_hours === "string" ? JSON.parse(row.quiet_hours) as Record<string, unknown> : row?.quiet_hours;
+    res.json({
+      instantPush: typeof saved?.instantPush === "boolean" ? saved.instantPush : true,
+      vibrateEmergencyDrops: typeof saved?.vibrateEmergencyDrops === "boolean" ? saved.vibrateEmergencyDrops : true,
+    });
+  } catch { res.status(500).json({ error: "Unable to load global drop alert settings." }); }
+});
+
+app.put("/api/drop-alerts/global", async (req, res) => {
+  const { userId, instantPush, vibrateEmergencyDrops } = req.body ?? {};
+  if (!userId || typeof instantPush !== "boolean" || typeof vibrateEmergencyDrops !== "boolean") {
+    res.status(400).json({ error: "userId and boolean notification settings are required." });
+    return;
+  }
+  const quietHours = JSON.stringify({ instantPush, vibrateEmergencyDrops });
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    const [rows] = await connection.query(
+      "SELECT id FROM drop_alerts WHERE user_id = ? AND shop_id IS NULL AND keyword = '__global_settings__' ORDER BY created_at DESC LIMIT 1 FOR UPDATE",
+      [userId],
+    );
+    const alertId = (rows as Array<{ id: string }>)[0]?.id;
+    if (alertId) {
+      await connection.query("UPDATE drop_alerts SET quiet_hours = ? WHERE id = ?", [quietHours, alertId]);
+    } else {
+      await connection.query(
+        `INSERT INTO drop_alerts (id, user_id, keyword, notify_free_food, quiet_hours, enabled)
+         VALUES (?, ?, '__global_settings__', FALSE, ?, TRUE)`,
+        [randomUUID(), userId, quietHours],
+      );
+    }
+    await connection.commit();
+    res.json({ instantPush, vibrateEmergencyDrops });
+  } catch {
+    await connection.rollback();
+    res.status(500).json({ error: "Unable to save global drop alert settings." });
+  } finally { connection.release(); }
+});
+
 app.get("/api/favorites", async (req, res) => {
   try {
     const [rows] = await pool.query("SELECT food_item_id FROM favorites WHERE user_id = ?", [req.query.userId]);
@@ -239,7 +339,7 @@ app.get("/api/foods", async (req, res) => {
               s.id AS shop_id, s.name AS shop_name, s.address, s.latitude, s.longitude, s.verified, s.reputation_score
        FROM food_items f JOIN shops s ON s.id = f.shop_id
        WHERE f.status = 'active' AND f.quantity_available > 0 AND f.pickup_ends_at > CURRENT_TIMESTAMP
-         AND LOWER(f.name) LIKE LOWER(?) ORDER BY f.pickup_ends_at ASC LIMIT 50`,
+         AND LOWER(CONCAT_WS(' ', f.name, f.description, s.name)) LIKE LOWER(?) ORDER BY f.pickup_ends_at ASC LIMIT 50`,
       [`%${search}%`],
     );
     res.json({ items: rows });
@@ -253,6 +353,22 @@ app.get("/api/shops", async (req, res) => {
     const [rows] = await pool.query("SELECT * FROM shops WHERE owner_id = ? ORDER BY created_at DESC", [req.query.ownerId]);
     res.json({ items: rows });
   } catch { res.status(500).json({ error: "Unable to load shop profile." }); }
+});
+
+app.get("/api/shops/:id", async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT s.*, COALESCE(AVG(r.rating), 0) AS average_rating, COUNT(r.id) AS review_count
+       FROM shops s
+       LEFT JOIN reviews r ON r.shop_id = s.id
+       WHERE s.id = ?
+       GROUP BY s.id`,
+      [req.params.id],
+    );
+    const shop = (rows as unknown[])[0];
+    if (!shop) { res.status(404).json({ error: "Shop not found." }); return; }
+    res.json(shop);
+  } catch { res.status(500).json({ error: "Unable to load shop details." }); }
 });
 
 app.post("/api/shops", async (req, res) => {

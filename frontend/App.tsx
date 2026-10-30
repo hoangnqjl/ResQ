@@ -7,11 +7,17 @@ import * as Crypto from "expo-crypto";
 import { AppDrawer } from "./src/components/AppDrawer";
 import HomeScreen, { type Food } from "./src/screens/HomeScreen";
 import { BuyerSetupScreen, FoodPreferencesScreen, SellerSetupScreen, ShopSetupScreen, WelcomeScreen } from "./src/screens/OnboardingScreens";
+import SharingCornerScreen from "./src/screens/SharingCornerScreen";
+import BudgetMysteryBagsScreen from "./src/screens/BudgetMysteryBagsScreen";
+import SharingStationMapScreen from "./src/screens/SharingStationMapScreen";
+import ShopDetailScreen from "./src/screens/ShopDetailScreen";
+import ExploreScreen from "./src/screens/ExploreScreen";
+import DropAlertCenterScreen from "./src/screens/DropAlertCenterScreen";
 import { API_URL, requestJson } from "./src/api";
 import { colors } from "./src/theme";
 
 type Profile = { id: string; full_name: string; role: "buyer" | "seller" | "admin"; is_incognito: boolean; dietary_preferences: string[]; allergies: string[] };
-type Page = "welcome" | "buyerGuide" | "foodPreferences" | "sellerGuide" | "shopSetup" | "home" | "orders" | "privacy" | "dropAlert" | "safety" | "complaints" | "help" | "settings" | "foodDetail";
+type Page = "welcome" | "buyerGuide" | "foodPreferences" | "sellerGuide" | "shopSetup" | "home" | "orders" | "privacy" | "dropAlert" | "safety" | "complaints" | "help" | "settings" | "foodDetail" | "sharing" | "budgetBags" | "stationMap" | "shopDetail";
 const blankProfile = (id: string): Profile => ({ id, full_name: "ResQ member", role: "buyer", is_incognito: false, dietary_preferences: [], allergies: [] });
 
 function ClientApp() {
@@ -22,6 +28,7 @@ function ClientApp() {
   const [activeTab, setActiveTab] = useState("Explore");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
+  const [selectedShopId, setSelectedShopId] = useState<string | null>(null);
   const [banner, setBanner] = useState("");
   const [error, setError] = useState("");
 
@@ -55,9 +62,9 @@ function ClientApp() {
       const tab = route === "home" ? "Home" : route === "explore" ? "Explore" : route === "maps" ? "Maps" : route === "saved" ? "Saved" : "Profile";
       setActiveTab(tab); setPage("home"); return;
     }
-    const pageMap: Record<string, Page> = { orders: "orders", dropAlert: "dropAlert", safety: "safety", complaints: "complaints", help: "help", settings: "settings", buyerSetup: "foodPreferences", privacy: "privacy", sharing: "home" };
+    const pageMap: Record<string, Page> = { orders: "orders", dropAlert: "dropAlert", safety: "safety", complaints: "complaints", help: "help", settings: "settings", buyerSetup: "foodPreferences", privacy: "privacy", sharing: "sharing", budgetBags: "budgetBags", stationMap: "stationMap", shopDetail: "shopDetail" };
+    if (route === "shopDetail") setSelectedShopId(null);
     setPage(pageMap[route] ?? "home");
-    if (route === "sharing") { setActiveTab("Explore"); setBanner("Showing food shared by nearby stores."); }
   };
   const saveBuyerSetup = async (name: string, allergies: string[], diet: string[]) => {
     await updateProfile({ full_name: name.trim() || profile?.full_name || "ResQ member", role: "buyer", allergies, dietary_preferences: diet });
@@ -94,8 +101,14 @@ function ClientApp() {
     {page === "foodPreferences" && <FoodPreferencesScreen initialName={profile.full_name} onBack={() => setPage("buyerGuide")} onSave={saveBuyerSetup} />}
     {page === "sellerGuide" && <SellerSetupScreen onBack={() => setPage("welcome")} onSetup={() => setPage("shopSetup")} onDashboard={() => { void finishOnboarding(); setActiveTab("Profile"); }} />}
     {page === "shopSetup" && <ShopSetupScreen onBack={() => setPage("sellerGuide")} busy={false} onSave={(name, address) => createShop(name, address)} />}
-    {page === "home" && <HomeScreen userId={userId} userName={profile.full_name} activeTab={activeTab} onOpenMenu={() => setDrawerOpen(true)} onOpenAlerts={() => setPage("dropAlert")} onTabChange={(tab) => { setActiveTab(tab); setBanner(""); }} onOpenFood={openFood} />}
-    {page !== "home" && !["welcome", "buyerGuide", "foodPreferences", "sellerGuide", "shopSetup"].includes(page) && <Destination page={page} profile={profile} userId={userId} food={selectedFood} banner={banner || error} onBack={() => setPage("home")} onReserve={reserveFood} onMenu={() => setDrawerOpen(true)} />}
+    {page === "home" && activeTab === "Explore" && <ExploreScreen userId={userId} activeTab={activeTab} onTabChange={setActiveTab} onOpenFood={openFood} />}
+    {page === "home" && activeTab !== "Explore" && <HomeScreen userId={userId} userName={profile.full_name} activeTab={activeTab} onOpenMenu={() => setDrawerOpen(true)} onOpenAlerts={() => setPage("dropAlert")} onTabChange={(tab) => { setActiveTab(tab); setBanner(""); }} onOpenFood={openFood} />}
+    {page === "sharing" && <SharingCornerScreen userId={userId} onBack={() => setPage("home")} onOpenMap={() => setPage("stationMap")} />}
+    {page === "budgetBags" && <BudgetMysteryBagsScreen userId={userId} onBack={() => setPage("home")} />}
+    {page === "stationMap" && <SharingStationMapScreen onBack={() => setPage("home")} onOpenShop={(id) => { setSelectedShopId(id); setPage("shopDetail"); }} />}
+    {page === "shopDetail" && <ShopDetailScreen shopId={selectedShopId ?? undefined} userId={userId} onBack={() => setPage("home")} />}
+    {page === "dropAlert" && <DropAlertCenterScreen userId={userId} onBack={() => setPage("home")} />}
+    {page !== "home" && !["welcome", "buyerGuide", "foodPreferences", "sellerGuide", "shopSetup", "sharing", "budgetBags", "stationMap", "shopDetail", "dropAlert"].includes(page) && <Destination page={page} profile={profile} userId={userId} food={selectedFood} banner={banner || error} onBack={() => setPage("home")} onReserve={reserveFood} onMenu={() => setDrawerOpen(true)} />}
     <AppDrawer visible={drawerOpen} name={profile.full_name} onClose={() => setDrawerOpen(false)} onNavigate={handleNavigate} onMerchant={() => { setDrawerOpen(false); setPage("sellerGuide"); }} onLogout={() => void logout()} />
   </SafeAreaView>;
 }

@@ -5,7 +5,7 @@ import { colors } from "../theme";
 type Item = [string, string, string];
 const groups: [string, Item[]][] = [
   ["PRIMARY NAVIGATION", [["home-outline", "Home", "home"], ["grid-outline", "Explore", "explore"], ["map-outline", "Food Heatmap", "maps"], ["bookmark-outline", "Saved Items", "saved"], ["receipt-outline", "My Orders", "orders"]]],
-  ["COMMUNITY & SPECIALS", [["gift-outline", "0g Sharing Corner", "sharing"], ["notifications-outline", "Drop Alert", "dropAlert"]]],
+  ["COMMUNITY & SPECIALS", [["gift-outline", "0đ Sharing Corner", "sharing"], ["pricetag-outline", "Budget Mystery Bags", "budgetBags"], ["map-outline", "0đ Sharing Station Map", "stationMap"], ["storefront-outline", "Shop Detail", "shopDetail"], ["notifications-outline", "Drop Alert", "dropAlert"]]],
   ["SAFETY & POLICIES", [["shield-checkmark-outline", "Food Safety & Storage", "safety"], ["document-text-outline", "Complaint & Refund Policy", "complaints"]]],
   ["PREFERENCES", [["leaf-outline", "Dietary & Allergy Filters", "buyerSetup"], ["eye-off-outline", "Incognito & Privacy", "privacy"], ["help-circle-outline", "Help & Support Center", "help"]]],
 ];
