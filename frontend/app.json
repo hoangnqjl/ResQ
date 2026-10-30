@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "ResQ Food",
+    "slug": "resq-food-client",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "android": { "package": "com.resq.foodapp", "adaptiveIcon": { "backgroundColor": "#176b48" } },
+    "ios": { "bundleIdentifier": "com.resq.foodapp", "supportsTablet": false },
+    "plugins": []
+  }
+}
