@@ -25,17 +25,22 @@ import {
   type CommunityFood,
   type CommunityShop,
 } from "../services/communityApi";
+import type { Food } from "./HomeScreen";
 
 export default function ShopDetailScreen({
   onBack,
   onOpenReviews,
   onOpenSettings,
+  onOpenFood,
+  onOpenFoodList,
   shopId,
   userId,
 }: {
   onBack: () => void;
   onOpenReviews: (shopId: string) => void;
   onOpenSettings: () => void;
+  onOpenFood?: (food: Food) => void;
+  onOpenFoodList?: (shopId: string) => void;
   shopId?: string;
   userId: string;
 }) {
@@ -190,15 +195,43 @@ export default function ShopDetailScreen({
               ios_backgroundColor="#697a6d"
             />
           </View>
-          <Text style={styles.listingHeading}>Available at this shop</Text>
+
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 20, marginBottom: 8 }}>
+            <Text style={styles.listingHeading}>Available at this shop</Text>
+            {foods.length > 0 && onOpenFoodList ? (
+              <Pressable onPress={() => onOpenFoodList(shop.id)}>
+                <Text style={{ color: communityColors.green, fontSize: 12, fontWeight: "700" }}>View full menu ›</Text>
+              </Pressable>
+            ) : null}
+          </View>
+
           {foods.length ? foods.map((food) => (
-            <View key={food.id} style={styles.foodRow}>
+            <Pressable
+              key={food.id}
+              onPress={() => onOpenFood?.({
+                id: food.id,
+                name: food.name,
+                description: food.description ?? undefined,
+                image_url: food.image_url ?? undefined,
+                original_price: food.original_price,
+                current_price: food.current_price,
+                quantity_available: food.quantity_available,
+                shop_id: food.shop_id,
+                shop_name: food.shop_name,
+                address: food.address,
+                verified: food.verified ?? false,
+                reputation_score: food.reputation_score,
+                storage_instructions: food.storage_instructions ?? undefined,
+              })}
+              style={styles.foodRow}
+            >
               <FallbackPhoto uri={imageUrl(food.image_url)} fallback={foodPhoto(food.name)} style={styles.foodImage} />
               <View style={styles.foodCopy}>
                 <Text numberOfLines={1} style={styles.foodName}>{food.name}</Text>
                 <Text style={styles.foodMeta}>{food.quantity_available} left · {Number(food.current_price).toLocaleString("vi-VN")}₫</Text>
               </View>
-            </View>
+              <Ionicons name="chevron-forward" size={16} color={communityColors.muted} />
+            </Pressable>
           )) : <Text style={styles.stateText}>Chưa có món ăn đang được đăng.</Text>}
         </ScrollView>
       ) : null}
@@ -308,7 +341,7 @@ const styles = StyleSheet.create({
   alertCopy: { flex: 1, gap: 6 },
   alertTitle: { color: communityColors.ink, fontSize: 12 },
   alertDescription: { color: communityColors.muted, fontSize: 9 },
-  listingHeading: { color: communityColors.ink, fontSize: 13, fontWeight: "800", marginTop: 18, marginBottom: 8 },
+  listingHeading: { color: communityColors.ink, fontSize: 14, fontWeight: "800" },
   foodRow: {
     minHeight: 65,
     flexDirection: "row",
@@ -316,6 +349,7 @@ const styles = StyleSheet.create({
     gap: 10,
     borderTopWidth: 1,
     borderTopColor: communityColors.line,
+    paddingVertical: 6,
   },
   foodImage: { width: 50, height: 50, borderRadius: 10, backgroundColor: communityColors.pale },
   foodCopy: { flex: 1, gap: 5 },
