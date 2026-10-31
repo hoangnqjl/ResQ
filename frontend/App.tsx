@@ -13,11 +13,21 @@ import SharingStationMapScreen from "./src/screens/SharingStationMapScreen";
 import ShopDetailScreen from "./src/screens/ShopDetailScreen";
 import ExploreScreen from "./src/screens/ExploreScreen";
 import DropAlertCenterScreen from "./src/screens/DropAlertCenterScreen";
+import FoodAllergiesScreen from "./src/screens/FoodAllergiesScreen";
+import IncognitoModeScreen from "./src/screens/IncognitoModeScreen";
+import BuyerProfileScreen from "./src/screens/BuyerProfileScreen";
+import SellerProfileScreen from "./src/screens/SellerProfileScreen";
+import EditProfileScreen from "./src/screens/EditProfileScreen";
+import DietScreen from "./src/screens/DietScreen";
+import CertificateScreen from "./src/screens/CertificateScreen";
+import AnonymousProfilePreviewScreen from "./src/screens/AnonymousProfilePreviewScreen";
+import StoreLocationScreen from "./src/screens/StoreLocationScreen";
+import NotificationRadiusScreen from "./src/screens/NotificationRadiusScreen";
 import { API_URL, requestJson } from "./src/api";
-import { colors } from "./src/theme";
+import { colors, fontSizes } from "./src/theme";
 
-type Profile = { id: string; full_name: string; role: "buyer" | "seller" | "admin"; is_incognito: boolean; dietary_preferences: string[]; allergies: string[] };
-type Page = "welcome" | "buyerGuide" | "foodPreferences" | "sellerGuide" | "shopSetup" | "home" | "orders" | "privacy" | "dropAlert" | "safety" | "complaints" | "help" | "settings" | "foodDetail" | "sharing" | "budgetBags" | "stationMap" | "shopDetail";
+type Profile = { id: string; full_name: string; email?: string; phone?: string; role: "buyer" | "seller" | "admin"; is_incognito: boolean; dietary_preferences: string[]; allergies: string[] };
+type Page = "welcome" | "buyerGuide" | "foodPreferences" | "sellerGuide" | "shopSetup" | "home" | "orders" | "privacy" | "dropAlert" | "safety" | "complaints" | "help" | "settings" | "foodDetail" | "sharing" | "budgetBags" | "stationMap" | "shopDetail" | "foodAllergies" | "buyerProfile" | "sellerProfile" | "editProfile" | "guestProfile" | "diet" | "safetyCert" | "incognitoPreview" | "storeLocation" | "notificationRadius";
 const blankProfile = (id: string): Profile => ({ id, full_name: "ResQ member", role: "buyer", is_incognito: false, dietary_preferences: [], allergies: [] });
 
 function ClientApp() {
@@ -31,6 +41,7 @@ function ClientApp() {
   const [selectedShopId, setSelectedShopId] = useState<string | null>(null);
   const [banner, setBanner] = useState("");
   const [error, setError] = useState("");
+  const [isIncognitoPreview, setIsIncognitoPreview] = useState(false);
 
   useEffect(() => {
     void (async () => {
@@ -58,11 +69,20 @@ function ClientApp() {
   const finishOnboarding = async () => { await AsyncStorage.setItem("resq.onboarding-complete", "true"); setPage("home"); setActiveTab("Explore"); };
   const handleNavigate = (route: string) => {
     setDrawerOpen(false);
+    if (route === "buyerProfile") {
+      setIsIncognitoPreview(false);
+      setPage("buyerProfile");
+      return;
+    }
+    if (route === "sellerProfile") {
+      setPage("sellerProfile");
+      return;
+    }
     if (["home", "explore", "maps", "saved", "profile"].includes(route)) {
       const tab = route === "home" ? "Home" : route === "explore" ? "Explore" : route === "maps" ? "Maps" : route === "saved" ? "Saved" : "Profile";
       setActiveTab(tab); setPage("home"); return;
     }
-    const pageMap: Record<string, Page> = { orders: "orders", dropAlert: "dropAlert", safety: "safety", complaints: "complaints", help: "help", settings: "settings", buyerSetup: "foodPreferences", privacy: "privacy", sharing: "sharing", budgetBags: "budgetBags", stationMap: "stationMap", shopDetail: "shopDetail" };
+    const pageMap: Record<string, Page> = { orders: "orders", dropAlert: "dropAlert", safety: "safety", complaints: "complaints", help: "help", settings: "settings", buyerSetup: "foodAllergies", foodAllergies: "foodAllergies", privacy: "privacy", sharing: "sharing", budgetBags: "budgetBags", stationMap: "stationMap", shopDetail: "shopDetail", buyerProfile: "buyerProfile", sellerProfile: "sellerProfile", editProfile: "editProfile", guestProfile: "guestProfile", diet: "diet", safetyCert: "safetyCert", incognitoPreview: "incognitoPreview", storeLocation: "storeLocation", notificationRadius: "notificationRadius" };
     if (route === "shopDetail") setSelectedShopId(null);
     setPage(pageMap[route] ?? "home");
   };
@@ -102,14 +122,211 @@ function ClientApp() {
     {page === "sellerGuide" && <SellerSetupScreen onBack={() => setPage("welcome")} onSetup={() => setPage("shopSetup")} onDashboard={() => { void finishOnboarding(); setActiveTab("Profile"); }} />}
     {page === "shopSetup" && <ShopSetupScreen onBack={() => setPage("sellerGuide")} busy={false} onSave={(name, address) => createShop(name, address)} />}
     {page === "home" && activeTab === "Explore" && <ExploreScreen userId={userId} activeTab={activeTab} onTabChange={setActiveTab} onOpenFood={openFood} />}
-    {page === "home" && activeTab !== "Explore" && <HomeScreen userId={userId} userName={profile.full_name} activeTab={activeTab} onOpenMenu={() => setDrawerOpen(true)} onOpenAlerts={() => setPage("dropAlert")} onTabChange={(tab) => { setActiveTab(tab); setBanner(""); }} onOpenFood={openFood} />}
+    {page === "home" && activeTab === "Profile" && (
+      <BuyerProfileScreen
+        userName={profile.full_name || "Nguyen Capybaras"}
+        isIncognito={isIncognitoPreview || Boolean(profile.is_incognito)}
+        onOpenMenu={() => setDrawerOpen(true)}
+        onNavigateQuickAction={(action) => {
+          if (action === "allergies") setPage("foodAllergies");
+          else if (action === "privacy") setPage("privacy");
+          else if (action === "diet") setPage("diet");
+          else if (action === "radius") setPage("notificationRadius");
+          else if (action === "route") setPage("stationMap");
+        }}
+        onEditProfile={() => setPage("editProfile")}
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          setIsIncognitoPreview(false);
+        }}
+      />
+    )}
+    {page === "home" && !["Explore", "Profile"].includes(activeTab) && (
+      <HomeScreen
+        userId={userId}
+        userName={profile.full_name}
+        activeTab={activeTab}
+        onOpenMenu={() => setDrawerOpen(true)}
+        onOpenAlerts={() => setPage("dropAlert")}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          setBanner("");
+        }}
+        onOpenFood={openFood}
+      />
+    )}
+    {page === "buyerProfile" && (
+      <BuyerProfileScreen
+        userName={profile.full_name || "Nguyen Capybaras"}
+        isIncognito={isIncognitoPreview || Boolean(profile.is_incognito)}
+        onBack={() => {
+          setIsIncognitoPreview(false);
+          setPage("home");
+        }}
+        onOpenMenu={() => setDrawerOpen(true)}
+        onNavigateQuickAction={(action) => {
+          if (action === "allergies") setPage("foodAllergies");
+          else if (action === "privacy") setPage("privacy");
+          else if (action === "diet") setPage("diet");
+          else if (action === "radius") setPage("notificationRadius");
+          else if (action === "route") setPage("stationMap");
+        }}
+        onEditProfile={() => setPage("editProfile")}
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          setIsIncognitoPreview(false);
+          setPage("home");
+        }}
+      />
+    )}
+    {page === "guestProfile" && (
+      <BuyerProfileScreen
+        isGuest={true}
+        userName="Tran Minh Anh"
+        onOpenMenu={() => setDrawerOpen(true)}
+        onBack={() => setPage("home")}
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          setPage("home");
+        }}
+      />
+    )}
+    {page === "editProfile" && (
+      <EditProfileScreen
+        initialData={{
+          fullName: profile.full_name || "Nguyen Capybaras",
+          phone: profile.phone || "(+84) 0123456789",
+          email: profile.email || "quynh23@email.com",
+          address: "Tổ 1, Phường Ngũ Hành Sơn, Đà Nẵng",
+        }}
+        onBack={() => setPage("home")}
+        onSave={async (data) => {
+          await updateProfile({
+            full_name: data.fullName,
+            phone: data.phone,
+            email: data.email,
+          });
+          setBanner("Changes saved: Your profile has been updated.");
+        }}
+      />
+    )}
+    {page === "safetyCert" && (
+      <CertificateScreen
+        onBack={() => setPage("sellerProfile")}
+        onSubmit={async (data) => {
+          setBanner("Food safety certificate submitted: " + data.certNo);
+        }}
+      />
+    )}
+    {page === "storeLocation" && (
+      <StoreLocationScreen
+        storeName="The Corner Kitchen"
+        storeAddress="Tổ 1, Phường Ngũ Hành Sơn, Đà Nẵng"
+        onBack={() => setPage("sellerProfile")}
+        onConfirm={() => {
+          setBanner("Store location & verification status confirmed.");
+          setPage("sellerProfile");
+        }}
+        onEditAddress={() => setPage("shopSetup")}
+      />
+    )}
+    {page === "sellerProfile" && (
+      <SellerProfileScreen
+        storeName="The Corner Kitchen"
+        storeAddress="Tổ 1, Phường Ngũ Hành Sơn, Đà Nẵng"
+        onBack={() => setPage("home")}
+        onEditStore={() => setPage("shopSetup")}
+        onItemPress={(key) => {
+          if (key === "safety_cert") setPage("safetyCert");
+          else if (key === "location" || key === "trust_badge") setPage("storeLocation");
+          else if (key === "hours") setBanner("Operating hours: 10:00 - 21:00.");
+        }}
+      />
+    )}
     {page === "sharing" && <SharingCornerScreen userId={userId} onBack={() => setPage("home")} onOpenMap={() => setPage("stationMap")} />}
     {page === "budgetBags" && <BudgetMysteryBagsScreen userId={userId} onBack={() => setPage("home")} />}
     {page === "stationMap" && <SharingStationMapScreen onBack={() => setPage("home")} onOpenShop={(id) => { setSelectedShopId(id); setPage("shopDetail"); }} />}
     {page === "shopDetail" && <ShopDetailScreen shopId={selectedShopId ?? undefined} userId={userId} onBack={() => setPage("home")} />}
     {page === "dropAlert" && <DropAlertCenterScreen userId={userId} onBack={() => setPage("home")} />}
-    {page !== "home" && !["welcome", "buyerGuide", "foodPreferences", "sellerGuide", "shopSetup", "sharing", "budgetBags", "stationMap", "shopDetail", "dropAlert"].includes(page) && <Destination page={page} profile={profile} userId={userId} food={selectedFood} banner={banner || error} onBack={() => setPage("home")} onReserve={reserveFood} onMenu={() => setDrawerOpen(true)} />}
-    <AppDrawer visible={drawerOpen} name={profile.full_name} onClose={() => setDrawerOpen(false)} onNavigate={handleNavigate} onMerchant={() => { setDrawerOpen(false); setPage("sellerGuide"); }} onLogout={() => void logout()} />
+    {page === "foodAllergies" && (
+      <FoodAllergiesScreen
+        initialAllergies={profile?.allergies?.length ? profile.allergies : ["Dairy", "Peanuts"]}
+        onBack={() => setPage("home")}
+        onSave={async (allergies) => {
+          await updateProfile({ allergies });
+          setBanner("Food allergy filters updated successfully.");
+          setPage("home");
+        }}
+      />
+    )}
+    {page === "diet" && (
+      <DietScreen
+        initialDiet={profile?.dietary_preferences?.[0] || "Non-vegetarian"}
+        onBack={() => setPage("home")}
+        onSave={async (diet) => {
+          await updateProfile({ dietary_preferences: [diet] });
+          setBanner("Dietary preferences updated successfully.");
+        }}
+      />
+    )}
+    {page === "privacy" && (
+      <IncognitoModeScreen
+        initialEnabled={Boolean(profile?.is_incognito)}
+        userName={profile?.full_name || "Nguyễn Thị Diễm Quỳnh"}
+        phone={profile?.phone || "(+84) 123456789"}
+        onBack={() => setPage("home")}
+        onToggle={async (enabled) => {
+          await updateProfile({ is_incognito: enabled });
+          setBanner(enabled ? "Incognito Mode activated." : "Incognito Mode deactivated.");
+        }}
+        onViewHiddenProfile={() => {
+          setPage("incognitoPreview");
+        }}
+      />
+    )}
+    {page === "incognitoPreview" && (
+      <AnonymousProfilePreviewScreen
+        buyerId="#BUYER-2041"
+        onBack={() => setPage("privacy")}
+        onSave={async () => {
+          setBanner("Changes saved: Your profile has been updated.");
+        }}
+      />
+    )}
+    {page === "notificationRadius" && (
+      <NotificationRadiusScreen
+        initialRadius={3}
+        address="Tổ 1, Phường Ngũ Hành Sơn, Đà Nẵng"
+        onBack={() => setPage("home")}
+        onSave={async (data) => {
+          await requestJson(`/api/users/${userId}/preferences`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              notification_radius_km: data.radius,
+              quiet_start: data.quietHours ? "22:00" : "00:00",
+              quiet_end: data.quietHours ? "06:00" : "00:00",
+            }),
+          });
+          setBanner("Changes saved: Your radius has been updated.");
+        }}
+      />
+    )}
+    {page !== "home" && !["welcome", "buyerGuide", "foodPreferences", "sellerGuide", "shopSetup", "sharing", "budgetBags", "stationMap", "shopDetail", "dropAlert", "foodAllergies", "privacy", "buyerProfile", "sellerProfile", "editProfile", "guestProfile", "diet", "safetyCert", "incognitoPreview", "storeLocation", "notificationRadius"].includes(page) && <Destination page={page} profile={profile} userId={userId} food={selectedFood} banner={banner || error} onBack={() => setPage("home")} onReserve={reserveFood} onMenu={() => setDrawerOpen(true)} />}
+    <AppDrawer
+      visible={drawerOpen}
+      name={profile.full_name}
+      onClose={() => setDrawerOpen(false)}
+      onNavigate={handleNavigate}
+      onMerchant={() => {
+        setDrawerOpen(false);
+        setPage("sellerProfile");
+      }}
+      onLogout={() => void logout()}
+    />
   </SafeAreaView>;
 }
 
@@ -142,4 +359,29 @@ function PrivacyContent({ profile }: { profile: Profile }) { return <Text style=
 
 export default function App() { return <SafeAreaProvider><ClientApp /></SafeAreaProvider>; }
 
-const s = StyleSheet.create({ safe: { flex: 1, backgroundColor: colors.white }, center: { flex: 1, justifyContent: "center", alignItems: "center", padding: 30, backgroundColor: colors.white }, loadingText: { color: colors.muted, fontSize: 12, marginTop: 9 }, errorTitle: { color: colors.ink, fontSize: 17, fontWeight: "800" }, errorText: { color: colors.muted, fontSize: 11, textAlign: "center", marginTop: 8 }, destination: { flex: 1, backgroundColor: colors.white }, destinationHeader: { height: 48, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 14, borderBottomWidth: 1, borderBottomColor: colors.line }, backButton: { height: 32, width: 32, borderRadius: 16, borderWidth: 1, borderColor: colors.line, justifyContent: "center", alignItems: "center" }, backText: { fontSize: 24, color: colors.ink, marginTop: -3 }, menuText: { color: colors.primary, fontSize: 15 }, destinationTitle: { color: colors.ink, fontSize: 11, fontWeight: "800" }, destinationBody: { padding: 18, gap: 12 }, banner: { backgroundColor: colors.pale, borderRadius: 10, padding: 10, color: colors.primary, fontSize: 10 }, detailPhoto: { height: 210, borderRadius: 18, backgroundColor: colors.pale, justifyContent: "center", alignItems: "center", overflow: "hidden" }, detailImage: { width: "100%", height: "100%" }, detailEmoji: { fontSize: 62 }, detailName: { color: colors.ink, fontSize: 20, fontWeight: "900" }, detailMeta: { color: colors.muted, fontSize: 10, lineHeight: 16 }, detailPrice: { color: colors.primary, fontSize: 24, fontWeight: "900" }, cta: { backgroundColor: colors.primary, borderRadius: 24, height: 46, alignItems: "center", justifyContent: "center", marginTop: 7 }, ctaText: { color: colors.white, fontSize: 10, fontWeight: "800" }, orderCard: { borderWidth: 1, borderColor: colors.line, borderRadius: 13, padding: 13, gap: 7 }, cardTitle: { color: colors.ink, fontSize: 12, fontWeight: "800" }, info: { color: colors.muted, fontSize: 10, lineHeight: 16 } });
+const s = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: colors.white },
+  center: { flex: 1, justifyContent: "center", alignItems: "center", padding: 30, backgroundColor: colors.white },
+  loadingText: { color: colors.muted, fontSize: fontSizes.bodySmall, marginTop: 9 },
+  errorTitle: { color: colors.ink, fontSize: fontSizes.title, fontWeight: "800" },
+  errorText: { color: colors.muted, fontSize: fontSizes.bodySmall, textAlign: "center", marginTop: 8 },
+  destination: { flex: 1, backgroundColor: colors.white },
+  destinationHeader: { height: 50, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 14, borderBottomWidth: 1, borderBottomColor: colors.line },
+  backButton: { height: 36, width: 36, borderRadius: 18, borderWidth: 1, borderColor: colors.line, justifyContent: "center", alignItems: "center" },
+  backText: { fontSize: 24, color: colors.ink, marginTop: -3 },
+  menuText: { color: colors.primary, fontSize: fontSizes.bodyLarge },
+  destinationTitle: { color: colors.ink, fontSize: fontSizes.bodyLarge, fontWeight: "800" },
+  destinationBody: { padding: 18, gap: 14 },
+  banner: { backgroundColor: colors.pale, borderRadius: 10, padding: 12, color: colors.primary, fontSize: fontSizes.caption },
+  detailPhoto: { height: 220, borderRadius: 18, backgroundColor: colors.pale, justifyContent: "center", alignItems: "center", overflow: "hidden" },
+  detailImage: { width: "100%", height: "100%" },
+  detailEmoji: { fontSize: 62 },
+  detailName: { color: colors.ink, fontSize: fontSizes.title, fontWeight: "900" },
+  detailMeta: { color: colors.muted, fontSize: fontSizes.bodySmall, lineHeight: 20 },
+  detailPrice: { color: colors.primary, fontSize: fontSizes.header, fontWeight: "900" },
+  cta: { backgroundColor: colors.primary, borderRadius: 24, height: 48, alignItems: "center", justifyContent: "center", marginTop: 8 },
+  ctaText: { color: colors.white, fontSize: fontSizes.bodyLarge, fontWeight: "800" },
+  orderCard: { borderWidth: 1, borderColor: colors.line, borderRadius: 14, padding: 14, gap: 8 },
+  cardTitle: { color: colors.ink, fontSize: fontSizes.bodyLarge, fontWeight: "800" },
+  info: { color: colors.muted, fontSize: fontSizes.bodySmall, lineHeight: 20 },
+});

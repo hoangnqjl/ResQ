@@ -71,11 +71,11 @@ app.get("/api/users/:id", async (req, res) => {
 });
 
 app.put("/api/users/:id", async (req, res) => {
-  const { full_name, role, is_incognito, dietary_preferences, allergies } = req.body ?? {};
+  const { full_name, email, phone, role, is_incognito, dietary_preferences, allergies } = req.body ?? {};
   try {
     await pool.query(
-      `UPDATE users SET full_name = ?, role = ?, is_incognito = ?, dietary_preferences = ?, allergies = ? WHERE id = ?`,
-      [full_name, role, Boolean(is_incognito), JSON.stringify(dietary_preferences ?? []), JSON.stringify(allergies ?? []), req.params.id],
+      `UPDATE users SET full_name = ?, email = COALESCE(?, email), phone = COALESCE(?, phone), role = ?, is_incognito = ?, dietary_preferences = ?, allergies = ? WHERE id = ?`,
+      [full_name, email ?? null, phone ?? null, role, Boolean(is_incognito), JSON.stringify(dietary_preferences ?? []), JSON.stringify(allergies ?? []), req.params.id],
     );
     const [rows] = await pool.query("SELECT * FROM users WHERE id = ?", [req.params.id]);
     const user = (rows as unknown[])[0];
