@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Image,
   Linking,
   Pressable,
   ScrollView,
@@ -13,31 +12,41 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { CommunityHeader, communityColors } from "../components/CommunityLayout";
+import { FallbackPhoto } from "../components/FallbackPhoto";
+import { cornerKitchenPhoto, foodPhoto } from "../data/designPhotos";
 import {
   getCommunityFoods,
   getCommunityShop,
+  getSavedShops,
   getShopDropAlert,
   imageUrl,
   saveShopDropAlert,
+  toggleSavedShop,
   type CommunityFood,
   type CommunityShop,
 } from "../services/communityApi";
 
 export default function ShopDetailScreen({
   onBack,
+  onOpenReviews,
+  onOpenSettings,
   shopId,
   userId,
 }: {
   onBack: () => void;
+  onOpenReviews: (shopId: string) => void;
+  onOpenSettings: () => void;
   shopId?: string;
   userId: string;
 }) {
   const [shop, setShop] = useState<CommunityShop | null>(null);
   const [foods, setFoods] = useState<CommunityFood[]>([]);
   const [dropAlert, setDropAlert] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const [loading, setLoading] = useState(true);
   const [alertBusy, setAlertBusy] = useState(false);
   const [error, setError] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -49,14 +58,16 @@ export default function ShopDetailScreen({
           if (active) setError("Chưa có cửa hàng nào để hiển thị.");
           return;
         }
-        const [shopDetails, shopAlert] = await Promise.all([
+        const [shopDetails, shopAlert, savedShops] = await Promise.all([
           getCommunityShop(id),
           getShopDropAlert(userId, id),
+          getSavedShops(userId),
         ]);
         if (!active) return;
         setShop(shopDetails);
         setFoods(allFoods.filter((food) => food.shop_id === id));
         setDropAlert(Boolean(shopAlert?.enabled));
+        setIsSaved(savedShops.items.some((savedShop) => savedShop.id === id));
       } catch (reason) {
         if (active) setError(reason instanceof Error ? reason.message : "Không thể tải thông tin cửa hàng.");
       } finally {
@@ -79,6 +90,16 @@ export default function ShopDetailScreen({
     }
   };
 
+  const toggleSaved = async () => {
+    if (!shop) return;
+    try {
+      const result = await toggleSavedShop(userId, shop.id);
+      setIsSaved(result.saved);
+    } catch (reason) {
+      Alert.alert("Saved shop", reason instanceof Error ? reason.message : "Could not update saved shops.");
+    }
+  };
+
   const showCertificate = async () => {
     if (!shop?.safety_certificate_url) {
       Alert.alert("Chứng nhận an toàn", shop?.verified ? "Cửa hàng được hệ thống đánh dấu đã xác minh." : "Cửa hàng chưa có liên kết chứng nhận.");
@@ -96,7 +117,17 @@ export default function ShopDetailScreen({
 
   return (
     <View style={styles.root}>
-      <CommunityHeader title="Shop Detail" onBack={onBack} onMore={() => {}} />
+      <CommunityHeader title="Shop Detail" onBack={onBack} onMore={() => setMenuOpen((open) => !open)} />
+      {menuOpen ? (
+        <View style={styles.moreMenu}>
+          <Pressable onPress={() => { setMenuOpen(false); Alert.alert("Report shop", "Shop reporting is not available yet."); }} style={styles.moreMenuItem}>
+            <Text style={styles.moreMenuText}>Report shop</Text>
+          </Pressable>
+          <Pressable onPress={() => { setMenuOpen(false); onOpenSettings(); }} style={styles.moreMenuItem}>
+            <Text style={styles.moreMenuText}>Search settings</Text>
+          </Pressable>
+        </View>
+      ) : null}
       {loading ? (
         <View style={styles.loading}><ActivityIndicator color={communityColors.green} /></View>
       ) : error ? (
@@ -104,11 +135,7 @@ export default function ShopDetailScreen({
       ) : shop ? (
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.photoWrap}>
-            {heroImage ? <Image source={{ uri: heroImage }} style={styles.shopPhoto} resizeMode="cover" /> : (
-              <View style={styles.photoFallback}>
-                <Ionicons name="storefront-outline" size={42} color={communityColors.green} />
-              </View>
-            )}
+            <FallbackPhoto uri={heroImage} fallback={cornerKitchenPhoto} style={styles.shopPhoto} />
           </View>
           <View style={styles.dots}>
             {gallery.slice(0, 3).map((food, index) => (
@@ -118,12 +145,19 @@ export default function ShopDetailScreen({
           <View style={styles.shopHeading}>
             <View style={styles.shopCopy}>
               <Text style={styles.shopName}>{shop.name}</Text>
-              <Text style={styles.reviewCount}>{Number(shop.review_count)} reviews</Text>
+              <Pressable onPress={() => onOpenReviews(shop.id)}>
+                <Text style={styles.reviewCount}>{Number(shop.review_count)} reviews · Shop review</Text>
+              </Pressable>
               <Text style={styles.address}>{shop.address}</Text>
             </View>
-            <View style={styles.rating}>
-              <Text style={styles.star}>★</Text>
-              <Text style={styles.ratingText}>{Number(shop.average_rating).toFixed(1)}</Text>
+            <View style={styles.headingActions}>
+              <Pressable onPress={() => void toggleSaved()} style={styles.saveShopButton} accessibilityLabel={isSaved ? "Unsave shop" : "Save shop"}>
+                <Ionicons name={isSaved ? "bookmark" : "bookmark-outline"} size={19} color={communityColors.green} />
+              </Pressable>
+              <View style={styles.rating}>
+                <Text style={styles.star}>★</Text>
+                <Text style={styles.ratingText}>{Number(shop.average_rating).toFixed(1)}</Text>
+              </View>
             </View>
           </View>
           <View style={styles.safetyCard}>
@@ -159,9 +193,7 @@ export default function ShopDetailScreen({
           <Text style={styles.listingHeading}>Available at this shop</Text>
           {foods.length ? foods.map((food) => (
             <View key={food.id} style={styles.foodRow}>
-              {imageUrl(food.image_url) ? (
-                <Image source={{ uri: imageUrl(food.image_url) }} style={styles.foodImage} resizeMode="cover" />
-              ) : <View style={styles.foodImage} />}
+              <FallbackPhoto uri={imageUrl(food.image_url)} fallback={foodPhoto(food.name)} style={styles.foodImage} />
               <View style={styles.foodCopy}>
                 <Text numberOfLines={1} style={styles.foodName}>{food.name}</Text>
                 <Text style={styles.foodMeta}>{food.quantity_available} left · {Number(food.current_price).toLocaleString("vi-VN")}₫</Text>
@@ -176,6 +208,9 @@ export default function ShopDetailScreen({
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: communityColors.white },
+  moreMenu: { position: "absolute", top: 62, right: 20, zIndex: 5, width: 164, paddingHorizontal: 13, paddingVertical: 6, borderWidth: 1, borderColor: communityColors.line, borderRadius: 16, backgroundColor: communityColors.white, elevation: 7 },
+  moreMenuItem: { minHeight: 38, justifyContent: "center" },
+  moreMenuText: { color: communityColors.ink, fontSize: 13 },
   content: { paddingHorizontal: 18, paddingTop: 9, paddingBottom: 28 },
   loading: { flex: 1, alignItems: "center", justifyContent: "center" },
   stateText: { color: communityColors.muted, fontSize: 12, padding: 22, textAlign: "center" },
@@ -189,7 +224,6 @@ const styles = StyleSheet.create({
     borderColor: communityColors.line,
   },
   shopPhoto: { width: "100%", height: "100%" },
-  photoFallback: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: communityColors.pale },
   dots: { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 7, height: 28 },
   dot: { width: 7, height: 7, borderRadius: 5, backgroundColor: "#e5eee5" },
   dotActive: { backgroundColor: "#687a6c" },
@@ -201,6 +235,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   shopCopy: { flex: 1 },
+  headingActions: { flexDirection: "row", alignItems: "center", gap: 7 },
+  saveShopButton: { width: 36, height: 36, borderRadius: 19, backgroundColor: communityColors.pale, alignItems: "center", justifyContent: "center" },
   shopName: { color: communityColors.ink, fontSize: 17, fontWeight: "800" },
   reviewCount: { color: communityColors.muted, fontSize: 11, marginTop: 5 },
   address: { color: communityColors.muted, fontSize: 10, marginTop: 4 },

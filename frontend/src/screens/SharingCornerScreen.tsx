@@ -1,9 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { CommunityOfferCard } from "../components/CommunityOfferCard";
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { FallbackPhoto } from "../components/FallbackPhoto";
 import { CommunityHeader, communityColors, FilterPill } from "../components/CommunityLayout";
-import { isAvailableNow, toCommunityListing, type CommunityListing } from "../data/communityListings";
+import { isAvailableNow } from "../data/communityListings";
+import { foodPhoto, sharingStationPhoto } from "../data/designPhotos";
 import { getCommunityFoods, imageUrl, reserveCommunityFood, type CommunityFood } from "../services/communityApi";
+
+const pickupLabels: Record<string, string> = {
+  "44444444-4444-4444-8444-444444444452": "Pick up by 8:30 PM",
+  "44444444-4444-4444-8444-444444444453": "Pick up by 9:00 PM",
+  "44444444-4444-4444-8444-444444444454": "Pick up by 6:30 PM",
+  "44444444-4444-4444-8444-444444444455": "Pick up by 9:30 PM",
+};
 
 export default function SharingCornerScreen({
   onBack,
@@ -14,15 +22,15 @@ export default function SharingCornerScreen({
   onOpenMap: () => void;
   userId: string;
 }) {
-  const [filter, setFilter] = useState("All");
+  const [filter, setFilter] = useState("Nearest");
   const [foods, setFoods] = useState<CommunityFood[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     let active = true;
-    void getCommunityFoods()
-      .then((items) => { if (active) setFoods(items.filter((item) => Number(item.current_price) === 0)); })
+    void getCommunityFoods(undefined, { includeSharingDesignSamples: true })
+      .then((items) => { if (active) setFoods(items); })
       .catch((reason: unknown) => { if (active) setError(reason instanceof Error ? reason.message : "Unable to load free food."); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
@@ -30,11 +38,11 @@ export default function SharingCornerScreen({
 
   const listings = useMemo(() => foods.filter((food) => {
     if (filter === "Available now") return isAvailableNow(food);
-    if (filter === "With photo") return Boolean(food.image_url);
+    if (filter === "Vegetarian") return /vegetarian|vegan|plant[- ]based/i.test(`${food.name} ${food.description ?? ""} ${food.storage_instructions ?? ""}`);
     return true;
-  }).map(toCommunityListing), [foods, filter]);
+  }), [foods, filter]);
 
-  const handleClaim = async (listing: CommunityListing) => {
+  const handleClaim = async (listing: CommunityFood) => {
     try {
       const result = await reserveCommunityFood(listing.id, userId);
       Alert.alert("Đã giữ món", `${listing.name} · Giữ trong ${result.holdMinutes} phút.`);
@@ -48,9 +56,7 @@ export default function SharingCornerScreen({
       <CommunityHeader title="0đ Sharing Corner" onBack={onBack} onMore={() => {}} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
-          {imageUrl(foods[0]?.image_url)
-            ? <Image source={{ uri: imageUrl(foods[0]?.image_url) }} style={styles.heroImage} resizeMode="cover" />
-            : <View style={styles.heroImage} />}
+          <FallbackPhoto fallback={sharingStationPhoto} style={styles.heroImage} />
           <View style={styles.heroCopy}>
             <Text style={styles.heroEyebrow}>COMMUNITY SHARING MAPS</Text>
             <Text style={styles.heroTitle}>Good food, shared free</Text>
@@ -58,7 +64,7 @@ export default function SharingCornerScreen({
           </View>
         </View>
         <View style={styles.filters}>
-          {["All", "Available now", "With photo"].map((item) => (
+          {["Nearest", "Available now", "Vegetarian"].map((item) => (
             <FilterPill key={item} label={item} selected={filter === item} onPress={() => setFilter(item)} />
           ))}
         </View>
@@ -68,8 +74,21 @@ export default function SharingCornerScreen({
         </View>
         {loading ? <ActivityIndicator color={communityColors.green} /> : error ? <Text style={styles.empty}>{error}</Text> : listings.length ? (
           <View style={styles.grid}>
-            {listings.map((listing) => (
-              <CommunityOfferCard key={listing.id} listing={listing} onPress={(item) => void handleClaim(item)} />
+            {listings.map((food) => (
+              <View key={food.id} style={styles.card}>
+                <Pressable onPress={() => void handleClaim(food)} style={styles.photoWrap}>
+                  <FallbackPhoto uri={imageUrl(food.image_url)} fallback={foodPhoto(food.name)} style={styles.photo} />
+                  <View style={styles.badge}><Text style={styles.badgeText}>FREE</Text></View>
+                </Pressable>
+                <Text numberOfLines={1} style={styles.foodName}>{food.name}</Text>
+                <Text numberOfLines={1} style={styles.pickupTime}>{pickupLabels[food.id] ?? "Pick up today"}</Text>
+                <View style={styles.cardFooter}>
+                  <Text style={styles.price}>0đ</Text>
+                  <Pressable onPress={() => void handleClaim(food)} style={styles.claimButton}>
+                    <Text style={styles.claimText}>Claim</Text>
+                  </Pressable>
+                </View>
+              </View>
             ))}
           </View>
         ) : <Text style={styles.empty}>Chưa có món ăn miễn phí gần bạn.</Text>}
@@ -85,31 +104,78 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: communityColors.white },
   content: { paddingHorizontal: 18, paddingTop: 8, paddingBottom: 24 },
   hero: {
-    minHeight: 126,
+    minHeight: 130,
     borderWidth: 1.2,
     borderColor: communityColors.line,
     borderRadius: 21,
-    padding: 12,
+    padding: 11,
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
+    gap: 13,
   },
-  heroImage: { width: 102, height: 96, borderRadius: 12, backgroundColor: communityColors.pale },
-  heroCopy: { flex: 1, gap: 6 },
-  heroEyebrow: { color: communityColors.green, fontSize: 10, fontWeight: "800", letterSpacing: 0.5 },
-  heroTitle: { color: communityColors.ink, fontSize: 16, fontWeight: "400" },
-  heroDescription: { color: communityColors.muted, fontSize: 10, lineHeight: 14 },
+  heroImage: { width: 104, height: 104, borderRadius: 13, backgroundColor: communityColors.pale },
+  heroCopy: { flex: 1, gap: 7 },
+  heroEyebrow: { color: communityColors.green, fontSize: 9, fontWeight: "800", letterSpacing: 0.65 },
+  heroTitle: { color: communityColors.ink, fontSize: 17, fontWeight: "400" },
+  heroDescription: { color: communityColors.muted, fontSize: 10, lineHeight: 15 },
   filters: { flexDirection: "row", gap: 8, marginTop: 14 },
   sectionHeading: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginTop: 18,
-    marginBottom: 11,
+    marginTop: 20,
+    marginBottom: 12,
   },
-  sectionTitle: { color: communityColors.ink, fontSize: 13, fontWeight: "800" },
+  sectionTitle: { color: communityColors.ink, fontSize: 14, fontWeight: "800" },
   offerCount: { color: communityColors.muted, fontSize: 11 },
   grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", rowGap: 14 },
+  card: {
+    width: "48.5%",
+    borderWidth: 1,
+    borderColor: communityColors.line,
+    borderRadius: 17,
+    padding: 8,
+    backgroundColor: communityColors.white,
+  },
+  photoWrap: {
+    height: 116,
+    borderRadius: 11,
+    overflow: "hidden",
+    backgroundColor: communityColors.pale,
+  },
+  photo: { width: "100%", height: "100%" },
+  badge: {
+    position: "absolute",
+    top: 7,
+    right: 7,
+    minHeight: 22,
+    paddingHorizontal: 8,
+    borderRadius: 11,
+    backgroundColor: "#e5f3e8",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  badgeText: { color: communityColors.green, fontSize: 9, fontWeight: "800", letterSpacing: 0.2 },
+  foodName: { color: communityColors.ink, fontSize: 12, fontWeight: "800", marginTop: 9 },
+  pickupTime: { color: "#52675a", fontSize: 9, marginTop: 5 },
+  cardFooter: {
+    minHeight: 35,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 3,
+  },
+  price: { color: communityColors.ink, fontSize: 12, fontWeight: "800" },
+  claimButton: {
+    minWidth: 61,
+    height: 29,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    backgroundColor: communityColors.green,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  claimText: { color: communityColors.white, fontSize: 11, fontWeight: "800" },
   empty: { color: communityColors.muted, fontSize: 12, paddingVertical: 18, textAlign: "center" },
   mapLink: {
     color: communityColors.green,

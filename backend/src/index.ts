@@ -95,8 +95,8 @@ app.put("/api/users/:id/preferences", async (req, res) => {
   const radius = Number(req.body?.notification_radius_km ?? 3);
   const quietStart = String(req.body?.quiet_start ?? "22:00");
   const quietEnd = String(req.body?.quiet_end ?? "07:00");
-  if (![1, 2, 3].includes(radius) || !/^\d{2}:\d{2}$/.test(quietStart) || !/^\d{2}:\d{2}$/.test(quietEnd)) {
-    res.status(400).json({ error: "Radius must be 1–3 km and quiet hours must use HH:MM." });
+  if (![0.5, 1, 2, 3].includes(radius) || !/^\d{2}:\d{2}$/.test(quietStart) || !/^\d{2}:\d{2}$/.test(quietEnd)) {
+    res.status(400).json({ error: "Radius must be 0.5–3 km and quiet hours must use HH:MM." });
     return;
   }
   try {
@@ -156,6 +156,83 @@ app.put("/api/drop-alerts", async (req, res) => {
     }
     res.json({ enabled });
   } catch { res.status(500).json({ error: "Unable to save drop alert." }); }
+});
+
+app.post("/api/drop-alerts/search", async (req, res) => {
+  const userId = String(req.body?.userId ?? "");
+  const keyword = String(req.body?.keyword ?? "").trim();
+  const radiusKm = Number(req.body?.radiusKm ?? 3);
+  const options = req.body?.options;
+  const allowedRadii = [0.5, 1, 2, 3, 5];
+  if (!userId || !keyword || keyword.length > 255 || !allowedRadii.includes(radiusKm)) {
+    res.status(400).json({ error: "userId, a search keyword, and a radius of 0.5, 1, 2, 3, or 5 km are required." });
+    return;
+  }
+  if (options !== undefined && (
+    typeof options !== "object" || options === null ||
+    !["food", "shop"].includes(options.target) ||
+    !Array.isArray(options.shopIds) || options.shopIds.length > 100 ||
+    typeof options.discountsOnly !== "boolean" ||
+    typeof options.freeOnly !== "boolean" ||
+    typeof options.timeWindow !== "string" || options.timeWindow.length > 32
+  )) {
+    res.status(400).json({ error: "Invalid search alert options." });
+    return;
+  }
+  const alertOptions = JSON.stringify(options ?? { start: "22:00", end: "07:00" });
+  try {
+    const [existing] = await pool.query(
+      "SELECT id FROM drop_alerts WHERE user_id = ? AND shop_id IS NULL AND keyword = ? ORDER BY created_at DESC LIMIT 1",
+      [userId, keyword],
+    );
+    const alertId = (existing as Array<{ id: string }>)[0]?.id;
+    if (alertId) {
+      await pool.query("UPDATE drop_alerts SET radius_km = ?, quiet_hours = ?, enabled = TRUE WHERE id = ?", [radiusKm, alertOptions, alertId]);
+    } else {
+      await pool.query(
+        `INSERT INTO drop_alerts (id, user_id, keyword, radius_km, notify_free_food, quiet_hours, enabled)
+         VALUES (?, ?, ?, ?, FALSE, ?, TRUE)`,
+        [randomUUID(), userId, keyword, radiusKm, alertOptions],
+      );
+    }
+    res.status(201).json({ saved: true, keyword, radiusKm });
+  } catch { res.status(500).json({ error: "Unable to save search alert." }); }
+});
+
+app.get("/api/drop-alerts/search", async (req, res) => {
+  const userId = String(req.query.userId ?? "");
+  if (!userId) { res.status(400).json({ error: "userId is required." }); return; }
+  try {
+    const [rows] = await pool.query(
+      `SELECT id, keyword, radius_km, enabled, created_at, quiet_hours
+       FROM drop_alerts
+       WHERE user_id = ? AND shop_id IS NULL AND keyword IS NOT NULL AND keyword != '__global_settings__'
+       ORDER BY created_at DESC`,
+      [userId],
+    );
+    res.json({ items: rows });
+  } catch { res.status(500).json({ error: "Unable to load search alerts." }); }
+});
+
+app.put("/api/drop-alerts/search/:id", async (req, res) => {
+  const userId = String(req.body?.userId ?? "");
+  const enabled = req.body?.enabled;
+  if (!userId || typeof enabled !== "boolean") {
+    res.status(400).json({ error: "userId and a boolean enabled value are required." });
+    return;
+  }
+  try {
+    const [result] = await pool.query(
+      `UPDATE drop_alerts SET enabled = ?
+       WHERE id = ? AND user_id = ? AND shop_id IS NULL AND keyword IS NOT NULL AND keyword != '__global_settings__'`,
+      [enabled, req.params.id, userId],
+    );
+    if (!(result as { affectedRows: number }).affectedRows) {
+      res.status(404).json({ error: "Search alert not found." });
+      return;
+    }
+    res.json({ enabled });
+  } catch { res.status(500).json({ error: "Unable to update search alert." }); }
 });
 
 app.get("/api/drop-alerts/global", async (req, res) => {
@@ -227,6 +304,68 @@ app.post("/api/favorites", async (req, res) => {
     else await pool.query("DELETE FROM favorites WHERE user_id = ? AND food_item_id = ?", [userId, foodId]);
     res.json({ saved });
   } catch { res.status(500).json({ error: "Unable to update favorites." }); }
+});
+
+app.get("/api/favorite-shops", async (req, res) => {
+  const userId = String(req.query.userId ?? "");
+  const includeDesignSamples = req.query.includeDesignSamples === "true";
+  if (!userId) { res.status(400).json({ error: "userId is required." }); return; }
+  try {
+    const [rows] = await pool.query(
+      `SELECT s.id, s.name, s.address, s.verified, s.reputation_score,
+              (SELECT f.image_url FROM food_items f WHERE f.shop_id = s.id ORDER BY f.created_at DESC LIMIT 1) AS image_url
+       FROM saved_shops ss JOIN shops s ON s.id = ss.shop_id
+       WHERE ss.user_id = ? ORDER BY ss.created_at DESC`,
+      [userId],
+    );
+    if (!includeDesignSamples) {
+      res.json({ items: rows });
+      return;
+    }
+    const designSamples = [
+      { id: "33333333-3333-4333-8333-333333333336", name: "The Corner Kitchen", address: "District 1 · 1.2 km" },
+      { id: "33333333-3333-4333-8333-333333333341", name: "Morning Brew Cafe", address: "District 3 · 2.4 km" },
+      { id: "33333333-3333-4333-8333-333333333342", name: "Green Bowl Studio", address: "Binh Thanh · 3.1 km" },
+    ];
+    const [sampleRows] = await pool.query(
+      `SELECT s.id, s.name, s.address, s.verified, s.reputation_score, NULL AS image_url
+       FROM shops s
+       WHERE s.id IN (?, ?, ?)
+       ORDER BY FIELD(s.id, ?, ?, ?)`,
+      [
+        "33333333-3333-4333-8333-333333333336",
+        "33333333-3333-4333-8333-333333333341",
+        "33333333-3333-4333-8333-333333333342",
+        "33333333-3333-4333-8333-333333333336",
+        "33333333-3333-4333-8333-333333333341",
+        "33333333-3333-4333-8333-333333333342",
+      ],
+    );
+    const existingDesignRows = sampleRows as { id: string }[];
+    const existingDesignIds = new Set(existingDesignRows.map((shop) => shop.id));
+    const missingDesignRows = designSamples
+      .filter((shop) => !existingDesignIds.has(shop.id))
+      .map((shop) => ({ ...shop, verified: 1, reputation_score: 4.8, image_url: null }));
+    const savedShopIds = new Set((rows as { id: string }[]).map((shop) => shop.id));
+    res.json({
+      items: [
+        ...[...existingDesignRows, ...missingDesignRows].filter((shop) => !savedShopIds.has(shop.id)),
+        ...rows as object[],
+      ],
+    });
+  } catch { res.status(500).json({ error: "Unable to load saved shops." }); }
+});
+
+app.post("/api/favorite-shops", async (req, res) => {
+  const { userId, shopId } = req.body ?? {};
+  if (!userId || !shopId) { res.status(400).json({ error: "userId and shopId are required." }); return; }
+  try {
+    const [existing] = await pool.query("SELECT 1 FROM saved_shops WHERE user_id = ? AND shop_id = ?", [userId, shopId]);
+    const saved = !(existing as unknown[]).length;
+    if (saved) await pool.query("INSERT INTO saved_shops (user_id, shop_id) VALUES (?, ?)", [userId, shopId]);
+    else await pool.query("DELETE FROM saved_shops WHERE user_id = ? AND shop_id = ?", [userId, shopId]);
+    res.json({ saved });
+  } catch { res.status(500).json({ error: "Unable to update saved shops." }); }
 });
 
 app.get("/api/reservations", async (req, res) => {
@@ -331,16 +470,58 @@ app.get("/api/health", async (_req, res) => {
 
 app.get("/api/foods", async (req, res) => {
   const search = String(req.query.search ?? "").trim();
+  const includeSearchDesignSamples = req.query.includeSearchDesignSamples === "true";
+  const includeSharingDesignSamples = req.query.includeSharingDesignSamples === "true";
+  const includeDropAlertDesignSamples = req.query.includeDropAlertDesignSamples === "true";
+  const searchDesignSampleIds = [
+    "44444444-4444-4444-8444-444444444446",
+    "44444444-4444-4444-8444-444444444447",
+    "44444444-4444-4444-8444-444444444448",
+    "44444444-4444-4444-8444-444444444449",
+    "44444444-4444-4444-8444-444444444450",
+    "44444444-4444-4444-8444-444444444451",
+  ];
+  const sharingDesignSampleIds = [
+    "44444444-4444-4444-8444-444444444452",
+    "44444444-4444-4444-8444-444444444453",
+    "44444444-4444-4444-8444-444444444454",
+    "44444444-4444-4444-8444-444444444455",
+  ];
+  const dropAlertDesignSampleIds = ["44444444-4444-4444-8444-444444444456"];
+  const allDesignSampleIds = [...searchDesignSampleIds, ...sharingDesignSampleIds, ...dropAlertDesignSampleIds];
+  const includedSampleIds = [
+    ...(includeSearchDesignSamples ? searchDesignSampleIds : []),
+    ...(includeSharingDesignSamples ? sharingDesignSampleIds : []),
+    ...(includeDropAlertDesignSamples ? dropAlertDesignSampleIds : []),
+  ];
+  const searchDesignLocations: Record<string, string> = {
+    "44444444-4444-4444-8444-444444444446": "District 1 · 1.2 km",
+    "44444444-4444-4444-8444-444444444447": "District 3 · 2.1 km",
+    "44444444-4444-4444-8444-444444444448": "Binh Thanh · 3.4 km",
+    "44444444-4444-4444-8444-444444444449": "District 2 · 4.0 km",
+    "44444444-4444-4444-8444-444444444450": "District 1 · 2.8 km",
+    "44444444-4444-4444-8444-444444444451": "District 3 · 4.0 km",
+  };
+  const locationExpression = includeSearchDesignSamples || includeDropAlertDesignSamples
+    ? `CASE f.id ${Object.entries({
+      ...searchDesignLocations,
+      ...(includeDropAlertDesignSamples ? { "44444444-4444-4444-8444-444444444456": "1.2 km away" } : {}),
+    }).map(([id, location]) =>
+      `WHEN '${id}' THEN '${location}'`).join(" ")} ELSE s.address END`
+    : "s.address";
+  const filteredSampleIds = includedSampleIds.length > 0 ? includedSampleIds : allDesignSampleIds;
+  const sampleFilter = `f.id ${includedSampleIds.length > 0 ? "IN" : "NOT IN"} (${filteredSampleIds.map(() => "?").join(", ")})`;
   try {
     await releaseExpiredHolds();
     const [rows] = await pool.query(
       `SELECT f.id, f.name, f.description, f.image_url, f.original_price, f.current_price, f.storage_instructions,
               f.quantity_available, f.allergens, f.expires_at, f.pickup_starts_at, f.pickup_ends_at,
-              s.id AS shop_id, s.name AS shop_name, s.address, s.latitude, s.longitude, s.verified, s.reputation_score
+              s.id AS shop_id, s.name AS shop_name, ${locationExpression} AS address, s.latitude, s.longitude, s.verified, s.reputation_score
        FROM food_items f JOIN shops s ON s.id = f.shop_id
        WHERE f.status = 'active' AND f.quantity_available > 0 AND f.pickup_ends_at > CURRENT_TIMESTAMP
-         AND LOWER(CONCAT_WS(' ', f.name, f.description, s.name)) LIKE LOWER(?) ORDER BY f.pickup_ends_at ASC LIMIT 50`,
-      [`%${search}%`],
+         AND ${sampleFilter}
+         AND LOWER(CONCAT_WS(' ', f.name, f.description, s.name)) LIKE LOWER(?) ORDER BY f.pickup_ends_at ASC, f.id ASC LIMIT 50`,
+      [...filteredSampleIds, `%${search}%`],
     );
     res.json({ items: rows });
   } catch {
@@ -369,6 +550,66 @@ app.get("/api/shops/:id", async (req, res) => {
     if (!shop) { res.status(404).json({ error: "Shop not found." }); return; }
     res.json(shop);
   } catch { res.status(500).json({ error: "Unable to load shop details." }); }
+});
+
+app.get("/api/shops/:id/reviews", async (req, res) => {
+  const userId = String(req.query.userId ?? "");
+  try {
+    const [reviews] = await pool.query(
+      `SELECT r.id, r.order_id, r.rating, r.comment, r.created_at, u.full_name AS author_name
+       FROM reviews r JOIN users u ON u.id = r.author_id
+       WHERE r.shop_id = ? ORDER BY r.created_at DESC LIMIT 100`,
+      [req.params.id],
+    );
+    const [eligibleOrders] = userId
+      ? await pool.query(
+        `SELECT o.id, o.created_at, o.total_amount
+         FROM orders o
+         LEFT JOIN reviews r ON r.order_id = o.id AND r.author_id = o.buyer_id
+         WHERE o.shop_id = ? AND o.buyer_id = ? AND o.status = 'completed' AND r.id IS NULL
+         ORDER BY o.created_at DESC LIMIT 1`,
+        [req.params.id, userId],
+      )
+      : [[]];
+    const [shops] = await pool.query("SELECT id FROM shops WHERE id = ?", [req.params.id]);
+    if (!(shops as unknown[]).length) { res.status(404).json({ error: "Shop not found." }); return; }
+    res.json({
+      items: reviews,
+      eligibleOrder: (eligibleOrders as Array<{ id: string }>)[0] ?? null,
+    });
+  } catch { res.status(500).json({ error: "Unable to load shop reviews." }); }
+});
+
+app.post("/api/shops/:id/reviews", async (req, res) => {
+  const authorId = String(req.body?.authorId ?? "");
+  const orderId = String(req.body?.orderId ?? "");
+  const rating = Number(req.body?.rating);
+  const comment = String(req.body?.comment ?? "").trim();
+  if (!authorId || !orderId || !Number.isInteger(rating) || rating < 1 || rating > 5) {
+    res.status(400).json({ error: "authorId, orderId, and a rating from 1 to 5 are required." });
+    return;
+  }
+  try {
+    const [orders] = await pool.query(
+      "SELECT id FROM orders WHERE id = ? AND shop_id = ? AND buyer_id = ? AND status = 'completed'",
+      [orderId, req.params.id, authorId],
+    );
+    if (!(orders as unknown[]).length) {
+      res.status(403).json({ error: "Only the buyer of a completed order can review this shop." });
+      return;
+    }
+    const [existing] = await pool.query("SELECT id FROM reviews WHERE order_id = ? AND author_id = ?", [orderId, authorId]);
+    if ((existing as unknown[]).length) {
+      res.status(409).json({ error: "This completed order already has a review." });
+      return;
+    }
+    const id = randomUUID();
+    await pool.query(
+      "INSERT INTO reviews (id, order_id, author_id, shop_id, rating, comment) VALUES (?, ?, ?, ?, ?, ?)",
+      [id, orderId, authorId, req.params.id, rating, comment || null],
+    );
+    res.status(201).json({ id, order_id: orderId, author_id: authorId, shop_id: req.params.id, rating, comment: comment || null });
+  } catch { res.status(500).json({ error: "Unable to save shop review." }); }
 });
 
 app.post("/api/shops", async (req, res) => {

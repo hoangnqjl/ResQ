@@ -74,6 +74,15 @@ CREATE TABLE IF NOT EXISTS favorites (
   CONSTRAINT fk_favorites_food FOREIGN KEY (food_item_id) REFERENCES food_items(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS saved_shops (
+  user_id CHAR(36) NOT NULL,
+  shop_id CHAR(36) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, shop_id),
+  CONSTRAINT fk_saved_shops_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_saved_shops_shop FOREIGN KEY (shop_id) REFERENCES shops(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS user_preferences (
   user_id CHAR(36) NOT NULL PRIMARY KEY,
   notification_radius_km DECIMAL(3,1) NOT NULL DEFAULT 3.0,

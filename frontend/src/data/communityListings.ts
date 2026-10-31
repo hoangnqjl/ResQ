@@ -7,7 +7,7 @@ export type CommunityListing = CommunityFood & {
 };
 
 const money = (value: string | number) =>
-  `${Number(value).toLocaleString("vi-VN")}₫`;
+  `$${(Number(value) / 25000).toFixed(2)}`;
 
 export function toCommunityListing(food: CommunityFood): CommunityListing {
   const currentPrice = Number(food.current_price);
@@ -19,7 +19,7 @@ export function toCommunityListing(food: CommunityFood): CommunityListing {
   return {
     ...food,
     badge: isFree ? "0đ" : `${discount}% OFF`,
-    priceLabel: isFree ? "Miễn phí" : money(currentPrice),
+    priceLabel: isFree ? "0đ" : money(currentPrice),
     kind: isFree ? "free" : "budget",
   };
 }

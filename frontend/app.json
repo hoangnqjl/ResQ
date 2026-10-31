@@ -5,6 +5,11 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "androidStatusBar": {
+      "barStyle": "dark-content",
+      "backgroundColor": "#00000000",
+      "translucent": true
+    },
     "android": { "package": "com.resq.foodapp", "adaptiveIcon": { "backgroundColor": "#176b48" } },
     "ios": { "bundleIdentifier": "com.resq.foodapp", "supportsTablet": false },
     "plugins": []

@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import { FallbackPhoto } from "../components/FallbackPhoto";
 import { CommunityOfferCard } from "../components/CommunityOfferCard";
 import { CommunityHeader, communityColors, FilterPill } from "../components/CommunityLayout";
 import { hasDiscount, toCommunityListing } from "../data/communityListings";
+import { foodPhoto } from "../data/designPhotos";
 import { getCommunityFoods, imageUrl, reserveCommunityFood, type CommunityFood } from "../services/communityApi";
 
-export default function BudgetMysteryBagsScreen({ onBack, userId }: { onBack: () => void; userId: string }) {
-  const [filter, setFilter] = useState("All");
+export default function BudgetMysteryBagsScreen({ onBack, onOpenGuide, userId }: { onBack: () => void; onOpenGuide: () => void; userId: string }) {
+  const [filter, setFilter] = useState("Under $3");
   const [foods, setFoods] = useState<CommunityFood[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -24,8 +26,9 @@ export default function BudgetMysteryBagsScreen({ onBack, userId }: { onBack: ()
     const discount = Number(food.original_price) > 0
       ? (1 - Number(food.current_price) / Number(food.original_price)) * 100
       : 0;
-    if (filter === "Under 30k") return Number(food.current_price) < 30000;
-    if (filter === "50%+ off") return discount >= 50;
+    if (filter === "Under $3") return Number(food.current_price) <= 75000;
+    if (filter === "50% off") return discount >= 50 && discount < 70;
+    if (filter === "70% off") return discount >= 70;
     return true;
   }).map(toCommunityListing), [foods, filter]);
 
@@ -40,12 +43,10 @@ export default function BudgetMysteryBagsScreen({ onBack, userId }: { onBack: ()
 
   return (
     <View style={styles.root}>
-      <CommunityHeader title="Budget Mystery Bags" onBack={onBack} onMore={() => {}} />
+      <CommunityHeader title="Budget Mystery Bags" onBack={onBack} onMore={onOpenGuide} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
-          {imageUrl(foods[0]?.image_url)
-            ? <Image source={{ uri: imageUrl(foods[0]?.image_url) }} style={styles.heroImage} resizeMode="cover" />
-            : <View style={styles.heroImage} />}
+          <FallbackPhoto uri={imageUrl(foods[0]?.image_url)} fallback={foodPhoto(foods[0]?.name ?? "")} style={styles.heroImage} />
           <View style={styles.heroCopy}>
             <Text style={styles.heroEyebrow}>SAVE 50%–70%</Text>
             <Text style={styles.heroTitle}>Save food. Spend less.</Text>
@@ -53,7 +54,7 @@ export default function BudgetMysteryBagsScreen({ onBack, userId }: { onBack: ()
           </View>
         </View>
         <View style={styles.filters}>
-          {["All", "Under 30k", "50%+ off"].map((item) => (
+          {["Under $3", "50% off", "70% off"].map((item) => (
             <FilterPill
               key={item}
               label={item}

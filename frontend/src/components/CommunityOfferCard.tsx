@@ -1,7 +1,9 @@
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { CommunityListing } from "../data/communityListings";
+import { foodPhoto } from "../data/designPhotos";
 import { imageUrl } from "../services/communityApi";
 import { communityColors } from "./CommunityLayout";
+import { FallbackPhoto } from "./FallbackPhoto";
 
 export function CommunityOfferCard({
   listing,
@@ -15,7 +17,7 @@ export function CommunityOfferCard({
   return (
     <View style={styles.card}>
       <Pressable onPress={() => onPress(listing)} style={styles.photoWrap}>
-        {uri ? <Image source={{ uri }} style={styles.photo} resizeMode="cover" /> : <View style={styles.photoFallback} />}
+        <FallbackPhoto uri={uri} fallback={foodPhoto(listing.name)} style={styles.photo} />
         <View style={[styles.badge, !isFree && styles.discountBadge]}>
           <Text style={[styles.badgeText, !isFree && styles.discountText]}>{listing.badge}</Text>
         </View>
@@ -25,7 +27,7 @@ export function CommunityOfferCard({
       <View style={styles.cardFooter}>
         <Text style={styles.price}>{listing.priceLabel}</Text>
         <Pressable onPress={() => onPress(listing)} style={styles.action}>
-          <Text style={styles.actionText}>{isFree ? "Nhận" : "Đặt"}</Text>
+          <Text style={styles.actionText}>{isFree ? "Claim" : "Reserve"}</Text>
         </Pressable>
       </View>
     </View>
@@ -50,10 +52,6 @@ const styles = StyleSheet.create({
   photo: {
     width: "100%",
     height: "100%",
-  },
-  photoFallback: {
-    flex: 1,
-    backgroundColor: communityColors.pale,
   },
   badge: {
     position: "absolute",

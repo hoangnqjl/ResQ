@@ -10,6 +10,7 @@ const imageSources = [
   ["salmon-poke-bowl.jpg", "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1000&q=80"],
   ["chicken-pho.jpg", "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=1000&q=80"],
   ["berry-pancakes.jpg", "https://images.unsplash.com/photo-1528207776546-365bb710ee93?auto=format&fit=crop&w=1000&q=80"],
+  ["vegetarian-garden-bowl.jpg", "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1000&q=80"],
 ] as const;
 
 try {
@@ -49,9 +50,20 @@ try {
   let sql = await readFile(seedPath, "utf8");
   for (const [fileName, url] of localImages) sql = sql.replaceAll(`{{${fileName}}}`, url);
   for (const statement of sql.split(";").map((part) => part.trim()).filter(Boolean)) await pool.query(statement);
-  const [rows] = await pool.query("SELECT COUNT(*) AS count FROM food_items WHERE shop_id = ?", ["33333333-3333-4333-8333-333333333333"]);
-  const count = Number((rows as Array<{ count: number }>)[0]?.count ?? 0);
-  console.log(`Demo buyer and seller profiles and ${count} food listings are ready. Images are stored in ${uploadsDir}.`);
+  const [rows] = await pool.query(
+    `SELECT COUNT(DISTINCT shop_id) AS shops, COUNT(*) AS listings, SUM(quantity_available) AS portions
+     FROM food_items WHERE shop_id IN (?, ?, ?, ?) AND status = 'active'`,
+    [
+      "33333333-3333-4333-8333-333333333333",
+      "33333333-3333-4333-8333-333333333334",
+      "33333333-3333-4333-8333-333333333335",
+      "33333333-3333-4333-8333-333333333337",
+    ],
+  );
+  const totals = (rows as Array<{ shops: number; listings: number; portions: number }>)[0];
+  console.log(
+    `Demo data is ready: ${totals.shops} shops, ${totals.listings} listings, ${totals.portions} portions. Images are stored in ${uploadsDir}.`,
+  );
 } finally {
   await pool.end();
 }

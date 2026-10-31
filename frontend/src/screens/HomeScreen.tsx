@@ -1,8 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { API_URL } from "../api";
+<<<<<<< HEAD
 import { colors, fontSizes } from "../theme";
+=======
+import { colors } from "../theme";
+import { FallbackPhoto } from "../components/FallbackPhoto";
+import { foodPhoto } from "../data/designPhotos";
+import { imageUrl } from "../services/communityApi";
+>>>>>>> 602a686 (Update ResQ Food project)
 
 export type Food = {
   id: string; name: string; description?: string; image_url?: string;
@@ -62,7 +69,7 @@ export default function HomeScreen({ userId, userName, activeTab, onOpenMenu, on
   const title = activeTab === "Saved" ? "Your saved meals" : activeTab === "Maps" ? "Food near you" : activeTab === "Profile" ? "Your ResQ profile" : activeTab === "Home" ? "Good food. Less waste." : "Explore nearby food";
 
   const MealCard = ({ food }: { food: Food }) => <Pressable onPress={() => onOpenFood(food)} style={s.mealCard}>
-    <View style={s.mealPhotoWrap}>{food.image_url ? <Image source={{ uri: food.image_url }} resizeMode="cover" style={s.mealPhoto} /> : <View style={s.photoFallback}><Text style={s.fallbackEmoji}>🥗</Text></View>}<Text style={s.timeBadge}>Pickup today</Text></View>
+    <View style={s.mealPhotoWrap}><FallbackPhoto uri={imageUrl(food.image_url)} fallback={foodPhoto(food.name)} style={s.mealPhoto} /><Text style={s.timeBadge}>Pickup today</Text></View>
     <Text numberOfLines={1} style={s.mealTitle}>{food.name}</Text>
     <View style={s.priceRow}><Text style={s.mealPrice}>{money(food.current_price)}</Text><Text style={s.rating}>★ {Number(food.reputation_score ?? 0).toFixed(1)}</Text></View>
     <Text numberOfLines={1} style={s.mealMeta}>{food.shop_name} · {food.quantity_available} left</Text>
@@ -88,7 +95,7 @@ export default function HomeScreen({ userId, userName, activeTab, onOpenMenu, on
         </ScrollView>
         <View style={s.sectionHeading}><Text style={s.sectionTitle}>Explore food near you</Text><Pressable onPress={() => onTabChange("Explore")}><Text style={s.seeAll}>See all</Text></Pressable></View>
         {loading ? <View style={s.loading}><ActivityIndicator color={colors.primary} /><Text style={s.mealMeta}>Loading live listings…</Text></View> : error ? <View style={s.emptyCard}><Text style={s.emptyTitle}>Server unavailable</Text><Text style={s.emptyText}>{error}</Text><Pressable onPress={() => setRefreshKey((key) => key + 1)} style={s.retry}><Text style={s.retryText}>Try again</Text></Pressable></View> : featured ? <Pressable onPress={() => onOpenFood(featured)} style={s.featuredCard}>
-          {featured.image_url ? <Image source={{ uri: featured.image_url }} style={s.featuredImage} resizeMode="cover" /> : <View style={[s.featuredImage, s.photoFallback]}><Text style={s.fallbackEmoji}>🥗</Text></View>}
+          <FallbackPhoto uri={imageUrl(featured.image_url)} fallback={foodPhoto(featured.name)} style={s.featuredImage} />
           <View style={s.featuredTag}><Text style={s.featuredKicker}>FROM THE DATABASE</Text><Text style={s.featuredName}>{featured.name}</Text><Text style={s.featuredPrice}>{money(featured.current_price)} · {featured.quantity_available} portions</Text></View>
         </Pressable> : <View style={s.emptyCard}><Text style={s.emptyTitle}>{activeTab === "Saved" ? "No saved meals yet" : "No meals available right now"}</Text><Text style={s.emptyText}>This list comes from MySQL. New store listings will appear here as soon as they are published.</Text></View>}
         <View style={s.dots}><View style={[s.dot, s.dotActive]} /><View style={s.dot} /><View style={s.dot} /></View>

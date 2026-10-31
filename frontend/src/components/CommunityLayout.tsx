@@ -12,6 +12,16 @@ export const communityColors = {
   white: "#ffffff",
 };
 
+export function CommunityFilterIcon() {
+  return (
+    <View style={styles.filterLinesIcon}>
+      <View style={[styles.filterLine, styles.filterLineLong]} />
+      <View style={[styles.filterLine, styles.filterLineMedium]} />
+      <View style={[styles.filterLine, styles.filterLineShort]} />
+    </View>
+  );
+}
+
 export function CommunityHeader({
   title,
   onBack,
@@ -64,6 +74,11 @@ export function FilterPill({
 }
 
 const styles = StyleSheet.create({
+  filterLinesIcon: { alignItems: "center", gap: 5 },
+  filterLine: { height: 1.5, borderRadius: 1, backgroundColor: communityColors.green },
+  filterLineLong: { width: 21 },
+  filterLineMedium: { width: 14 },
+  filterLineShort: { width: 7 },
   header: {
     height: 54,
     flexDirection: "row",

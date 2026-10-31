@@ -51,14 +51,138 @@ export type GlobalDropAlertSettings = {
   vibrateEmergencyDrops: boolean;
 };
 
-export async function getCommunityFoods(search?: string) {
-  const query = search?.trim() ? `?search=${encodeURIComponent(search.trim())}` : "";
+export type ShopReview = {
+  id: string;
+  order_id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  author_name: string;
+};
+
+export type EligibleReviewOrder = { id: string; created_at: string; total_amount: number | string };
+export type SearchAlertOptions = {
+  target: "food" | "shop";
+  shopIds: string[];
+  discountsOnly: boolean;
+  freeOnly: boolean;
+  timeWindow: string;
+};
+export type SearchDropAlert = {
+  id: string;
+  keyword: string;
+  radius_km: number | string;
+  enabled: number | boolean;
+  created_at: string;
+  quiet_hours?: SearchAlertOptions | string;
+};
+export type SavedShop = Pick<CommunityShop, "id" | "name" | "address" | "verified" | "reputation_score"> & { image_url?: string | null };
+
+export async function getCommunityFoods(
+  search?: string,
+  options: {
+    includeSearchDesignSamples?: boolean;
+    includeSharingDesignSamples?: boolean;
+    includeDropAlertDesignSamples?: boolean;
+  } = {},
+) {
+  const params = new URLSearchParams();
+  if (search?.trim()) params.set("search", search.trim());
+  if (options.includeSearchDesignSamples) params.set("includeSearchDesignSamples", "true");
+  if (options.includeSharingDesignSamples) params.set("includeSharingDesignSamples", "true");
+  if (options.includeDropAlertDesignSamples) params.set("includeDropAlertDesignSamples", "true");
+  const encodedParams = params.toString();
+  const query = encodedParams ? `?${encodedParams}` : "";
   const result = await requestJson<{ items: CommunityFood[] }>(`/api/foods${query}`);
   return result.items;
 }
 
 export async function getCommunityShop(shopId: string) {
   return requestJson<CommunityShop>(`/api/shops/${encodeURIComponent(shopId)}`);
+}
+
+export async function getShopReviews(shopId: string, userId: string) {
+  return requestJson<{ items: ShopReview[]; eligibleOrder: EligibleReviewOrder | null }>(
+    `/api/shops/${encodeURIComponent(shopId)}/reviews?userId=${encodeURIComponent(userId)}`,
+  );
+}
+
+export async function submitShopReview(
+  shopId: string,
+  values: { authorId: string; orderId: string; rating: number; comment: string },
+) {
+  return requestJson<ShopReview>(`/api/shops/${encodeURIComponent(shopId)}/reviews`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(values),
+  });
+}
+
+export async function saveSearchDropAlert(userId: string, keyword: string, radiusKm: number, options?: SearchAlertOptions) {
+  return requestJson<{ saved: boolean; keyword: string; radiusKm: number }>("/api/drop-alerts/search", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId, keyword, radiusKm, options }),
+  });
+}
+
+export async function getFavoriteFoodIds(userId: string) {
+  const result = await requestJson<{ items: string[] }>(`/api/favorites?userId=${encodeURIComponent(userId)}`);
+  return result.items;
+}
+
+export async function toggleFavoriteFood(userId: string, foodId: string) {
+  return requestJson<{ saved: boolean }>("/api/favorites", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId, foodId }),
+  });
+}
+
+export async function getSavedShops(userId: string, options: { includeDesignSamples?: boolean } = {}) {
+  const params = new URLSearchParams({ userId });
+  if (options.includeDesignSamples) params.set("includeDesignSamples", "true");
+  return requestJson<{ items: SavedShop[] }>(`/api/favorite-shops?${params.toString()}`);
+}
+
+export async function toggleSavedShop(userId: string, shopId: string) {
+  return requestJson<{ saved: boolean }>("/api/favorite-shops", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId, shopId }),
+  });
+}
+
+export async function getSearchDropAlerts(userId: string) {
+  return requestJson<{ items: SearchDropAlert[] }>(
+    `/api/drop-alerts/search?userId=${encodeURIComponent(userId)}`,
+  );
+}
+
+export async function updateSearchDropAlert(userId: string, alertId: string, enabled: boolean) {
+  return requestJson<{ enabled: boolean }>(`/api/drop-alerts/search/${encodeURIComponent(alertId)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId, enabled }),
+  });
+}
+
+export async function saveNotificationRadius(userId: string, radiusKm: number) {
+  const current = await requestJson<{ quiet_start: string; quiet_end: string }>(
+    `/api/users/${encodeURIComponent(userId)}/preferences`,
+  );
+  return requestJson<{ notification_radius_km: number }>(
+    `/api/users/${encodeURIComponent(userId)}/preferences`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        notification_radius_km: radiusKm,
+        quiet_start: current.quiet_start.slice(0, 5),
+        quiet_end: current.quiet_end.slice(0, 5),
+      }),
+    },
+  );
 }
 
 export async function reserveCommunityFood(foodItemId: string, buyerId: string) {
