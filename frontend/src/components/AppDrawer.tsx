@@ -12,6 +12,11 @@ const groups: [string, Item[]][] = [
       ["map-outline", "Food Heatmap", "maps"],
       ["bookmark-outline", "Saved Items", "saved"],
       ["receipt-outline", "My Orders", "orders"],
+      ["person-outline", "Hồ sơ người mua", "buyerProfile"],
+      ["storefront-outline", "Hồ sơ người bán", "sellerProfile"],
+      ["create-outline", "Chỉnh sửa hồ sơ", "editProfile"],
+      ["location-outline", "Vị trí & Huy hiệu uy tín", "storeLocation"],
+      ["document-text-outline", "Giấy chứng nhận ATVSTP", "certificate"],
     ],
   ],
   [

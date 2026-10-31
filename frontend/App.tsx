@@ -317,6 +317,9 @@ function ClientApp() {
       diet: "diet",
       notificationRadius: "notificationRadius",
       buyerSetup: "foodPreferences",
+      editProfile: "editProfile",
+      certificate: "certificate",
+      storeLocation: "storeLocation",
       help: "help",
       settings: "settings",
     };
