@@ -1,3 +1,4 @@
+import { BottomNavBar } from "../components/BottomNavBar";
 import { useState } from "react";
 import {
   Image,
@@ -10,6 +11,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, fontSizes } from "../theme";
+import { foodPhoto, cornerKitchenPhoto } from "../data/designPhotos";
 
 type Props = {
   userName?: string;
@@ -26,12 +28,12 @@ type Props = {
 
 // 6 demo meal photos for the 3-column grid
 const MEAL_PHOTOS = [
-  "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80",
-  "https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=400&q=80",
-  "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=400&q=80",
-  "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=400&q=80",
-  "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=400&q=80",
-  "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=400&q=80",
+  foodPhoto("chicken"),
+  foodPhoto("salmon"),
+  foodPhoto("noodles"),
+  foodPhoto("pancakes"),
+  foodPhoto("avocado"),
+  foodPhoto("pasta"),
 ];
 
 const TABS = [
@@ -120,9 +122,7 @@ export default function BuyerProfileScreen({
           {/* Avatar with capybara */}
           <View style={s.avatarWrap}>
             <Image
-              source={{
-                uri: "https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?auto=format&fit=crop&w=200&q=80",
-              }}
+              source={cornerKitchenPhoto}
               style={s.avatarImage}
             />
             {!isGuest && (
@@ -280,9 +280,9 @@ export default function BuyerProfileScreen({
         {/* 3-Column Photo Grid (Visible in Normal Mode) */}
         {!isIncognito ? (
           <View style={s.gridContainer}>
-            {MEAL_PHOTOS.map((url, idx) => (
+            {MEAL_PHOTOS.map((src, idx) => (
               <View key={idx} style={s.gridItem}>
-                <Image source={{ uri: url }} style={s.gridPhoto} resizeMode="cover" />
+                <Image source={src} style={s.gridPhoto} resizeMode="cover" />
               </View>
             ))}
           </View>
@@ -306,33 +306,7 @@ export default function BuyerProfileScreen({
 
       {/* Bottom Tab Bar */}
       {onTabChange && (
-        <View style={s.tabBar}>
-          {TABS.map(([label, icon]) => {
-            const isSelected = activeTab === label;
-            return (
-              <Pressable
-                key={label}
-                onPress={() => onTabChange(label)}
-                style={s.tab}
-              >
-                <View
-                  style={[s.tabIconWrap, isSelected && s.tabIconWrapActive]}
-                >
-                  <Ionicons
-                    name={icon}
-                    size={18}
-                    color={isSelected ? colors.primary : "#456051"}
-                  />
-                </View>
-                <Text
-                  style={[s.tabLabel, isSelected && s.tabLabelActive]}
-                >
-                  {label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        <BottomNavBar activeTab={activeTab} onTabChange={onTabChange} />
       )}
       {/* 3-Dot Dropdown Menu Modal */}
       {showMenu && (
@@ -451,7 +425,7 @@ const s = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   backIcon: {
-    fontSize: 24,
+    fontSize: fontSizes.header,
     color: colors.ink,
     marginTop: -2,
   },
@@ -461,7 +435,7 @@ const s = StyleSheet.create({
     color: colors.ink,
   },
   moreIcon: {
-    fontSize: 20,
+    fontSize: fontSizes.title,
     color: colors.ink,
     fontWeight: "900",
     marginTop: -4,
@@ -509,12 +483,12 @@ const s = StyleSheet.create({
     gap: 3,
   },
   statValue: {
-    fontSize: 20,
+    fontSize: fontSizes.title,
     fontWeight: "800",
     color: colors.ink,
   },
   statLabel: {
-    fontSize: 11,
+    fontSize: fontSizes.badge,
     color: colors.muted,
   },
   nameBlock: {
@@ -536,7 +510,7 @@ const s = StyleSheet.create({
     gap: 4,
   },
   trustedText: {
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     fontWeight: "600",
     color: colors.primary,
   },
@@ -559,7 +533,7 @@ const s = StyleSheet.create({
     gap: 6,
   },
   guestButtonText: {
-    fontSize: 13,
+    fontSize: fontSizes.bodySmall,
     fontWeight: "700",
     color: colors.primary,
   },
@@ -589,7 +563,7 @@ const s = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   editButtonText: {
-    fontSize: 13,
+    fontSize: fontSizes.bodySmall,
     fontWeight: "700",
     color: colors.ink,
   },
@@ -602,7 +576,7 @@ const s = StyleSheet.create({
     justifyContent: "center",
   },
   shareButtonText: {
-    fontSize: 13,
+    fontSize: fontSizes.bodySmall,
     fontWeight: "700",
     color: colors.primary,
   },
@@ -637,7 +611,7 @@ const s = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   quickLabel: {
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     color: colors.ink,
     fontWeight: "500",
   },
@@ -708,49 +682,13 @@ const s = StyleSheet.create({
     gap: 2,
   },
   toastTitle: {
-    fontSize: 13,
+    fontSize: fontSizes.bodySmall,
     fontWeight: "800",
     color: colors.ink,
   },
   toastSub: {
-    fontSize: 11,
+    fontSize: fontSizes.badge,
     color: colors.muted,
-  },
-  tabBar: {
-    height: 56,
-    marginHorizontal: 14,
-    marginBottom: 8,
-    flexDirection: "row",
-    borderColor: colors.line,
-    borderWidth: 1,
-    borderRadius: 28,
-    backgroundColor: colors.white,
-    alignItems: "center",
-    justifyContent: "space-around",
-  },
-  tab: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 2,
-  },
-  tabIconWrap: {
-    width: 34,
-    height: 26,
-    borderRadius: 13,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  tabIconWrapActive: {
-    backgroundColor: colors.pale,
-  },
-  tabLabel: {
-    color: "#64756a",
-    fontSize: fontSizes.caption,
-  },
-  tabLabelActive: {
-    color: colors.primary,
-    fontWeight: "800",
   },
   menuOverlay: {
     flex: 1,
@@ -781,7 +719,7 @@ const s = StyleSheet.create({
     gap: 10,
   },
   menuItemText: {
-    fontSize: 14,
+    fontSize: fontSizes.bodyMedium,
     fontWeight: "600",
     color: colors.ink,
   },

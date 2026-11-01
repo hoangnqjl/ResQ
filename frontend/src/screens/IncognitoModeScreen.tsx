@@ -35,7 +35,7 @@ export default function IncognitoModeScreen({
   onToggle,
   onViewHiddenProfile,
 }: Props) {
-  const [enabled, setEnabled] = useState(initialEnabled);
+  const [enabled, setEnabled] = useState(Boolean(initialEnabled));
   const [busy, setBusy] = useState(false);
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const [previewSheetVisible, setPreviewSheetVisible] = useState(false);
@@ -131,7 +131,7 @@ export default function IncognitoModeScreen({
       </ScrollView>
 
       {/* Bottom Button (visible only when enabled = true) */}
-      {enabled && (
+      {Boolean(enabled) ? (
         <View style={s.bottomContainer}>
           <Pressable
             onPress={() => {
@@ -143,7 +143,7 @@ export default function IncognitoModeScreen({
             <Text style={s.viewProfileText}>View hidden profile</Text>
           </Pressable>
         </View>
-      )}
+      ) : null}
 
       {/* Incognito Confirmation Modal - M1-US-A2-1 */}
       <IncognitoConfirmationModal
@@ -190,7 +190,7 @@ const s = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   backIcon: {
-    fontSize: 24,
+    fontSize: fontSizes.header,
     color: colors.ink,
     marginTop: -2,
   },
@@ -200,7 +200,7 @@ const s = StyleSheet.create({
     color: colors.ink,
   },
   moreIcon: {
-    fontSize: 20,
+    fontSize: fontSizes.title,
     color: colors.ink,
     fontWeight: "900",
     marginTop: -4,
@@ -225,12 +225,12 @@ const s = StyleSheet.create({
     gap: 4,
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: fontSizes.bodyLarge,
     fontWeight: "800",
     color: colors.ink,
   },
   cardSubtitle: {
-    fontSize: 13,
+    fontSize: fontSizes.bodySmall,
     color: colors.muted,
     fontWeight: "500",
   },
@@ -265,7 +265,7 @@ const s = StyleSheet.create({
     marginLeft: 1,
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: fontSizes.bodyMedium,
     fontWeight: "800",
     color: colors.ink,
     marginTop: 24,
@@ -302,7 +302,7 @@ const s = StyleSheet.create({
     backgroundColor: "transparent",
   },
   featureText: {
-    fontSize: 14,
+    fontSize: fontSizes.bodyMedium,
     color: colors.ink,
     fontWeight: "500",
   },
@@ -318,7 +318,7 @@ const s = StyleSheet.create({
     justifyContent: "center",
   },
   viewProfileText: {
-    fontSize: 16,
+    fontSize: fontSizes.bodyLarge,
     fontWeight: "800",
     color: "#ffffff",
   },

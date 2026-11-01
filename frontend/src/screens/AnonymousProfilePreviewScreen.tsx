@@ -122,7 +122,7 @@ export default function AnonymousProfilePreviewScreen({
 
         {/* Bottom Section: Changes saved Card & Save CTA */}
         <View style={s.bottomSection}>
-          {savedSuccess && (
+          {savedSuccess ? (
             <View style={s.successCard}>
               <View style={s.successCheckCircle}>
                 <Ionicons name="checkmark" size={18} color="#ffffff" />
@@ -132,7 +132,7 @@ export default function AnonymousProfilePreviewScreen({
                 <Text style={s.successSubtitle}>Your profile has been updated.</Text>
               </View>
             </View>
-          )}
+          ) : null}
 
           <Pressable
             onPress={handleSave}
@@ -173,7 +173,7 @@ const s = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   backIcon: {
-    fontSize: 24,
+    fontSize: fontSizes.header,
     color: colors.ink,
     marginTop: -2,
   },
@@ -183,7 +183,7 @@ const s = StyleSheet.create({
     color: colors.ink,
   },
   moreIcon: {
-    fontSize: 20,
+    fontSize: fontSizes.title,
     color: colors.ink,
     fontWeight: "900",
     marginTop: -4,
@@ -220,12 +220,12 @@ const s = StyleSheet.create({
     gap: 3,
   },
   anonymousTitle: {
-    fontSize: 15,
+    fontSize: fontSizes.body,
     fontWeight: "800",
     color: colors.ink,
   },
   anonymousId: {
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     color: colors.muted,
   },
   hiddenBadge: {
@@ -234,12 +234,12 @@ const s = StyleSheet.create({
     gap: 4,
   },
   hiddenText: {
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     fontWeight: "600",
     color: "#dc2626",
   },
   sectionTitle: {
-    fontSize: 15,
+    fontSize: fontSizes.body,
     fontWeight: "800",
     color: colors.ink,
     marginTop: 26,
@@ -269,12 +269,12 @@ const s = StyleSheet.create({
   sellerLabel: {
     flex: 1,
     marginLeft: 12,
-    fontSize: 14,
+    fontSize: fontSizes.bodyMedium,
     fontWeight: "700",
     color: colors.ink,
   },
   sellerValue: {
-    fontSize: 13,
+    fontSize: fontSizes.bodySmall,
     color: colors.muted,
     fontWeight: "500",
   },
@@ -311,12 +311,12 @@ const s = StyleSheet.create({
     gap: 2,
   },
   successTitle: {
-    fontSize: 14,
+    fontSize: fontSizes.bodyMedium,
     fontWeight: "800",
     color: colors.ink,
   },
   successSubtitle: {
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     color: "#64756a",
   },
   saveButton: {
@@ -327,7 +327,7 @@ const s = StyleSheet.create({
     justifyContent: "center",
   },
   saveButtonText: {
-    fontSize: 16,
+    fontSize: fontSizes.bodyLarge,
     fontWeight: "800",
     color: "#ffffff",
   },

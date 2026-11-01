@@ -1,3 +1,4 @@
+import { fontSizes } from "../theme";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -161,11 +162,11 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#fff" },
   content: { paddingHorizontal: 18, paddingTop: 9, paddingBottom: 20 },
   loading: { flex: 1, alignItems: "center", justifyContent: "center" },
-  error: { color: "#a23930", fontSize: 12, marginBottom: 10 },
-  heading: { color: communityColors.ink, fontSize: 15, fontWeight: "800", marginTop: 14, marginBottom: 12 },
+  error: { color: "#a23930", fontSize: fontSizes.caption, marginBottom: 10 },
+  heading: { color: communityColors.ink, fontSize: fontSizes.body, fontWeight: "800", marginTop: 14, marginBottom: 12 },
   sortList: { gap: 9 },
   sortRow: { minHeight: 55, borderWidth: 1.2, borderColor: communityColors.line, borderRadius: 30, paddingHorizontal: 15, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
-  sortText: { color: communityColors.ink, fontSize: 13, flex: 1 },
+  sortText: { color: communityColors.ink, fontSize: fontSizes.bodySmall, flex: 1 },
   sortTextSelected: { fontWeight: "800" },
   radio: { width: 23, height: 23, borderRadius: 13, borderWidth: 1.5, borderColor: communityColors.green, alignItems: "center", justifyContent: "center" },
   radioSelected: { backgroundColor: communityColors.green, borderColor: communityColors.green },
@@ -173,13 +174,13 @@ const styles = StyleSheet.create({
   radiusRow: { flexDirection: "row", justifyContent: "space-between", gap: 7 },
   radiusPill: { flex: 1, minHeight: 42, borderRadius: 24, borderWidth: 1.2, borderColor: communityColors.line, alignItems: "center", justifyContent: "center" },
   radiusActive: { backgroundColor: communityColors.pale, borderColor: communityColors.pale },
-  radiusText: { color: communityColors.ink, fontSize: 12 },
+  radiusText: { color: communityColors.ink, fontSize: fontSizes.caption },
   radiusTextActive: { fontWeight: "800" },
   preferenceRow: { minHeight: 78, borderWidth: 1.2, borderColor: communityColors.line, borderRadius: 23, paddingHorizontal: 15, paddingVertical: 11, flexDirection: "row", alignItems: "center", gap: 9, marginBottom: 10 },
   preferenceCopy: { flex: 1 },
-  preferenceTitle: { color: communityColors.ink, fontSize: 13, fontWeight: "800" },
-  preferenceDescription: { color: communityColors.muted, fontSize: 11, lineHeight: 16, marginTop: 4 },
+  preferenceTitle: { color: communityColors.ink, fontSize: fontSizes.bodySmall, fontWeight: "800" },
+  preferenceDescription: { color: communityColors.muted, fontSize: fontSizes.badge, lineHeight: 16, marginTop: 4 },
   apply: { position: "absolute", bottom: 12, left: 18, right: 18, height: 57, borderRadius: 30, backgroundColor: communityColors.green, alignItems: "center", justifyContent: "center" },
   disabled: { opacity: 0.6 },
-  applyText: { color: "#fff", fontSize: 15, fontWeight: "800" },
+  applyText: { color: "#fff", fontSize: fontSizes.body, fontWeight: "800" },
 });

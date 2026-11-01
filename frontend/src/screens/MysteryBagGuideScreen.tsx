@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { CommunityHeader, communityColors } from "../components/CommunityLayout";
+import { fontSizes } from "../theme";
 
 const benefits = [
   {
@@ -73,17 +74,17 @@ const styles = StyleSheet.create({
   surpriseBag: { width: "32%", aspectRatio: 0.77, borderWidth: 1.4, borderColor: communityColors.line, borderRadius: 19, alignItems: "center", justifyContent: "center", overflow: "hidden" },
   diagonalA: { position: "absolute", width: "140%", height: 1.5, backgroundColor: communityColors.line, transform: [{ rotate: "48deg" }] },
   diagonalB: { position: "absolute", width: "140%", height: 1.5, backgroundColor: communityColors.line, transform: [{ rotate: "-48deg" }] },
-  bagLabel: { color: communityColors.ink, fontSize: 13, fontWeight: "800", backgroundColor: "rgba(255,255,255,0.82)", paddingHorizontal: 5 },
+  bagLabel: { color: communityColors.ink, fontSize: fontSizes.bodySmall, fontWeight: "800", backgroundColor: "rgba(255,255,255,0.82)", paddingHorizontal: 5 },
   introCopy: { flex: 1, gap: 8 },
-  eyebrow: { color: communityColors.muted, fontSize: 12, fontWeight: "800" },
-  introTitle: { color: communityColors.ink, fontSize: 19, fontWeight: "800" },
-  introDetail: { color: communityColors.muted, fontSize: 14, lineHeight: 21 },
+  eyebrow: { color: communityColors.muted, fontSize: fontSizes.caption, fontWeight: "800" },
+  introTitle: { color: communityColors.ink, fontSize: fontSizes.subtitle, fontWeight: "800" },
+  introDetail: { color: communityColors.muted, fontSize: fontSizes.bodyMedium, lineHeight: 21 },
   benefits: { gap: 15, marginTop: 18 },
   benefitCard: { minHeight: 103, paddingHorizontal: 15, paddingVertical: 15, borderRadius: 25, borderWidth: 1.3, borderColor: communityColors.line, flexDirection: "row", alignItems: "center", gap: 13 },
   benefitIcon: { width: 57, height: 57, borderRadius: 31, backgroundColor: communityColors.pale, alignItems: "center", justifyContent: "center" },
   benefitCopy: { flex: 1 },
-  benefitTitle: { color: communityColors.ink, fontSize: 15, fontWeight: "800" },
-  benefitDetail: { color: communityColors.muted, fontSize: 13, lineHeight: 19, marginTop: 3 },
+  benefitTitle: { color: communityColors.ink, fontSize: fontSizes.body, fontWeight: "800" },
+  benefitDetail: { color: communityColors.muted, fontSize: fontSizes.bodySmall, lineHeight: 19, marginTop: 3 },
   browseButton: { position: "absolute", bottom: 12, left: 18, right: 18, height: 62, borderRadius: 34, backgroundColor: communityColors.green, alignItems: "center", justifyContent: "center" },
-  browseText: { color: "#fff", fontSize: 16, fontWeight: "800" },
+  browseText: { color: "#fff", fontSize: fontSizes.bodyLarge, fontWeight: "800" },
 });

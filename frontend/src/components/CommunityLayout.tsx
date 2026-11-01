@@ -1,15 +1,16 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { colors, fontSizes } from "../theme";
 
 export const communityColors = {
-  ink: "#193d2e",
-  green: "#176b49",
-  muted: "#75847a",
-  line: "#e1e9e1",
-  pale: "#eaf3eb",
-  orange: "#ad5315",
-  paleOrange: "#fff0df",
-  white: "#ffffff",
+  ink: colors.ink,
+  green: colors.primary,
+  muted: colors.muted,
+  line: colors.line,
+  pale: colors.pale,
+  orange: colors.orange,
+  paleOrange: colors.paleOrange,
+  white: colors.white,
 };
 
 export function CommunityFilterIcon() {
@@ -99,7 +100,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: "center",
     color: communityColors.ink,
-    fontSize: 16,
+    fontSize: fontSizes.bodyLarge,
     fontWeight: "800",
     marginHorizontal: 8,
   },
@@ -122,7 +123,7 @@ const styles = StyleSheet.create({
   },
   filterText: {
     color: "#3d5548",
-    fontSize: 11,
+    fontSize: fontSizes.badge,
   },
   filterTextSelected: {
     color: communityColors.white,

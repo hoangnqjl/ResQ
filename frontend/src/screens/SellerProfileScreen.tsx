@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, fontSizes } from "../theme";
+import { cornerKitchenPhoto } from "../data/designPhotos";
 
 type Props = {
   storeName?: string;
@@ -41,9 +42,7 @@ export default function SellerProfileScreen({
         {/* Store Top Row: Avatar & Edit store button */}
         <View style={s.storeTopRow}>
           <Image
-            source={{
-              uri: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=300&q=80",
-            }}
+            source={cornerKitchenPhoto}
             style={s.avatarImage}
           />
 
@@ -92,7 +91,7 @@ export default function SellerProfileScreen({
               <Ionicons name="information-circle-outline" size={16} color="#9aa79e" />
             </View>
             <View style={s.cardBottomLine}>
-              <Text style={s.whiteCardValue} numberOfLines={1} adjustsFontSizeToFit>
+              <Text style={s.whiteCardValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75}>
                 $142.50
               </Text>
               <Text style={s.whiteCardTrend} numberOfLines={1}>
@@ -202,7 +201,7 @@ const s = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   backIcon: {
-    fontSize: 24,
+    fontSize: fontSizes.header,
     color: colors.ink,
     marginTop: -2,
   },
@@ -212,7 +211,7 @@ const s = StyleSheet.create({
     color: colors.ink,
   },
   moreIcon: {
-    fontSize: 20,
+    fontSize: fontSizes.title,
     color: colors.ink,
     fontWeight: "900",
     marginTop: -4,
@@ -245,7 +244,7 @@ const s = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   editStoreText: {
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     fontWeight: "700",
     color: colors.ink,
   },
@@ -298,7 +297,7 @@ const s = StyleSheet.create({
     justifyContent: "space-between",
   },
   greenCardLabel: {
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     fontWeight: "600",
     color: "rgba(255, 255, 255, 0.9)",
   },
@@ -309,12 +308,12 @@ const s = StyleSheet.create({
     marginTop: 8,
   },
   greenCardValue: {
-    fontSize: 22,
+    fontSize: fontSizes.titleLarge,
     fontWeight: "900",
     color: "#ffffff",
   },
   greenCardTrend: {
-    fontSize: 11.5,
+    fontSize: fontSizes.badge,
     fontWeight: "600",
     color: "rgba(255, 255, 255, 0.85)",
   },
@@ -324,33 +323,35 @@ const s = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     borderColor: "#e1e9e2",
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     paddingVertical: 14,
     minHeight: 88,
     justifyContent: "space-between",
     overflow: "hidden",
   },
   whiteCardLabel: {
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     fontWeight: "600",
     color: colors.muted,
   },
   whiteCardValue: {
-    fontSize: 20,
+    fontSize: fontSizes.titleSmall,
     fontWeight: "900",
-    letterSpacing: -0.5,
+    letterSpacing: -0.6,
     color: colors.ink,
+    flexShrink: 1,
   },
   whiteCardTrend: {
-    fontSize: 11.5,
+    fontSize: fontSizes.badge,
     fontWeight: "600",
     color: colors.muted,
+    flexShrink: 0,
   },
   sectionWrap: {
     marginTop: 26,
   },
   sectionTitle: {
-    fontSize: 17,
+    fontSize: fontSizes.subtitleSmall,
     fontWeight: "800",
     color: colors.ink,
     marginBottom: 12,
@@ -379,7 +380,7 @@ const s = StyleSheet.create({
   verifyItemTitle: {
     flex: 1,
     marginLeft: 12,
-    fontSize: 14,
+    fontSize: fontSizes.bodyMedium,
     fontWeight: "600",
     color: colors.ink,
   },
@@ -390,7 +391,7 @@ const s = StyleSheet.create({
     borderRadius: 12,
   },
   approvedText: {
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     fontWeight: "700",
     color: colors.primary,
   },
@@ -401,12 +402,12 @@ const s = StyleSheet.create({
     borderRadius: 12,
   },
   pendingText: {
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     fontWeight: "700",
     color: "#d97706",
   },
   hoursText: {
-    fontSize: 13,
+    fontSize: fontSizes.bodySmall,
     fontWeight: "600",
     color: colors.muted,
   },

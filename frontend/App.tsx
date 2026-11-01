@@ -409,7 +409,7 @@ function ClientApp() {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={s.safe} edges={["top", "bottom", "left", "right"]}>
+      <SafeAreaView style={s.safe} edges={page === "home" && activeTab === "Maps" ? ["left", "right"] : ["top", "bottom", "left", "right"]}>
         <StatusBar style="dark" />
 
         {/* Global Banner Notification */}
@@ -703,7 +703,7 @@ function ClientApp() {
 
         {page === "privacy" && (
           <IncognitoModeScreen
-            initialEnabled={profile.is_incognito}
+            initialEnabled={Boolean(profile.is_incognito)}
             userName={profile.full_name}
             phone={profile.phone || "(+84) 0123456789"}
             onBack={() => goBack()}

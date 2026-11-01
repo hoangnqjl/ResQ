@@ -1,3 +1,4 @@
+import { fontSizes } from "../theme";
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { FallbackPhoto } from "../components/FallbackPhoto";
@@ -115,9 +116,9 @@ const styles = StyleSheet.create({
   },
   heroImage: { width: 104, height: 104, borderRadius: 13, backgroundColor: communityColors.pale },
   heroCopy: { flex: 1, gap: 7 },
-  heroEyebrow: { color: communityColors.green, fontSize: 9, fontWeight: "800", letterSpacing: 0.65 },
-  heroTitle: { color: communityColors.ink, fontSize: 17, fontWeight: "400" },
-  heroDescription: { color: communityColors.muted, fontSize: 10, lineHeight: 15 },
+  heroEyebrow: { color: communityColors.green, fontSize: fontSizes.mini, fontWeight: "800", letterSpacing: 0.65 },
+  heroTitle: { color: communityColors.ink, fontSize: fontSizes.subtitleSmall, fontWeight: "400" },
+  heroDescription: { color: communityColors.muted, fontSize: fontSizes.micro, lineHeight: 15 },
   filters: { flexDirection: "row", gap: 8, marginTop: 14 },
   sectionHeading: {
     flexDirection: "row",
@@ -126,8 +127,8 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 12,
   },
-  sectionTitle: { color: communityColors.ink, fontSize: 14, fontWeight: "800" },
-  offerCount: { color: communityColors.muted, fontSize: 11 },
+  sectionTitle: { color: communityColors.ink, fontSize: fontSizes.bodyMedium, fontWeight: "800" },
+  offerCount: { color: communityColors.muted, fontSize: fontSizes.badge },
   grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", rowGap: 14 },
   card: {
     width: "48.5%",
@@ -155,9 +156,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  badgeText: { color: communityColors.green, fontSize: 9, fontWeight: "800", letterSpacing: 0.2 },
-  foodName: { color: communityColors.ink, fontSize: 12, fontWeight: "800", marginTop: 9 },
-  pickupTime: { color: "#52675a", fontSize: 9, marginTop: 5 },
+  badgeText: { color: communityColors.green, fontSize: fontSizes.mini, fontWeight: "800", letterSpacing: 0.2 },
+  foodName: { color: communityColors.ink, fontSize: fontSizes.caption, fontWeight: "800", marginTop: 9 },
+  pickupTime: { color: "#52675a", fontSize: fontSizes.mini, marginTop: 5 },
   cardFooter: {
     minHeight: 35,
     flexDirection: "row",
@@ -165,7 +166,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 3,
   },
-  price: { color: communityColors.ink, fontSize: 12, fontWeight: "800" },
+  price: { color: communityColors.ink, fontSize: fontSizes.caption, fontWeight: "800" },
   claimButton: {
     minWidth: 61,
     height: 29,
@@ -175,11 +176,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  claimText: { color: communityColors.white, fontSize: 11, fontWeight: "800" },
-  empty: { color: communityColors.muted, fontSize: 12, paddingVertical: 18, textAlign: "center" },
+  claimText: { color: communityColors.white, fontSize: fontSizes.badge, fontWeight: "800" },
+  empty: { color: communityColors.muted, fontSize: fontSizes.caption, paddingVertical: 18, textAlign: "center" },
   mapLink: {
     color: communityColors.green,
-    fontSize: 11,
+    fontSize: fontSizes.badge,
     fontWeight: "700",
     textAlign: "center",
     paddingVertical: 18,

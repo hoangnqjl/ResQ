@@ -3,6 +3,7 @@ import { ActivityIndicator, ImageBackground, Pressable, ScrollView, StyleSheet, 
 import { Ionicons } from "@expo/vector-icons";
 import { getCommunityFoods, type CommunityFood } from "../services/communityApi";
 import { communityColors } from "../components/CommunityLayout";
+import { fontSizes } from "../theme";
 import { heatmapMapPhoto } from "../data/designPhotos";
 
 type Props = { onBack: () => void; onOpenMap: () => void };
@@ -110,29 +111,29 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#fff" },
   header: { height: 64, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 18 },
   roundButton: { width: 43, height: 43, borderRadius: 23, borderWidth: 1.3, borderColor: communityColors.line, alignItems: "center", justifyContent: "center" },
-  headerTitle: { color: communityColors.ink, fontSize: 18, fontWeight: "800" },
+  headerTitle: { color: communityColors.ink, fontSize: fontSizes.subtitle, fontWeight: "800" },
   content: { paddingHorizontal: 18, paddingTop: 8, paddingBottom: 102 },
   mapPreview: { height: 206, borderRadius: 24, overflow: "hidden", backgroundColor: communityColors.pale, borderWidth: 1, borderColor: communityColors.line },
   stationBadge: { position: "absolute", top: 16, left: 15, minHeight: 42, borderRadius: 25, paddingHorizontal: 16, backgroundColor: "#fff", flexDirection: "row", alignItems: "center", gap: 9 },
   orangeDot: { width: 12, height: 12, borderRadius: 7, backgroundColor: "#df7c29" },
-  stationText: { color: "#d77828", fontSize: 13, fontWeight: "800" },
+  stationText: { color: "#d77828", fontSize: fontSizes.bodySmall, fontWeight: "800" },
   mapPin: { position: "absolute", width: 19, height: 19, borderRadius: 10, backgroundColor: "#fff", borderWidth: 2, borderColor: communityColors.green, alignItems: "center", justifyContent: "center" },
   mapPinDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: communityColors.green },
   sectionHeading: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 20, marginBottom: 11 },
-  sectionTitle: { color: communityColors.ink, fontSize: 17, fontWeight: "800" },
-  sectionMeta: { color: communityColors.muted, fontSize: 13 },
+  sectionTitle: { color: communityColors.ink, fontSize: fontSizes.subtitleSmall, fontWeight: "800" },
+  sectionMeta: { color: communityColors.muted, fontSize: fontSizes.bodySmall },
   loading: { marginTop: 32 },
-  errorText: { color: "#a23930", fontSize: 13, textAlign: "center", paddingVertical: 20 },
+  errorText: { color: "#a23930", fontSize: fontSizes.bodySmall, textAlign: "center", paddingVertical: 20 },
   hotspotCard: { minHeight: 87, borderRadius: 23, borderWidth: 1.2, borderColor: communityColors.line, paddingHorizontal: 16, paddingVertical: 14, marginBottom: 13 },
   hotspotTitleRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  hotspotTitle: { flex: 1, color: communityColors.ink, fontSize: 14, fontWeight: "800" },
-  mealCount: { color: communityColors.ink, fontSize: 13, fontWeight: "800" },
-  hotspotMeta: { color: communityColors.muted, fontSize: 12, marginTop: 5 },
+  hotspotTitle: { flex: 1, color: communityColors.ink, fontSize: fontSizes.bodyMedium, fontWeight: "800" },
+  mealCount: { color: communityColors.ink, fontSize: fontSizes.bodySmall, fontWeight: "800" },
+  hotspotMeta: { color: communityColors.muted, fontSize: fontSizes.caption, marginTop: 5 },
   progressTrack: { height: 8, borderRadius: 5, backgroundColor: "#e5ece5", marginTop: 11, overflow: "hidden" },
   progressFill: { height: "100%", borderRadius: 5, backgroundColor: communityColors.green },
   emptyCard: { borderWidth: 1, borderColor: communityColors.line, borderRadius: 20, padding: 22, alignItems: "center" },
-  emptyTitle: { color: communityColors.ink, fontSize: 15, fontWeight: "800" },
-  emptyText: { color: communityColors.muted, fontSize: 13, marginTop: 6, textAlign: "center" },
+  emptyTitle: { color: communityColors.ink, fontSize: fontSizes.body, fontWeight: "800" },
+  emptyText: { color: communityColors.muted, fontSize: fontSizes.bodySmall, marginTop: 6, textAlign: "center" },
   openButton: { position: "absolute", bottom: 12, left: 18, right: 18, height: 62, borderRadius: 34, backgroundColor: communityColors.green, alignItems: "center", justifyContent: "center" },
-  openButtonText: { color: "#fff", fontSize: 16, fontWeight: "800" },
+  openButtonText: { color: "#fff", fontSize: fontSizes.bodyLarge, fontWeight: "800" },
 });

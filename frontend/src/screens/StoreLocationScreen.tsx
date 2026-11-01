@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import RealMapView, { Marker } from "../components/RealMapView";
 import {
   Pressable,
   ScrollView,
@@ -26,6 +27,7 @@ export default function StoreLocationScreen({
 }: Props) {
   const [confirming, setConfirming] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const mapRef = useRef<any>(null);
 
   const handleConfirm = async () => {
     if (confirming) return;
@@ -60,63 +62,54 @@ export default function StoreLocationScreen({
         >
           {/* Map Preview Card */}
           <View style={s.mapCard}>
-            {/* City Grid Background */}
-            <View style={s.mapBackground}>
-              {/* Horizontal white streets */}
-              <View style={[s.streetH, { top: 40 }]} />
-              <View style={[s.streetH, { top: 110 }]} />
-              <View style={[s.streetH, { top: 180 }]} />
-
-              {/* Vertical white streets */}
-              <View style={[s.streetV, { left: 45 }]} />
-              <View style={[s.streetV, { left: 125 }]} />
-              <View style={[s.streetV, { left: 205 }]} />
-              <View style={[s.streetV, { left: 275 }]} />
-
-              {/* Street Names */}
-              <Text style={[s.streetLabel, { top: 92, left: 62 }]}>
-                Lê Văn{"\n"}Hiến
-              </Text>
-              <Text
-                style={[
-                  s.streetLabel,
-                  { top: 60, left: 188, transform: [{ rotate: "90deg" }] },
-                ]}
+            <RealMapView
+              ref={mapRef}
+              style={StyleSheet.absoluteFill}
+              initialRegion={{
+                latitude: 15.9688,
+                longitude: 108.2580,
+                latitudeDelta: 0.008,
+                longitudeDelta: 0.008,
+              }}
+              showsCompass={false}
+            >
+              <Marker
+                coordinate={{ latitude: 15.9688, longitude: 108.2580 }}
+                title={storeName}
+                description={storeAddress}
               >
-                Nguyễn
-              </Text>
-              <Text style={[s.streetLabel, { top: 82, right: 28 }]}>
-                Biển{"\n"}Đông
-              </Text>
-
-              {/* Center Building block */}
-              <View style={s.centerBuilding} />
-
-              {/* Pin Callout & Target Radius */}
-              <View style={s.pinContainer}>
-                {/* Store Name Callout */}
-                <View style={s.calloutBubble}>
-                  <Text style={s.calloutText}>{storeName}</Text>
+                <View style={{ alignItems: "center" }}>
+                  <View style={s.calloutBubble}>
+                    <Text style={s.calloutText}>{storeName}</Text>
+                  </View>
+                  <View style={s.radiusCircle}>
+                    <Ionicons name="location" size={34} color={colors.deepGreen} />
+                    <View style={s.pinBaseDot} />
+                  </View>
                 </View>
+              </Marker>
+            </RealMapView>
 
-                {/* Accuracy Radius Dashed Circle */}
-                <View style={s.radiusCircle}>
-                  <Ionicons name="location" size={34} color={colors.deepGreen} />
-                  <View style={s.pinBaseDot} />
-                </View>
-              </View>
-
-              {/* 100m Map Scale */}
-              <View style={s.scaleContainer}>
-                <Text style={s.scaleText}>100 m</Text>
-                <View style={s.scaleBracket} />
-              </View>
-
-              {/* Locate Me Button */}
-              <Pressable style={s.locateButton}>
-                <Ionicons name="locate-outline" size={19} color={colors.ink} />
-              </Pressable>
+            {/* 100m Map Scale */}
+            <View style={s.scaleContainer} pointerEvents="none">
+              <Text style={s.scaleText}>100 m</Text>
+              <View style={s.scaleBracket} />
             </View>
+
+            {/* Locate Me Button */}
+            <Pressable
+              style={s.locateButton}
+              onPress={() => {
+                mapRef.current?.animateToRegion?.({
+                  latitude: 15.9688,
+                  longitude: 108.2580,
+                  latitudeDelta: 0.008,
+                  longitudeDelta: 0.008,
+                }, 400);
+              }}
+            >
+              <Ionicons name="locate-outline" size={19} color={colors.ink} />
+            </Pressable>
           </View>
 
           {/* Address Bar Card */}
@@ -206,7 +199,7 @@ const s = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   backIcon: {
-    fontSize: 24,
+    fontSize: fontSizes.header,
     color: colors.ink,
     marginTop: -2,
   },
@@ -216,7 +209,7 @@ const s = StyleSheet.create({
     color: colors.ink,
   },
   moreIcon: {
-    fontSize: 20,
+    fontSize: fontSizes.title,
     color: colors.ink,
     fontWeight: "900",
     marginTop: -4,
@@ -260,7 +253,7 @@ const s = StyleSheet.create({
   },
   streetLabel: {
     position: "absolute",
-    fontSize: 10,
+    fontSize: fontSizes.micro,
     color: "#6b7d70",
     fontWeight: "600",
     lineHeight: 13,
@@ -296,7 +289,7 @@ const s = StyleSheet.create({
     marginBottom: 6,
   },
   calloutText: {
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     fontWeight: "700",
     color: colors.ink,
   },
@@ -325,7 +318,7 @@ const s = StyleSheet.create({
     alignItems: "flex-start",
   },
   scaleText: {
-    fontSize: 10,
+    fontSize: fontSizes.micro,
     fontWeight: "600",
     color: colors.ink,
     marginBottom: 2,
@@ -365,7 +358,7 @@ const s = StyleSheet.create({
   },
   addressText: {
     flex: 1,
-    fontSize: 13,
+    fontSize: fontSizes.bodySmall,
     fontWeight: "600",
     color: colors.ink,
     marginHorizontal: 10,
@@ -385,7 +378,7 @@ const s = StyleSheet.create({
     marginBottom: 2,
   },
   badgeCardTitle: {
-    fontSize: 15,
+    fontSize: fontSizes.body,
     fontWeight: "800",
     color: colors.ink,
     marginLeft: 8,
@@ -412,12 +405,12 @@ const s = StyleSheet.create({
     justifyContent: "center",
   },
   statusTextDark: {
-    fontSize: 13,
+    fontSize: fontSizes.bodySmall,
     fontWeight: "600",
     color: colors.ink,
   },
   statusTextOrange: {
-    fontSize: 13,
+    fontSize: fontSizes.bodySmall,
     fontWeight: "600",
     color: "#d97706",
   },
@@ -432,7 +425,7 @@ const s = StyleSheet.create({
     justifyContent: "center",
   },
   confirmButtonText: {
-    fontSize: 16,
+    fontSize: fontSizes.bodyLarge,
     fontWeight: "800",
     color: "#ffffff",
   },

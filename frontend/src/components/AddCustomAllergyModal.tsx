@@ -1,3 +1,4 @@
+import { fontSizes } from "../theme";
 import { useState } from "react";
 import {
   Modal,
@@ -143,7 +144,7 @@ const s = StyleSheet.create({
     justifyContent: "space-between",
   },
   title: {
-    fontSize: 20,
+    fontSize: fontSizes.title,
     fontWeight: "800",
     color: "#183d2d",
     letterSpacing: -0.2,
@@ -157,7 +158,7 @@ const s = StyleSheet.create({
     justifyContent: "center",
   },
   label: {
-    fontSize: 14,
+    fontSize: fontSizes.bodyMedium,
     fontWeight: "600",
     color: "#223b2c",
     marginTop: 18,
@@ -169,12 +170,12 @@ const s = StyleSheet.create({
     borderColor: "#dbe5dc",
     borderRadius: 12,
     paddingHorizontal: 14,
-    fontSize: 15,
+    fontSize: fontSizes.body,
     color: "#183d2d",
     backgroundColor: "#ffffff",
   },
   suggestionsTitle: {
-    fontSize: 14,
+    fontSize: fontSizes.bodyMedium,
     fontWeight: "600",
     color: "#223b2c",
     marginTop: 18,
@@ -198,7 +199,7 @@ const s = StyleSheet.create({
     backgroundColor: "#eaf3ea",
   },
   chipText: {
-    fontSize: 13,
+    fontSize: fontSizes.bodySmall,
     color: "#223b2c",
     fontWeight: "500",
   },
@@ -215,7 +216,7 @@ const s = StyleSheet.create({
     marginBottom: 22,
   },
   noticeText: {
-    fontSize: 13,
+    fontSize: fontSizes.bodySmall,
     lineHeight: 19,
     color: "#275039",
   },
@@ -234,7 +235,7 @@ const s = StyleSheet.create({
   },
   cancelText: {
     color: "#c24734",
-    fontSize: 15,
+    fontSize: fontSizes.body,
     fontWeight: "700",
   },
   addButton: {
@@ -250,7 +251,7 @@ const s = StyleSheet.create({
   },
   addText: {
     color: "#ffffff",
-    fontSize: 15,
+    fontSize: fontSizes.body,
     fontWeight: "700",
   },
 });

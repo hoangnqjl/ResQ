@@ -183,7 +183,7 @@ const s = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    fontSize: 19,
+    fontSize: fontSizes.titleSmall,
     fontWeight: "800",
     color: colors.ink,
     letterSpacing: -0.2,
@@ -222,7 +222,7 @@ const s = StyleSheet.create({
     backgroundColor: colors.deepGreen,
   },
   segmentText: {
-    fontSize: 13,
+    fontSize: fontSizes.bodySmall,
     fontWeight: "700",
     color: "#64756a",
   },
@@ -252,13 +252,13 @@ const s = StyleSheet.create({
   },
   label: {
     width: 58,
-    fontSize: 13,
+    fontSize: fontSizes.bodySmall,
     color: colors.muted,
     fontWeight: "500",
   },
   value: {
     flex: 1,
-    fontSize: 13,
+    fontSize: fontSizes.bodySmall,
     fontWeight: "600",
     color: colors.ink,
   },
@@ -272,7 +272,7 @@ const s = StyleSheet.create({
     borderRadius: 8,
   },
   hiddenText: {
-    fontSize: 11,
+    fontSize: fontSizes.badge,
     fontWeight: "700",
     color: "#dc2626",
   },
@@ -283,7 +283,7 @@ const s = StyleSheet.create({
     borderRadius: 8,
   },
   visibleText: {
-    fontSize: 11,
+    fontSize: fontSizes.badge,
     fontWeight: "700",
     color: colors.primary,
   },
@@ -295,7 +295,7 @@ const s = StyleSheet.create({
     justifyContent: "center",
   },
   gotItText: {
-    fontSize: 16,
+    fontSize: fontSizes.bodyLarge,
     fontWeight: "800",
     color: "#ffffff",
   },

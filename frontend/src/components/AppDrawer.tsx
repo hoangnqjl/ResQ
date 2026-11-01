@@ -185,7 +185,7 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  closeText: { color: colors.ink, fontSize: 20, lineHeight: 22 },
+  closeText: { color: colors.ink, fontSize: fontSizes.title, lineHeight: 22 },
   profileRow: {
     flexDirection: "row",
     alignItems: "center",

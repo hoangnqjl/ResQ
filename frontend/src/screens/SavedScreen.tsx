@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { CommunityFilterIcon, CommunityHeader, communityColors } from "../components/CommunityLayout";
+import { BottomNavBar } from "../components/BottomNavBar";
 import { FallbackPhoto } from "../components/FallbackPhoto";
 import { cornerKitchenPhoto, foodPhoto } from "../data/designPhotos";
 import {
@@ -39,13 +40,6 @@ const designFoodIds = {
 };
 const designShopId = "33333333-3333-4333-8333-333333333336";
 
-const tabs = [
-  ["Home", "home-outline"],
-  ["Explore", "search-outline"],
-  ["Maps", "map-outline"],
-  ["Saved", "bookmark"],
-  ["Profile", "person-outline"],
-] as const;
 
 function toFood(food: CommunityFood): Food {
   return {
@@ -277,16 +271,7 @@ export default function SavedScreen({ userId, onOpenMenu, onOpenFood, onOpenShop
           {collection === "Shop" && !filteredShops.length && !previewShops.length ? <EmptySaved collection="shop" /> : null}
         </ScrollView>
       )}
-      <View style={styles.tabBar}>
-        {tabs.map(([label, icon]) => (
-          <Pressable key={label} onPress={() => onTabChange(label)} style={styles.tab} accessibilityRole="tab" accessibilityState={{ selected: label === "Saved" }}>
-            <View style={[styles.tabIcon, label === "Saved" && styles.tabIconActive]}>
-              <Ionicons name={icon} size={22} color={label === "Saved" ? communityColors.green : communityColors.ink} />
-            </View>
-            <Text style={[styles.tabLabel, label === "Saved" && styles.tabLabelActive]}>{label}</Text>
-          </Pressable>
-        ))}
-      </View>
+      <BottomNavBar activeTab="Saved" onTabChange={onTabChange} />
     </View>
   );
 }
@@ -315,7 +300,7 @@ const styles = StyleSheet.create({
   searchBox: { flex: 1, height: 42, borderWidth: 1.3, borderColor: communityColors.line, borderRadius: 25, paddingHorizontal: 13, flexDirection: "row", alignItems: "center", gap: 9 },
   searchInput: { flex: 1, color: communityColors.ink, fontSize: 13, paddingVertical: 0 },
   filterButton: { width: 66, height: 42, borderRadius: 24, backgroundColor: communityColors.pale, alignItems: "center", justifyContent: "center" },
-  grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", paddingHorizontal: 18, paddingBottom: 105, rowGap: 25 },
+  grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", paddingHorizontal: 18, paddingBottom: 20, rowGap: 25 },
   card: { width: "48.5%" },
   orphanCard: { marginLeft: "51.5%" },
   photo: { width: "100%", aspectRatio: 1.22, borderRadius: 12, overflow: "hidden", backgroundColor: communityColors.pale, borderWidth: 1, borderColor: communityColors.line },
@@ -333,10 +318,4 @@ const styles = StyleSheet.create({
   emptyText: { color: communityColors.muted, fontSize: 12, textAlign: "center", marginTop: 5 },
   retry: { backgroundColor: communityColors.green, borderRadius: 22, paddingHorizontal: 18, paddingVertical: 9, marginTop: 14 },
   retryText: { color: "#fff", fontSize: 12, fontWeight: "700" },
-  tabBar: { position: "absolute", left: 18, right: 18, bottom: 9, height: 48, borderRadius: 26, borderWidth: 1, borderColor: communityColors.line, backgroundColor: "#fff", flexDirection: "row", alignItems: "center", justifyContent: "space-around", elevation: 3 },
-  tab: { flex: 1, alignItems: "center", justifyContent: "center", height: 46 },
-  tabIcon: { width: 58, height: 30, borderRadius: 20, alignItems: "center", justifyContent: "center" },
-  tabIconActive: { backgroundColor: communityColors.pale },
-  tabLabel: { color: communityColors.ink, fontSize: 10, marginTop: 1 },
-  tabLabelActive: { color: communityColors.green, fontWeight: "800" },
 });

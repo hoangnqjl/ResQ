@@ -1,3 +1,4 @@
+import { fontSizes } from "../theme";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { CommunityListing } from "../data/communityListings";
 import { foodPhoto } from "../data/designPhotos";
@@ -66,7 +67,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: communityColors.ink,
-    fontSize: 10,
+    fontSize: fontSizes.micro,
     fontWeight: "800",
   },
   discountBadge: {
@@ -77,13 +78,13 @@ const styles = StyleSheet.create({
   },
   name: {
     color: communityColors.ink,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     fontWeight: "800",
     marginTop: 8,
   },
   subtitle: {
     color: "#52675a",
-    fontSize: 10,
+    fontSize: fontSizes.micro,
     marginTop: 6,
   },
   cardFooter: {
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
   },
   price: {
     color: communityColors.ink,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     fontWeight: "800",
   },
   action: {
@@ -109,7 +110,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     color: communityColors.white,
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     fontWeight: "800",
   },
 });

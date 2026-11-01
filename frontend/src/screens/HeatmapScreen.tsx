@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { BottomNavBar } from "../components/BottomNavBar";
+import { useEffect, useMemo, useRef, useState } from "react";
+import RealMapView, { Marker, type Region } from "../components/RealMapView";
 import {
   ActivityIndicator,
   Alert,
@@ -33,13 +35,6 @@ const green = "#176b49";
 const muted = "#77877c";
 const line = "#e1e9e1";
 const pale = "#eaf3eb";
-const tabs = [
-  ["Home", "home-outline"],
-  ["Explore", "search-outline"],
-  ["Maps", "map-outline"],
-  ["Saved", "bookmark-outline"],
-  ["Profile", "person-outline"],
-] as const;
 const parkingOptions = [
   { key: "motorbike", title: "Free motorbike parking", detail: "No parking fee when picking up", icon: "P" },
   { key: "curbside", title: "Curbside pickup (Vỉa hè)", detail: "Staff brings food to your bike outside", icon: "↔" },
@@ -153,6 +148,7 @@ function PreviewPin({ left, top, color }: { left: number; top: number; color: st
 
 export default function HeatmapScreen({ userId, activeTab, onTabChange, onOpenShop, onOpenHotspots }: Props) {
   const insets = useSafeAreaInsets();
+  const mapRef = useRef<any>(null);
   const [foods, setFoods] = useState<CommunityFood[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -234,6 +230,30 @@ export default function HeatmapScreen({ userId, activeTab, onTabChange, onOpenSh
       longitude: shopFoods[0].longitude == null ? undefined : Number(shopFoods[0].longitude),
     }));
   }, [foods, foodOrRestaurant, foodType, foodTypeEnabled, search, selectedTime, timeFilterEnabled]);
+
+  const initialRegion = useMemo<Region>(() => {
+    const withCoords = clusters.filter((c) => c.latitude != null && c.longitude != null);
+    if (withCoords.length > 0) {
+      const lats = withCoords.map((c) => c.latitude as number);
+      const lngs = withCoords.map((c) => c.longitude as number);
+      const minLat = Math.min(...lats);
+      const maxLat = Math.max(...lats);
+      const minLng = Math.min(...lngs);
+      const maxLng = Math.max(...lngs);
+      return {
+        latitude: (minLat + maxLat) / 2,
+        longitude: (minLng + maxLng) / 2,
+        latitudeDelta: Math.max(0.035, (maxLat - minLat) * 1.6),
+        longitudeDelta: Math.max(0.035, (maxLng - minLng) * 1.6),
+      };
+    }
+    return {
+      latitude: 15.9748,
+      longitude: 108.2500,
+      latitudeDelta: 0.05,
+      longitudeDelta: 0.05,
+    };
+  }, [clusters]);
 
   const selectedCluster = clusters.find((cluster) => cluster.id === selectedShopId) ?? null;
   const selectedPinNumber = selectedCluster
@@ -425,7 +445,40 @@ export default function HeatmapScreen({ userId, activeTab, onTabChange, onOpenSh
 
   return (
     <View style={styles.mapScreen}>
-      <MapBackdrop fullScreen />
+      <RealMapView
+        ref={mapRef}
+        style={StyleSheet.absoluteFill}
+        initialRegion={initialRegion}
+        showsUserLocation
+        showsMyLocationButton={false}
+        showsCompass={false}
+      >
+        {clusters.map((cluster) => {
+          if (cluster.latitude == null || cluster.longitude == null) return null;
+          const mealCount = cluster.foods.reduce((sum, food) => sum + Number(food.quantity_available), 0);
+          const isSelected = cluster.id === selectedShopId;
+          return (
+            <Marker
+              key={cluster.id}
+              coordinate={{ latitude: cluster.latitude, longitude: cluster.longitude }}
+              onPress={() => {
+                setSelectedShopId(cluster.id);
+                setListOpen(false);
+                setFilterMenu(false);
+              }}
+            >
+              <View style={styles.markerContainer}>
+                <View style={[styles.clusterPin, isSelected && styles.clusterPinSelected]}>
+                  <Text style={[styles.clusterLabel, isSelected && styles.clusterLabelSelected]}>
+                    {mealCount} {mealCount === 1 ? "meal" : "meals"}
+                  </Text>
+                </View>
+                <View style={[styles.clusterTip, isSelected && styles.clusterTipSelected]} />
+              </View>
+            </Marker>
+          );
+        })}
+      </RealMapView>
       <View style={[styles.searchBar, { top: insets.top + 8 }]}>
         <View style={styles.searchField}>
           <Ionicons name="search-outline" size={21} color="#718278" />
@@ -448,31 +501,6 @@ export default function HeatmapScreen({ userId, activeTab, onTabChange, onOpenSh
         <View style={styles.mapError}><Text style={styles.mapErrorText}>{error}</Text><Pressable onPress={() => { setLoading(true); setError(""); void getCommunityFoods().then(setFoods).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Unable to load food locations.")).finally(() => setLoading(false)); }}><Text style={styles.retryText}>Try again</Text></Pressable></View>
       ) : (
         <>
-          {clusters.map((cluster, index) => {
-            const withCoordinates = clusters.filter((item) => item.latitude !== undefined && item.longitude !== undefined);
-            const minLat = Math.min(...withCoordinates.map((item) => item.latitude as number));
-            const maxLat = Math.max(...withCoordinates.map((item) => item.latitude as number));
-            const minLng = Math.min(...withCoordinates.map((item) => item.longitude as number));
-            const maxLng = Math.max(...withCoordinates.map((item) => item.longitude as number));
-            const latSpan = maxLat - minLat;
-            const lngSpan = maxLng - minLng;
-            const left = cluster.longitude === undefined
-              ? 28 + ((index * 37) % 56)
-              : lngSpan === 0 ? 28 : 28 + ((cluster.longitude - minLng) / lngSpan) * 54;
-            const top = cluster.latitude === undefined
-              ? 34 + ((index * 10) % 10)
-              : latSpan === 0 ? 34 : 34 + (1 - (cluster.latitude - minLat) / latSpan) * 10;
-            return (
-              <MapCluster
-                key={cluster.id}
-                cluster={cluster}
-                left={left}
-                top={top}
-                selected={cluster.id === selectedShopId}
-                onPress={() => { setSelectedShopId(cluster.id); setListOpen(false); setFilterMenu(false); }}
-              />
-            );
-          })}
           {clusters.length === 0 && !search ? (
             <View style={styles.mapEmpty}><Text style={styles.mapEmptyTitle}>No food locations yet</Text><Text style={styles.mapEmptyText}>Active shop listings will appear on the map.</Text></View>
           ) : null}
@@ -533,7 +561,7 @@ export default function HeatmapScreen({ userId, activeTab, onTabChange, onOpenSh
             <Text style={styles.unitText}>{unit}</Text>
           </Pressable>
           <Pressable
-            onPress={() => Alert.alert("Your location", "Location permission is not enabled. The map uses shop locations shared by the ResQ backend.")}
+            onPress={() => { if (mapRef.current?.animateToRegion) mapRef.current.animateToRegion(initialRegion, 500); }}
             style={styles.mapControl}
             accessibilityLabel="Show my location"
           >
@@ -564,16 +592,7 @@ export default function HeatmapScreen({ userId, activeTab, onTabChange, onOpenSh
           <Ionicons name="list-outline" size={25} color={ink} />
         </Pressable>
       )}
-      <View style={[styles.tabBar, { bottom: insets.bottom + 10 }]}>
-        {tabs.map(([label, icon]) => (
-          <Pressable key={label} onPress={() => onTabChange(label)} style={styles.tab} accessibilityRole="tab" accessibilityState={{ selected: activeTab === label }}>
-            <View style={[styles.tabIcon, activeTab === label && styles.tabIconActive]}>
-              <Ionicons name={icon} size={22} color={activeTab === label ? green : "#40574b"} />
-            </View>
-            <Text style={[styles.tabLabel, activeTab === label && styles.tabLabelActive]}>{label}</Text>
-          </Pressable>
-        ))}
-      </View>
+      <BottomNavBar activeTab={activeTab} onTabChange={onTabChange} floating bottomInset={insets.bottom} />
     </View>
   );
 }
@@ -600,10 +619,13 @@ const styles = StyleSheet.create({
   filterIconMedium: { width: 16 },
   hotspotsButton: { minHeight: 42, borderTopWidth: 1, borderTopColor: line, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 12 },
   hotspotsButtonText: { color: green, fontSize: 12, fontWeight: "800" },
-  clusterPin: { position: "absolute", width: 56, height: 56, borderRadius: 30, backgroundColor: "#fff", alignItems: "center", justifyContent: "center", zIndex: 2, shadowColor: "#273a2c", shadowOpacity: 0.12, shadowRadius: 5, elevation: 4, transform: [{ translateX: -28 }, { translateY: -28 }] },
+  markerContainer: { alignItems: "center", justifyContent: "center" },
+  clusterPin: { width: 58, height: 58, borderRadius: 29, backgroundColor: "#fff", alignItems: "center", justifyContent: "center", shadowColor: "#273a2c", shadowOpacity: 0.18, shadowRadius: 5, elevation: 4, borderWidth: 1.5, borderColor: "#d5dfd8" },
+  clusterPinSelected: { borderColor: green, borderWidth: 2, backgroundColor: "#f4faf5" },
+  clusterLabelSelected: { color: green, fontWeight: "700" },
   clusterLabel: { color: ink, fontSize: 11, fontWeight: "500" },
-  clusterTip: { position: "absolute", bottom: -4, width: 14, height: 14, backgroundColor: "#fff", transform: [{ rotate: "45deg" }] },
-  clusterTipSelected: { backgroundColor: "#fff" },
+  clusterTip: { width: 10, height: 10, backgroundColor: "#fff", transform: [{ rotate: "45deg" }], marginTop: -5 },
+  clusterTipSelected: { backgroundColor: "#f4faf5", borderColor: green },
   mapLoading: { position: "absolute", top: "46%", alignSelf: "center", padding: 16, borderRadius: 30, backgroundColor: "#fff" },
   mapError: { position: "absolute", top: "38%", alignSelf: "center", width: "78%", padding: 17, borderRadius: 18, backgroundColor: "#fff", alignItems: "center", gap: 8 },
   mapErrorText: { color: ink, fontSize: 13, textAlign: "center" },
@@ -611,7 +633,7 @@ const styles = StyleSheet.create({
   mapEmpty: { position: "absolute", top: "44%", alignSelf: "center", paddingHorizontal: 20, paddingVertical: 12, borderRadius: 14, backgroundColor: "rgba(255,255,255,0.9)", alignItems: "center" },
   mapEmptyTitle: { color: ink, fontSize: 14, fontWeight: "800" },
   mapEmptyText: { color: muted, fontSize: 12, marginTop: 4 },
-  pinPopover: { position: "absolute", zIndex: 5, top: "16%", left: "36%", width: 126, padding: 10, borderRadius: 13, borderWidth: 1, borderColor: line, backgroundColor: "#fff", shadowColor: "#213b2d", shadowOpacity: 0.12, shadowRadius: 10, elevation: 5 },
+  pinPopover: { position: "absolute", zIndex: 5, top: 108, left: 20, right: 20, padding: 14, borderRadius: 16, borderWidth: 1, borderColor: line, backgroundColor: "#fff", shadowColor: "#213b2d", shadowOpacity: 0.16, shadowRadius: 10, elevation: 6 },
   pinPopoverTitle: { color: ink, fontSize: 11, fontWeight: "800", marginBottom: 7 },
   pinPopoverLine: { color: muted, fontSize: 10, marginBottom: 6 },
   pinPopoverActions: { flexDirection: "row", gap: 5, marginTop: 4 },
@@ -635,12 +657,6 @@ const styles = StyleSheet.create({
   collapsedMapControl: { position: "absolute", right: 17, zIndex: 3 },
   mapControl: { height: 46, width: 46, borderRadius: 24, backgroundColor: "#fff", alignItems: "center", justifyContent: "center", shadowColor: "#243729", shadowOpacity: 0.1, shadowRadius: 6, elevation: 3 },
   unitText: { color: ink, fontSize: 12, fontWeight: "600" },
-  tabBar: { position: "absolute", bottom: 10, left: 17, right: 17, height: 50, borderRadius: 28, backgroundColor: "#fff", borderWidth: 1, borderColor: "#edf0ed", flexDirection: "row", alignItems: "center", justifyContent: "space-around", paddingHorizontal: 5, zIndex: 3, shadowColor: "#243729", shadowOpacity: 0.12, shadowRadius: 7, elevation: 4 },
-  tab: { flex: 1, height: 46, alignItems: "center", justifyContent: "center" },
-  tabIcon: { width: 50, height: 30, borderRadius: 19, alignItems: "center", justifyContent: "center" },
-  tabIconActive: { backgroundColor: pale },
-  tabLabel: { color: "#445a4d", fontSize: 10, marginTop: 1 },
-  tabLabelActive: { color: green, fontWeight: "700" },
   filterPage: { flex: 1, backgroundColor: "#fff" },
   timePage: { flex: 1, backgroundColor: "#fff" },
   filterHeader: { height: 62, marginHorizontal: 17, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },

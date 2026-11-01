@@ -123,7 +123,7 @@ const s = StyleSheet.create({
     marginBottom: 14,
   },
   title: {
-    fontSize: 19,
+    fontSize: fontSizes.titleSmall,
     fontWeight: "800",
     color: colors.ink,
     textAlign: "center",
@@ -131,7 +131,7 @@ const s = StyleSheet.create({
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: fontSizes.bodySmall,
     color: colors.muted,
     textAlign: "center",
     lineHeight: 18,
@@ -165,12 +165,12 @@ const s = StyleSheet.create({
   itemLabel: {
     flex: 1,
     marginLeft: 10,
-    fontSize: 13,
+    fontSize: fontSizes.bodySmall,
     fontWeight: "600",
     color: colors.ink,
   },
   itemStatus: {
-    fontSize: 13,
+    fontSize: fontSizes.bodySmall,
     fontWeight: "500",
     color: colors.muted,
   },
@@ -188,7 +188,7 @@ const s = StyleSheet.create({
     justifyContent: "center",
   },
   cancelText: {
-    fontSize: 14,
+    fontSize: fontSizes.bodyMedium,
     fontWeight: "700",
     color: "#b91c1c",
   },
@@ -201,7 +201,7 @@ const s = StyleSheet.create({
     justifyContent: "center",
   },
   confirmText: {
-    fontSize: 14,
+    fontSize: fontSizes.bodyMedium,
     fontWeight: "800",
     color: "#ffffff",
   },

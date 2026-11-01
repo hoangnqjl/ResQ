@@ -1,3 +1,4 @@
+import { fontSizes } from "../theme";
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import { FallbackPhoto } from "../components/FallbackPhoto";
@@ -95,9 +96,9 @@ const styles = StyleSheet.create({
   },
   heroImage: { width: 102, height: 96, borderRadius: 12, backgroundColor: communityColors.pale },
   heroCopy: { flex: 1, gap: 6 },
-  heroEyebrow: { color: communityColors.ink, fontSize: 10, fontWeight: "800", letterSpacing: 0.5 },
-  heroTitle: { color: communityColors.ink, fontSize: 16, fontWeight: "400" },
-  heroDescription: { color: communityColors.muted, fontSize: 10, lineHeight: 14 },
+  heroEyebrow: { color: communityColors.ink, fontSize: fontSizes.micro, fontWeight: "800", letterSpacing: 0.5 },
+  heroTitle: { color: communityColors.ink, fontSize: fontSizes.bodyLarge, fontWeight: "400" },
+  heroDescription: { color: communityColors.muted, fontSize: fontSizes.micro, lineHeight: 14 },
   filters: { flexDirection: "row", gap: 8, marginTop: 14 },
   sectionHeading: {
     flexDirection: "row",
@@ -106,8 +107,8 @@ const styles = StyleSheet.create({
     marginTop: 18,
     marginBottom: 11,
   },
-  sectionTitle: { color: communityColors.ink, fontSize: 13, fontWeight: "800" },
-  offerCount: { color: communityColors.muted, fontSize: 11 },
+  sectionTitle: { color: communityColors.ink, fontSize: fontSizes.bodySmall, fontWeight: "800" },
+  offerCount: { color: communityColors.muted, fontSize: fontSizes.badge },
   grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", rowGap: 14 },
-  empty: { color: communityColors.muted, fontSize: 12, paddingVertical: 18, textAlign: "center" },
+  empty: { color: communityColors.muted, fontSize: fontSizes.caption, paddingVertical: 18, textAlign: "center" },
 });

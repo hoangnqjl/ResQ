@@ -1,4 +1,5 @@
 import { useState } from "react";
+import RealMapView, { Marker, Circle } from "../components/RealMapView";
 import {
   Pressable,
   ScrollView,
@@ -76,95 +77,36 @@ export default function NotificationRadiusScreen({
           <View style={s.unifiedCard}>
             {/* Map Area */}
             <View style={s.mapBackground}>
-              {/* Streets background grid */}
-              <View style={[s.streetH, { top: 72 }]} />
-              <View style={[s.streetH, { top: 160 }]} />
-              <View style={[s.streetV, { left: 52 }]} />
-              <View style={[s.streetV, { left: 155 }]} />
-              <View style={[s.streetV, { left: 245 }]} />
-
-              {/* Area labels */}
-              <Text style={[s.mapLabel, { top: 38, left: 16 }]}>Ngũ Hành Sơn</Text>
-              <Text style={[s.mapLabel, { top: 135, left: 16 }]}>Lê Văn Hiến</Text>
-              <Text
-                style={[
-                  s.mapLabel,
-                  { top: 150, right: 62, transform: [{ rotate: "90deg" }] },
-                ]}
+              <RealMapView
+                style={StyleSheet.absoluteFill}
+                initialRegion={{
+                  latitude: 15.9748,
+                  longitude: 108.2500,
+                  latitudeDelta: 0.08,
+                  longitudeDelta: 0.08,
+                }}
+                showsCompass={false}
               >
-                Võ Nguyên Giáp
-              </Text>
-              <Text style={[s.mapLabel, { top: 160, right: 18 }]}>Biển Đông</Text>
+                <Marker coordinate={{ latitude: 15.9748, longitude: 108.2500 }}>
+                  <View style={{ alignItems: "center" }}>
+                    <Ionicons name="location" size={32} color={colors.deepGreen} />
+                    <View style={s.pinBaseDot} />
+                  </View>
+                </Marker>
+                <Circle
+                  center={{ latitude: 15.9748, longitude: 108.2500 }}
+                  radius={radius * 1000}
+                  fillColor="rgba(24, 69, 59, 0.16)"
+                  strokeColor="#18453B"
+                  strokeWidth={2}
+                />
+              </RealMapView>
 
               {/* Floating Address Pill (Top-Left) */}
-              <View style={s.addressPill}>
+              <View style={s.addressPill} pointerEvents="none">
                 <Ionicons name="location-outline" size={13} color={colors.ink} />
                 <Text style={s.addressPillText}>{address}</Text>
               </View>
-
-              {/* Concentric Circles centered on pin */}
-              <View style={s.centerPinWrap}>
-                {/* 3 km Outer Circle */}
-                <View
-                  style={[
-                    s.circle3km,
-                    radius === 3 ? s.circleActiveSolid : s.circleInactiveDashed,
-                    radius >= 3 && s.circleActiveFill,
-                  ]}
-                >
-                  {/* 2 km Middle Circle */}
-                  <View
-                    style={[
-                      s.circle2km,
-                      radius === 2 ? s.circleActiveSolid : s.circleInactiveDashed,
-                      radius >= 2 && s.circleActiveFill,
-                    ]}
-                  >
-                    {/* 1 km Inner Circle */}
-                    <View
-                      style={[
-                        s.circle1km,
-                        radius === 1 ? s.circleActiveSolid : s.circleInactiveDashed,
-                        radius >= 1 && s.circleActiveFill,
-                      ]}
-                    >
-                      {/* Center Pin */}
-                      <Ionicons
-                        name="location"
-                        size={32}
-                        color={colors.deepGreen}
-                      />
-                      <View style={s.pinBaseDot} />
-                    </View>
-
-                    {/* 1 km label */}
-                    <View style={s.pill1km}>
-                      <Text style={s.circlePillText}>1 km</Text>
-                    </View>
-
-                    {/* 2 km label */}
-                    <View style={s.pill2km}>
-                      <Text style={s.circlePillText}>2 km</Text>
-                    </View>
-                  </View>
-
-                  {/* 3 km label */}
-                  <View style={s.pill3km}>
-                    <Text style={s.circlePillText}>3 km</Text>
-                  </View>
-                </View>
-              </View>
-
-              {/* 1 km scale bracket */}
-              <View style={s.scaleContainer}>
-                <Text style={s.scaleText}>1 km</Text>
-                <View style={s.scaleBracket} />
-              </View>
-
-              {/* Locate me button */}
-              <Pressable style={s.locateButton}>
-                <Ionicons name="locate-outline" size={19} color={colors.ink} />
-              </Pressable>
             </View>
 
             {/* Slider Section inside same Card */}
@@ -396,7 +338,7 @@ const s = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   backIcon: {
-    fontSize: 24,
+    fontSize: fontSizes.header,
     color: colors.ink,
     marginTop: -2,
   },
@@ -406,7 +348,7 @@ const s = StyleSheet.create({
     color: colors.ink,
   },
   moreIcon: {
-    fontSize: 20,
+    fontSize: fontSizes.title,
     color: colors.ink,
     fontWeight: "900",
     marginTop: -4,
@@ -449,7 +391,7 @@ const s = StyleSheet.create({
   },
   mapLabel: {
     position: "absolute",
-    fontSize: 10,
+    fontSize: fontSizes.micro,
     fontWeight: "600",
     color: "#6b7d70",
   },
@@ -472,7 +414,7 @@ const s = StyleSheet.create({
     elevation: 3,
   },
   addressPillText: {
-    fontSize: 11,
+    fontSize: fontSizes.badge,
     fontWeight: "700",
     color: colors.ink,
   },
@@ -559,7 +501,7 @@ const s = StyleSheet.create({
     borderColor: "#e1e9e2",
   },
   circlePillText: {
-    fontSize: 10,
+    fontSize: fontSizes.micro,
     fontWeight: "700",
     color: colors.ink,
   },
@@ -570,7 +512,7 @@ const s = StyleSheet.create({
     alignItems: "flex-start",
   },
   scaleText: {
-    fontSize: 10,
+    fontSize: fontSizes.micro,
     fontWeight: "600",
     color: colors.ink,
     marginBottom: 2,
@@ -611,12 +553,12 @@ const s = StyleSheet.create({
     justifyContent: "space-between",
   },
   sliderTitle: {
-    fontSize: 15,
+    fontSize: fontSizes.body,
     fontWeight: "800",
     color: colors.ink,
   },
   sliderValue: {
-    fontSize: 15,
+    fontSize: fontSizes.body,
     fontWeight: "800",
     color: colors.ink,
   },
@@ -691,7 +633,7 @@ const s = StyleSheet.create({
     marginTop: 4,
   },
   stepLabel: {
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     fontWeight: "600",
     color: colors.muted,
   },
@@ -731,7 +673,7 @@ const s = StyleSheet.create({
   alertRowLabel: {
     flex: 1,
     marginLeft: 12,
-    fontSize: 14,
+    fontSize: fontSizes.bodyMedium,
     fontWeight: "700",
     color: colors.ink,
   },
@@ -797,12 +739,12 @@ const s = StyleSheet.create({
     gap: 2,
   },
   successTitle: {
-    fontSize: 14,
+    fontSize: fontSizes.bodyMedium,
     fontWeight: "800",
     color: colors.ink,
   },
   successSubtitle: {
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     color: "#64756a",
   },
   saveButton: {
@@ -813,7 +755,7 @@ const s = StyleSheet.create({
     justifyContent: "center",
   },
   saveButtonText: {
-    fontSize: 16,
+    fontSize: fontSizes.bodyLarge,
     fontWeight: "800",
     color: "#ffffff",
   },

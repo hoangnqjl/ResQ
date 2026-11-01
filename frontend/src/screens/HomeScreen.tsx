@@ -13,6 +13,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { API_URL } from "../api";
 import { colors, fontSizes } from "../theme";
+import { BottomNavBar } from "../components/BottomNavBar";
 import { FallbackPhoto } from "../components/FallbackPhoto";
 import { foodPhoto } from "../data/designPhotos";
 import { imageUrl } from "../services/communityApi";
@@ -43,13 +44,6 @@ type Props = {
   onOpenFood: (food: Food) => void;
 };
 
-const tabs = [
-  ["Home", "home-outline"],
-  ["Explore", "search-outline"],
-  ["Maps", "map-outline"],
-  ["Saved", "bookmark-outline"],
-  ["Profile", "person-outline"],
-] as const;
 
 const filters = [
   "Near me",
@@ -469,45 +463,7 @@ export default function HomeScreen({
       </ScrollView>
 
       {/* Bottom tab navigation */}
-      <View style={s.tabBar}>
-        {tabs.map(([label, icon]) => (
-          <Pressable
-            key={label}
-            onPress={() => onTabChange(label)}
-            style={s.tab}
-            accessibilityRole="tab"
-            accessibilityState={{
-              selected: activeTab === label,
-            }}
-          >
-            <View
-              style={[
-                s.tabIcon,
-                activeTab === label && s.tabIconActive,
-              ]}
-            >
-              <Ionicons
-                name={icon}
-                size={18}
-                color={
-                  activeTab === label
-                    ? colors.primary
-                    : "#456051"
-                }
-              />
-            </View>
-
-            <Text
-              style={[
-                s.tabLabel,
-                activeTab === label && s.tabLabelActive,
-              ]}
-            >
-              {label}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+      <BottomNavBar activeTab={activeTab} onTabChange={onTabChange} />
 
       {/* Filter modal */}
       <Modal
@@ -914,48 +870,6 @@ const s = StyleSheet.create({
     color: colors.white,
     fontSize: fontSizes.bodySmall,
     fontWeight: "700",
-  },
-
-  tabBar: {
-    height: 56,
-    marginHorizontal: 14,
-    marginBottom: 8,
-    flexDirection: "row",
-    borderColor: colors.line,
-    borderWidth: 1,
-    borderRadius: 28,
-    backgroundColor: colors.white,
-    alignItems: "center",
-    justifyContent: "space-around",
-  },
-
-  tab: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 2,
-  },
-
-  tabIcon: {
-    width: 34,
-    height: 26,
-    borderRadius: 13,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  tabIconActive: {
-    backgroundColor: colors.pale,
-  },
-
-  tabLabel: {
-    color: "#64756a",
-    fontSize: fontSizes.caption,
-  },
-
-  tabLabelActive: {
-    color: colors.primary,
-    fontWeight: "800",
   },
 
   profilePanel: {

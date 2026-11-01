@@ -143,7 +143,7 @@ const s = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   backIcon: {
-    fontSize: 24,
+    fontSize: fontSizes.header,
     color: colors.ink,
     marginTop: -2,
   },
@@ -153,7 +153,7 @@ const s = StyleSheet.create({
     color: colors.ink,
   },
   moreIcon: {
-    fontSize: 20,
+    fontSize: fontSizes.title,
     color: colors.ink,
     fontWeight: "900",
     marginTop: -4,
@@ -180,7 +180,7 @@ const s = StyleSheet.create({
     justifyContent: "space-between",
   },
   optionLabel: {
-    fontSize: 15,
+    fontSize: fontSizes.body,
     fontWeight: "700",
     color: colors.ink,
   },
@@ -227,12 +227,12 @@ const s = StyleSheet.create({
     gap: 2,
   },
   successTitle: {
-    fontSize: 14,
+    fontSize: fontSizes.bodyMedium,
     fontWeight: "800",
     color: colors.ink,
   },
   successSubtitle: {
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     color: "#64756a",
   },
   saveButton: {
@@ -243,7 +243,7 @@ const s = StyleSheet.create({
     justifyContent: "center",
   },
   saveButtonText: {
-    fontSize: 16,
+    fontSize: fontSizes.bodyLarge,
     fontWeight: "800",
     color: "#ffffff",
   },

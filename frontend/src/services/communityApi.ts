@@ -35,6 +35,8 @@ export type CommunityShop = {
   reputation_score: number | string;
   average_rating: number | string;
   review_count: number;
+  pickup_window?: string | null;
+  image_url?: string | null;
 };
 
 export type DropAlert = {
@@ -49,6 +51,9 @@ export type DropAlert = {
 export type GlobalDropAlertSettings = {
   instantPush: boolean;
   vibrateEmergencyDrops: boolean;
+  pushNotifications?: boolean;
+  emailAlerts?: boolean;
+  soundAlerts?: boolean;
 };
 
 export type ShopReview = {
@@ -193,12 +198,34 @@ export async function reserveCommunityFood(foodItemId: string, buyerId: string) 
   });
 }
 
-export function imageUrl(value?: string | null) {
-  if (!value) return undefined;
-  if (/^https?:\/\//i.test(value)) {
-    return value.replace(/^http:\/\/(?:localhost|127\.0\.0\.1)(?=[:/])/i, API_URL);
+export function imageUrl(value?: string | null): string | undefined {
+  if (!value || typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+
+  // Catch unreplaced template tags like {{image.jpg}}
+  if (/^\{\{.*\}\}$/.test(trimmed)) return undefined;
+
+  try {
+    if (/^https?:\/\//i.test(trimmed)) {
+      const parsed = new URL(trimmed);
+      if (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") {
+        const apiParsed = new URL(API_URL);
+        parsed.protocol = apiParsed.protocol;
+        parsed.hostname = apiParsed.hostname;
+        parsed.port = apiParsed.port;
+      }
+      return encodeURI(decodeURI(parsed.toString()));
+    }
+
+    const cleanPath = trimmed.replace(/^\/+/, "");
+    const base = API_URL.replace(/\/+$/, "");
+    const full = `${base}/${cleanPath}`;
+    const parsed = new URL(full);
+    return encodeURI(decodeURI(parsed.toString()));
+  } catch {
+    return undefined;
   }
-  return `${API_URL}/${value.replace(/^\/+/, "")}`;
 }
 
 export async function getShopDropAlert(userId: string, shopId: string) {

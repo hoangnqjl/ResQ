@@ -207,7 +207,7 @@ const s = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   backIcon: {
-    fontSize: 24,
+    fontSize: fontSizes.header,
     color: colors.ink,
     marginTop: -2,
   },
@@ -217,7 +217,7 @@ const s = StyleSheet.create({
     color: colors.ink,
   },
   moreIcon: {
-    fontSize: 20,
+    fontSize: fontSizes.title,
     color: colors.ink,
     fontWeight: "900",
     marginTop: -4,
@@ -250,13 +250,13 @@ const s = StyleSheet.create({
     borderRadius: 1,
   },
   uploadTitle: {
-    fontSize: 14,
+    fontSize: fontSizes.bodyMedium,
     fontWeight: "700",
     color: colors.ink,
     marginTop: 6,
   },
   uploadSubtitle: {
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     color: colors.muted,
     marginTop: 4,
   },
@@ -273,7 +273,7 @@ const s = StyleSheet.create({
     marginTop: 14,
   },
   fileName: {
-    fontSize: 13,
+    fontSize: fontSizes.bodySmall,
     fontWeight: "600",
     color: colors.ink,
   },
@@ -283,7 +283,7 @@ const s = StyleSheet.create({
     gap: 12,
   },
   fileSize: {
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     color: colors.muted,
   },
   fieldGroup: {
@@ -291,7 +291,7 @@ const s = StyleSheet.create({
     gap: 6,
   },
   fieldLabel: {
-    fontSize: 13,
+    fontSize: fontSizes.bodySmall,
     fontWeight: "500",
     color: "#64756a",
     marginLeft: 2,
@@ -303,7 +303,7 @@ const s = StyleSheet.create({
     borderColor: "#e1e9e2",
     backgroundColor: "#ffffff",
     paddingHorizontal: 16,
-    fontSize: 14,
+    fontSize: fontSizes.bodyMedium,
     color: colors.ink,
   },
   spacer: {
@@ -333,12 +333,12 @@ const s = StyleSheet.create({
     gap: 2,
   },
   successTitle: {
-    fontSize: 14,
+    fontSize: fontSizes.bodyMedium,
     fontWeight: "800",
     color: colors.ink,
   },
   successSubtitle: {
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     color: "#64756a",
   },
   submitButton: {
@@ -349,7 +349,7 @@ const s = StyleSheet.create({
     justifyContent: "center",
   },
   submitButtonText: {
-    fontSize: 16,
+    fontSize: fontSizes.bodyLarge,
     fontWeight: "800",
     color: "#ffffff",
   },

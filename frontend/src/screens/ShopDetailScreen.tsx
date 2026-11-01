@@ -1,3 +1,4 @@
+import { fontSizes } from "../theme";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -200,7 +201,7 @@ export default function ShopDetailScreen({
             <Text style={styles.listingHeading}>Available at this shop</Text>
             {foods.length > 0 && onOpenFoodList ? (
               <Pressable onPress={() => onOpenFoodList(shop.id)}>
-                <Text style={{ color: communityColors.green, fontSize: 12, fontWeight: "700" }}>View full menu ›</Text>
+                <Text style={{ color: communityColors.green, fontSize: fontSizes.caption, fontWeight: "700" }}>View full menu ›</Text>
               </Pressable>
             ) : null}
           </View>
@@ -243,10 +244,10 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: communityColors.white },
   moreMenu: { position: "absolute", top: 62, right: 20, zIndex: 5, width: 164, paddingHorizontal: 13, paddingVertical: 6, borderWidth: 1, borderColor: communityColors.line, borderRadius: 16, backgroundColor: communityColors.white, elevation: 7 },
   moreMenuItem: { minHeight: 38, justifyContent: "center" },
-  moreMenuText: { color: communityColors.ink, fontSize: 13 },
+  moreMenuText: { color: communityColors.ink, fontSize: fontSizes.bodySmall },
   content: { paddingHorizontal: 18, paddingTop: 9, paddingBottom: 28 },
   loading: { flex: 1, alignItems: "center", justifyContent: "center" },
-  stateText: { color: communityColors.muted, fontSize: 12, padding: 22, textAlign: "center" },
+  stateText: { color: communityColors.muted, fontSize: fontSizes.caption, padding: 22, textAlign: "center" },
   photoWrap: {
     width: "100%",
     aspectRatio: 1,
@@ -270,9 +271,9 @@ const styles = StyleSheet.create({
   shopCopy: { flex: 1 },
   headingActions: { flexDirection: "row", alignItems: "center", gap: 7 },
   saveShopButton: { width: 36, height: 36, borderRadius: 19, backgroundColor: communityColors.pale, alignItems: "center", justifyContent: "center" },
-  shopName: { color: communityColors.ink, fontSize: 17, fontWeight: "800" },
-  reviewCount: { color: communityColors.muted, fontSize: 11, marginTop: 5 },
-  address: { color: communityColors.muted, fontSize: 10, marginTop: 4 },
+  shopName: { color: communityColors.ink, fontSize: fontSizes.subtitleSmall, fontWeight: "800" },
+  reviewCount: { color: communityColors.muted, fontSize: fontSizes.badge, marginTop: 5 },
+  address: { color: communityColors.muted, fontSize: fontSizes.micro, marginTop: 4 },
   rating: {
     height: 36,
     minWidth: 62,
@@ -283,8 +284,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 5,
   },
-  star: { color: "#dd842e", fontSize: 13 },
-  ratingText: { color: "#4b5e51", fontSize: 11 },
+  star: { color: "#dd842e", fontSize: fontSizes.bodySmall },
+  ratingText: { color: "#4b5e51", fontSize: fontSizes.badge },
   safetyCard: {
     minHeight: 102,
     borderWidth: 1.2,
@@ -305,9 +306,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   safetyCopy: { flex: 1, gap: 4 },
-  safetyEyebrow: { color: communityColors.muted, fontSize: 11, fontWeight: "800", letterSpacing: 0.6 },
-  safetyTitle: { color: communityColors.ink, fontSize: 12, fontWeight: "800" },
-  safetyDetails: { color: communityColors.muted, fontSize: 10, lineHeight: 14 },
+  safetyEyebrow: { color: communityColors.muted, fontSize: fontSizes.badge, fontWeight: "800", letterSpacing: 0.6 },
+  safetyTitle: { color: communityColors.ink, fontSize: fontSizes.caption, fontWeight: "800" },
+  safetyDetails: { color: communityColors.muted, fontSize: fontSizes.micro, lineHeight: 14 },
   viewButton: {
     minWidth: 43,
     height: 30,
@@ -317,7 +318,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  viewText: { color: communityColors.ink, fontSize: 11, fontWeight: "700" },
+  viewText: { color: communityColors.ink, fontSize: fontSizes.badge, fontWeight: "700" },
   alertCard: {
     minHeight: 66,
     borderWidth: 1.2,
@@ -339,9 +340,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   alertCopy: { flex: 1, gap: 6 },
-  alertTitle: { color: communityColors.ink, fontSize: 12 },
-  alertDescription: { color: communityColors.muted, fontSize: 9 },
-  listingHeading: { color: communityColors.ink, fontSize: 14, fontWeight: "800" },
+  alertTitle: { color: communityColors.ink, fontSize: fontSizes.caption },
+  alertDescription: { color: communityColors.muted, fontSize: fontSizes.mini },
+  listingHeading: { color: communityColors.ink, fontSize: fontSizes.bodyMedium, fontWeight: "800" },
   foodRow: {
     minHeight: 65,
     flexDirection: "row",
@@ -353,6 +354,6 @@ const styles = StyleSheet.create({
   },
   foodImage: { width: 50, height: 50, borderRadius: 10, backgroundColor: communityColors.pale },
   foodCopy: { flex: 1, gap: 5 },
-  foodName: { color: communityColors.ink, fontSize: 12, fontWeight: "700" },
-  foodMeta: { color: communityColors.muted, fontSize: 10 },
+  foodName: { color: communityColors.ink, fontSize: fontSizes.caption, fontWeight: "700" },
+  foodMeta: { color: communityColors.muted, fontSize: fontSizes.micro },
 });

@@ -1,5 +1,7 @@
+import { fontSizes } from "../theme";
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import RealMapView, { Marker } from "../components/RealMapView";
 import { CommunityHeader, communityColors } from "../components/CommunityLayout";
 import { FallbackPhoto } from "../components/FallbackPhoto";
 import { sharingMapPhoto, sharingStationPhoto } from "../data/designPhotos";
@@ -8,47 +10,48 @@ import { getCommunityFoods, imageUrl, type CommunityFood } from "../services/com
 type Station = { shopId: string; name: string; image?: string; count: number; latitude?: number; longitude?: number };
 
 function MapIllustration({ stations, onOpenShop }: { stations: Station[]; onOpenShop: (id: string) => void }) {
-  const coordinates = stations.filter((station) => station.latitude !== undefined && station.longitude !== undefined);
-  const minLatitude = coordinates.length ? Math.min(...coordinates.map((station) => station.latitude as number)) : 0;
-  const maxLatitude = coordinates.length ? Math.max(...coordinates.map((station) => station.latitude as number)) : 0;
-  const minLongitude = coordinates.length ? Math.min(...coordinates.map((station) => station.longitude as number)) : 0;
-  const maxLongitude = coordinates.length ? Math.max(...coordinates.map((station) => station.longitude as number)) : 0;
-  const mapPins = stations.length === 1
-    ? [
-      { station: stations[0], label: "Station 1", left: "29%", top: "26%" },
-      { station: stations[0], label: "Station 2", left: "52%", top: "54%" },
-    ]
-    : stations.map((station, index) => {
-      const latitudeRange = maxLatitude - minLatitude || 1;
-      const longitudeRange = maxLongitude - minLongitude || 1;
-      const left = station.longitude === undefined
-        ? 20 + (index * 23) % 60
-        : 12 + ((station.longitude - minLongitude) / longitudeRange) * 70;
-      const top = station.latitude === undefined
-        ? 20 + (index * 31) % 55
-        : 15 + (1 - (station.latitude - minLatitude) / latitudeRange) * 65;
-      return { station, label: `Station ${index + 1}`, left: `${left}%`, top: `${top}%` };
-    });
+  const initialRegion = useMemo(() => {
+    const coords = stations.filter((s) => s.latitude != null && s.longitude != null);
+    if (coords.length > 0) {
+      return {
+        latitude: Number(coords[0].latitude),
+        longitude: Number(coords[0].longitude),
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      };
+    }
+    return {
+      latitude: 15.9748,
+      longitude: 108.2500,
+      latitudeDelta: 0.05,
+      longitudeDelta: 0.05,
+    };
+  }, [stations]);
 
   return (
     <View style={styles.map}>
-      <ImageBackground source={sharingMapPhoto} style={StyleSheet.absoluteFill} resizeMode="cover" />
+      <RealMapView style={StyleSheet.absoluteFill} initialRegion={initialRegion}>
+        {stations.map((station, index) => {
+          const lat = station.latitude != null ? Number(station.latitude) : 15.9748 + (index * 0.005);
+          const lng = station.longitude != null ? Number(station.longitude) : 108.2500 + (index * 0.005);
+          return (
+            <Marker
+              key={station.shopId}
+              coordinate={{ latitude: lat, longitude: lng }}
+              onPress={() => onOpenShop(station.shopId)}
+            >
+              <View style={{ alignItems: "center" }}>
+                <View style={styles.pinWrap}>
+                  <Text style={styles.pinText}>0đ</Text>
+                  <View style={styles.pinTail} />
+                </View>
+                <Text numberOfLines={1} style={styles.stationLabel}>{station.name}</Text>
+              </View>
+            </Marker>
+          );
+        })}
+      </RealMapView>
       <Text pointerEvents="none" style={styles.mapTitle}>0đ Donation Stations Map</Text>
-      {mapPins.map(({ station, label, left, top }) => {
-        return (
-          <Pressable
-            key={label}
-            style={[styles.stationPin, { left, top }]}
-            onPress={() => onOpenShop(station.shopId)}
-          >
-            <View style={styles.pinWrap}>
-              <Text style={styles.pinText}>0đ</Text>
-              <View style={styles.pinTail} />
-            </View>
-            <Text numberOfLines={1} style={styles.stationLabel}>{label}</Text>
-          </Pressable>
-        );
-      })}
     </View>
   );
 }
@@ -138,7 +141,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 14,
   },
-  bannerText: { color: communityColors.white, fontSize: 12, fontWeight: "700" },
+  bannerText: { color: communityColors.white, fontSize: fontSizes.caption, fontWeight: "700" },
   map: {
     position: "relative",
     height: 382,
@@ -155,7 +158,7 @@ const styles = StyleSheet.create({
     top: "49%",
     textAlign: "center",
     color: communityColors.ink,
-    fontSize: 15,
+    fontSize: fontSizes.body,
     fontWeight: "800",
   },
   stationPin: { position: "absolute", alignItems: "center", maxWidth: "45%" },
@@ -169,7 +172,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: communityColors.white,
     color: communityColors.ink,
-    fontSize: 11,
+    fontSize: fontSizes.badge,
     fontWeight: "800",
     elevation: 3,
     shadowColor: "#193d2e",
@@ -194,7 +197,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 5,
     marginTop: 7,
-    fontSize: 10,
+    fontSize: fontSizes.micro,
     fontWeight: "700",
   },
   stationCard: {
@@ -209,12 +212,12 @@ const styles = StyleSheet.create({
     gap: 9,
   },
   state: { marginTop: 16 },
-  stateText: { color: communityColors.muted, fontSize: 12, paddingVertical: 18, textAlign: "center" },
+  stateText: { color: communityColors.muted, fontSize: fontSizes.caption, paddingVertical: 18, textAlign: "center" },
   stationMain: { flex: 1, minWidth: 0, flexDirection: "row", alignItems: "center", gap: 9 },
   stationImage: { width: 58, height: 58, borderRadius: 11, backgroundColor: communityColors.pale },
   stationCopy: { flex: 1 },
-  stationName: { color: communityColors.ink, fontSize: 13, fontWeight: "800" },
-  stationDetails: { color: "#41594a", fontSize: 11, marginTop: 4 },
+  stationName: { color: communityColors.ink, fontSize: fontSizes.bodySmall, fontWeight: "800" },
+  stationDetails: { color: "#41594a", fontSize: fontSizes.badge, marginTop: 4 },
   walkButton: {
     minHeight: 32,
     borderRadius: 18,
@@ -223,5 +226,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: communityColors.green,
   },
-  walkText: { color: communityColors.white, fontSize: 11, fontWeight: "700" },
+  walkText: { color: communityColors.white, fontSize: fontSizes.badge, fontWeight: "700" },
 });

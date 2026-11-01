@@ -12,6 +12,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, fontSizes } from "../theme";
+import { FallbackPhoto } from "../components/FallbackPhoto";
+import { cornerKitchenPhoto } from "../data/designPhotos";
 
 type ProfileData = {
   fullName: string;
@@ -101,7 +103,7 @@ export default function EditProfileScreen({
       >
         {/* Avatar & Change photo */}
         <View style={s.avatarSection}>
-          <Image source={{ uri: avatarUrl }} style={s.avatarImage} />
+          <FallbackPhoto uri={avatarUrl} fallback={cornerKitchenPhoto} style={s.avatarImage} />
           <Pressable onPress={handleChangePhoto} hitSlop={8}>
             <Text style={s.changePhotoText}>Change photo</Text>
           </Pressable>
@@ -227,7 +229,7 @@ const s = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   backIcon: {
-    fontSize: 24,
+    fontSize: fontSizes.header,
     color: colors.ink,
     marginTop: -2,
   },
@@ -237,7 +239,7 @@ const s = StyleSheet.create({
     color: colors.ink,
   },
   moreIcon: {
-    fontSize: 20,
+    fontSize: fontSizes.title,
     color: colors.ink,
     fontWeight: "900",
     marginTop: -4,
@@ -261,7 +263,7 @@ const s = StyleSheet.create({
   },
   changePhotoText: {
     marginTop: 10,
-    fontSize: 13,
+    fontSize: fontSizes.bodySmall,
     fontWeight: "700",
     color: colors.ink,
     textDecorationLine: "underline",
@@ -273,7 +275,7 @@ const s = StyleSheet.create({
     gap: 6,
   },
   label: {
-    fontSize: 13,
+    fontSize: fontSizes.bodySmall,
     color: "#64756a",
     fontWeight: "500",
     marginLeft: 2,
@@ -285,7 +287,7 @@ const s = StyleSheet.create({
     borderColor: "#e1e9e2",
     backgroundColor: "#ffffff",
     paddingHorizontal: 16,
-    fontSize: 15,
+    fontSize: fontSizes.body,
     color: colors.ink,
   },
   bottomSpacer: {
@@ -315,12 +317,12 @@ const s = StyleSheet.create({
     gap: 2,
   },
   successTitle: {
-    fontSize: 14,
+    fontSize: fontSizes.bodyMedium,
     fontWeight: "800",
     color: colors.ink,
   },
   successSubtitle: {
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     color: "#64756a",
   },
   saveButton: {
@@ -331,7 +333,7 @@ const s = StyleSheet.create({
     justifyContent: "center",
   },
   saveButtonText: {
-    fontSize: 16,
+    fontSize: fontSizes.bodyLarge,
     fontWeight: "800",
     color: "#ffffff",
   },

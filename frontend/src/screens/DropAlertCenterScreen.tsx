@@ -1,3 +1,4 @@
+import { fontSizes } from "../theme";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -283,11 +284,11 @@ const styles = StyleSheet.create({
     paddingTop: 17,
     paddingBottom: 10,
   },
-  globalEyebrow: { color: communityColors.muted, fontSize: 11, fontWeight: "800", letterSpacing: 0.6, marginBottom: 9 },
+  globalEyebrow: { color: communityColors.muted, fontSize: fontSizes.badge, fontWeight: "800", letterSpacing: 0.6, marginBottom: 9 },
   globalRow: { minHeight: 61, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 9 },
   globalCopy: { flex: 1, gap: 5 },
-  globalTitle: { color: communityColors.ink, fontSize: 14, fontWeight: "800" },
-  globalDescription: { color: communityColors.muted, fontSize: 13 },
+  globalTitle: { color: communityColors.ink, fontSize: fontSizes.bodyMedium, fontWeight: "800" },
+  globalDescription: { color: communityColors.muted, fontSize: fontSizes.bodySmall },
   vibrateTitle: { flex: 1 },
   divider: { height: 1, backgroundColor: "#e7eee7" },
   sectionHeading: {
@@ -298,8 +299,8 @@ const styles = StyleSheet.create({
     marginBottom: 11,
     paddingHorizontal: 2,
   },
-  sectionTitle: { color: communityColors.ink, fontSize: 16, fontWeight: "800" },
-  activeCount: { color: communityColors.muted, fontSize: 13 },
+  sectionTitle: { color: communityColors.ink, fontSize: fontSizes.bodyLarge, fontWeight: "800" },
+  activeCount: { color: communityColors.muted, fontSize: fontSizes.bodySmall },
   shopCard: {
     minHeight: 84,
     borderWidth: 1.2,
@@ -316,9 +317,9 @@ const styles = StyleSheet.create({
   keywordCard: { minHeight: 72, borderWidth: 1.2, borderColor: communityColors.line, borderRadius: 21, paddingHorizontal: 13, flexDirection: "row", alignItems: "center", gap: 11, marginBottom: 10 },
   keywordIcon: { width: 42, height: 42, borderRadius: 22, backgroundColor: communityColors.pale, alignItems: "center", justifyContent: "center" },
   shopCopy: { flex: 1, gap: 4 },
-  shopName: { color: communityColors.ink, fontSize: 14, fontWeight: "800" },
-  shopSub: { color: communityColors.muted, fontSize: 12 },
-  shopMeta: { color: communityColors.muted, fontSize: 12, lineHeight: 18 },
+  shopName: { color: communityColors.ink, fontSize: fontSizes.bodyMedium, fontWeight: "800" },
+  shopSub: { color: communityColors.muted, fontSize: fontSizes.caption },
+  shopMeta: { color: communityColors.muted, fontSize: fontSizes.caption, lineHeight: 18 },
   toggle: {
     width: 50,
     height: 30,
@@ -341,7 +342,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   toggleThumbOn: { alignSelf: "flex-end" },
-  emptyText: { color: communityColors.muted, fontSize: 12, textAlign: "center", paddingVertical: 16 },
+  emptyText: { color: communityColors.muted, fontSize: fontSizes.caption, textAlign: "center", paddingVertical: 16 },
   addButton: {
     minHeight: 52,
     borderRadius: 32,
@@ -352,9 +353,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: 5,
   },
-  addText: { color: communityColors.ink, fontSize: 13, fontWeight: "800" },
+  addText: { color: communityColors.ink, fontSize: fontSizes.bodySmall, fontWeight: "800" },
   errorWrap: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24 },
-  errorText: { color: "#a54232", fontSize: 12, textAlign: "center" },
+  errorText: { color: "#a54232", fontSize: fontSizes.caption, textAlign: "center" },
   retry: { backgroundColor: communityColors.green, paddingHorizontal: 16, paddingVertical: 9, borderRadius: 20, marginTop: 12 },
-  retryText: { color: "#ffffff", fontSize: 12, fontWeight: "700" },
+  retryText: { color: "#ffffff", fontSize: fontSizes.caption, fontWeight: "700" },
 });

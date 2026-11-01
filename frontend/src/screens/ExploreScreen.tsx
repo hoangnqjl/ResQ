@@ -1,3 +1,5 @@
+import { BottomNavBar } from "../components/BottomNavBar";
+import { fontSizes } from "../theme";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -180,28 +182,6 @@ function FoodCard({ food, onPress }: { food: CommunityFood; onPress: (food: Food
       </View>
       <Text numberOfLines={1} style={styles.foodLocation}>{food.address}</Text>
     </Pressable>
-  );
-}
-
-function BottomTabs({ activeTab, onTabChange }: { activeTab: string; onTabChange: (tab: string) => void }) {
-  const tabs = [
-    ["Home", "home-outline"],
-    ["Explore", "search-outline"],
-    ["Maps", "map-outline"],
-    ["Saved", "bookmark-outline"],
-    ["Profile", "person-outline"],
-  ] as const;
-  return (
-    <View style={styles.tabBar}>
-      {tabs.map(([label, icon]) => (
-        <Pressable key={label} onPress={() => onTabChange(label)} style={styles.tab}>
-          <View style={[styles.tabIcon, activeTab === label && styles.tabIconActive]}>
-            <Ionicons name={icon} size={19} color={activeTab === label ? communityColors.green : communityColors.ink} />
-          </View>
-          <Text style={[styles.tabLabel, activeTab === label && styles.tabLabelActive]}>{label}</Text>
-        </Pressable>
-      ))}
-    </View>
   );
 }
 
@@ -611,7 +591,7 @@ export default function ExploreScreen({
               </>
             )}
           </ScrollView>
-          {mode === "explore" && <BottomTabs activeTab={activeTab} onTabChange={onTabChange} />}
+          {mode === "explore" && <BottomNavBar activeTab={activeTab} onTabChange={onTabChange} />}
         </>
       )}
     </View>
@@ -639,7 +619,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#ffffff",
   },
-  headerTitle: { flex: 1, textAlign: "center", color: communityColors.ink, fontSize: 16, fontWeight: "700" },
+  headerTitle: { flex: 1, textAlign: "center", color: communityColors.ink, fontSize: fontSizes.bodyLarge, fontWeight: "700" },
   headerSpacer: { width: 46 },
   moreMenu: {
     position: "absolute",
@@ -656,7 +636,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   moreMenuRow: { minHeight: 34, justifyContent: "center" },
-  moreMenuText: { color: communityColors.ink, fontSize: 12 },
+  moreMenuText: { color: communityColors.ink, fontSize: fontSizes.caption },
   content: { paddingHorizontal: 18, paddingTop: 10, paddingBottom: 22 },
   resultsContent: { flexGrow: 1 },
   searchRow: { flexDirection: "row", alignItems: "center", gap: 9 },
@@ -671,7 +651,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
   },
-  searchInput: { flex: 1, color: communityColors.ink, fontSize: 13, paddingVertical: 0 },
+  searchInput: { flex: 1, color: communityColors.ink, fontSize: fontSizes.bodySmall, paddingVertical: 0 },
   filterButton: {
     width: 66,
     height: 43,
@@ -682,7 +662,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  sectionTitle: { color: communityColors.ink, fontSize: 16, fontWeight: "800" },
+  sectionTitle: { color: communityColors.ink, fontSize: fontSizes.bodyLarge, fontWeight: "800" },
   quickSectionTitle: { marginTop: 15 },
   quickList: { gap: 15, paddingVertical: 15 },
   quickItem: { width: 58, alignItems: "center", gap: 7 },
@@ -727,8 +707,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 2,
     borderColor: communityColors.ink,
   },
-  quickLabel: { color: communityColors.ink, fontSize: 11 },
-  categorySubtitle: { color: communityColors.muted, fontSize: 12, marginTop: 3, marginBottom: 13 },
+  quickLabel: { color: communityColors.ink, fontSize: fontSizes.badge },
+  categorySubtitle: { color: communityColors.muted, fontSize: fontSizes.caption, marginTop: 3, marginBottom: 13 },
   categoryGrid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", rowGap: 12 },
   categoryCard: {
     width: "48.5%",
@@ -739,9 +719,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   categoryImage: { width: "100%", height: 106, borderRadius: 13, backgroundColor: communityColors.pale },
-  categoryTitle: { color: communityColors.ink, fontSize: 13, fontWeight: "800", marginTop: 9 },
+  categoryTitle: { color: communityColors.ink, fontSize: fontSizes.bodySmall, fontWeight: "800", marginTop: 9 },
   categoryMeta: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 5 },
-  categoryCount: { color: communityColors.muted, fontSize: 12 },
+  categoryCount: { color: communityColors.muted, fontSize: fontSizes.caption },
   filterRow: { flexDirection: "row", gap: 7, marginTop: 12 },
   resultFilter: {
     flex: 1,
@@ -754,10 +734,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   resultFilterActive: { backgroundColor: communityColors.green, borderColor: communityColors.green },
-  resultFilterText: { color: "#40584b", fontSize: 9, fontWeight: "500" },
+  resultFilterText: { color: "#40584b", fontSize: fontSizes.mini, fontWeight: "500" },
   resultFilterTextActive: { color: "#ffffff", fontWeight: "700" },
   resultsHeading: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 18, marginBottom: 10 },
-  resultsCount: { color: communityColors.muted, fontSize: 10 },
+  resultsCount: { color: communityColors.muted, fontSize: fontSizes.micro },
   foodGrid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", rowGap: 13 },
   foodCard: { width: "47.5%" },
   foodPhotoWrap: {
@@ -781,11 +761,11 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 7,
     paddingVertical: 4,
-    fontSize: 9,
+    fontSize: fontSizes.mini,
   },
-  foodName: { color: communityColors.ink, fontSize: 12, fontWeight: "700", marginTop: 7 },
+  foodName: { color: communityColors.ink, fontSize: fontSizes.caption, fontWeight: "700", marginTop: 7 },
   priceLine: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 5 },
-  foodPrice: { color: "#43594b", fontSize: 10 },
+  foodPrice: { color: "#43594b", fontSize: fontSizes.micro },
   ratingBadge: {
     flexDirection: "row",
     alignItems: "center",
@@ -794,45 +774,28 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "#fff1df",
   },
-  ratingStar: { color: "#dc812c", fontSize: 10 },
-  ratingText: { color: "#43594b", fontSize: 9 },
-  foodLocation: { color: communityColors.muted, fontSize: 9, marginTop: 5 },
+  ratingStar: { color: "#dc812c", fontSize: fontSizes.micro },
+  ratingText: { color: "#43594b", fontSize: fontSizes.mini },
+  foodLocation: { color: communityColors.muted, fontSize: fontSizes.mini, marginTop: 5 },
   loading: { padding: 30 },
-  emptyState: { textAlign: "center", color: communityColors.muted, fontSize: 12, paddingVertical: 26 },
+  emptyState: { textAlign: "center", color: communityColors.muted, fontSize: fontSizes.caption, paddingVertical: 26 },
   notFound: { flex: 1, minHeight: 0, justifyContent: "center", alignItems: "center", paddingHorizontal: 19, paddingBottom: 20 },
   locationIllustration: { width: 156, height: 156, marginBottom: 26 },
-  notFoundTitle: { color: communityColors.ink, fontSize: 22, fontWeight: "800", textAlign: "center" },
-  notFoundDescription: { color: communityColors.muted, fontSize: 15, lineHeight: 23, textAlign: "center", marginTop: 16, marginBottom: 24 },
+  notFoundTitle: { color: communityColors.ink, fontSize: fontSizes.titleLarge, fontWeight: "800", textAlign: "center" },
+  notFoundDescription: { color: communityColors.muted, fontSize: fontSizes.body, lineHeight: 23, textAlign: "center", marginTop: 16, marginBottom: 24 },
   expandRadiusButton: { width: "100%", height: 58, borderRadius: 32, backgroundColor: communityColors.green, alignItems: "center", justifyContent: "center" },
-  expandRadiusText: { color: "#fff", fontSize: 15, fontWeight: "800" },
+  expandRadiusText: { color: "#fff", fontSize: fontSizes.body, fontWeight: "800" },
   searchAlertButton: { width: "100%", minHeight: 57, borderRadius: 32, borderWidth: 1.5, borderColor: communityColors.line, alignItems: "center", justifyContent: "center", marginTop: 13 },
-  searchAlertText: { color: communityColors.ink, fontSize: 15, fontWeight: "800" },
-  inlineError: { color: "#a54232", fontSize: 11, paddingVertical: 12 },
-  tabBar: {
-    minHeight: 58,
-    marginHorizontal: 18,
-    marginBottom: 3,
-    borderRadius: 32,
-    borderWidth: 1.2,
-    borderColor: communityColors.line,
-    backgroundColor: "#ffffff",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-around",
-  },
-  tab: { flex: 1, alignItems: "center", justifyContent: "center", gap: 1 },
-  tabIcon: { width: 58, height: 34, borderRadius: 19, alignItems: "center", justifyContent: "center" },
-  tabIconActive: { backgroundColor: communityColors.pale },
-  tabLabel: { color: "#53665a", fontSize: 9 },
-  tabLabelActive: { color: communityColors.green, fontWeight: "800" },
+  searchAlertText: { color: communityColors.ink, fontSize: fontSizes.body, fontWeight: "800" },
+  inlineError: { color: "#a54232", fontSize: fontSizes.badge, paddingVertical: 12 },
   historyContent: { paddingHorizontal: 18, paddingTop: 24, paddingBottom: 22 },
   historySearch: { flex: 1, height: 46, borderWidth: 1.3, borderColor: communityColors.line, borderRadius: 25, marginLeft: 10, paddingHorizontal: 12, flexDirection: "row", alignItems: "center", gap: 9 },
   historySearchButton: { position: "absolute", bottom: 10, left: 18, right: 18, height: 57, borderRadius: 31, backgroundColor: communityColors.green, alignItems: "center", justifyContent: "center" },
-  historySearchButtonText: { color: "#fff", fontSize: 15, fontWeight: "800" },
+  historySearchButtonText: { color: "#fff", fontSize: fontSizes.body, fontWeight: "800" },
   historyHeading: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 3 },
-  historyTitle: { color: communityColors.ink, fontSize: 17, fontWeight: "800" },
-  historyCount: { color: communityColors.muted, fontSize: 13, marginTop: 7 },
-  clearAll: { color: communityColors.ink, fontSize: 13, fontWeight: "700" },
+  historyTitle: { color: communityColors.ink, fontSize: fontSizes.subtitleSmall, fontWeight: "800" },
+  historyCount: { color: communityColors.muted, fontSize: fontSizes.bodySmall, marginTop: 7 },
+  clearAll: { color: communityColors.ink, fontSize: fontSizes.bodySmall, fontWeight: "700" },
   historyRow: {
     minHeight: 70,
     flexDirection: "row",
@@ -850,11 +813,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   historyCopy: { flex: 1, gap: 5 },
-  historyItem: { color: communityColors.ink, fontSize: 13, fontWeight: "700" },
-  historyWhen: { color: communityColors.muted, fontSize: 12 },
+  historyItem: { color: communityColors.ink, fontSize: fontSizes.bodySmall, fontWeight: "700" },
+  historyWhen: { color: communityColors.muted, fontSize: fontSizes.caption },
   removeHistory: { width: 35, height: 42, alignItems: "center", justifyContent: "center" },
-  searchAgain: { color: communityColors.muted, fontSize: 12, fontWeight: "800", letterSpacing: 0.6, marginTop: 18 },
+  searchAgain: { color: communityColors.muted, fontSize: fontSizes.caption, fontWeight: "800", letterSpacing: 0.6, marginTop: 18 },
   historyChips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 15, rowGap: 9 },
   historyChip: { paddingHorizontal: 12, minHeight: 35, borderRadius: 20, backgroundColor: communityColors.pale, justifyContent: "center" },
-  historyChipText: { color: "#344e3e", fontSize: 12 },
+  historyChipText: { color: "#344e3e", fontSize: fontSizes.caption },
 });
