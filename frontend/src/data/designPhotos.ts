@@ -8,6 +8,9 @@ export const categoryPhotos = {
 } satisfies Record<string, ImageSourcePropType>;
 
 export const cornerKitchenPhoto = require("../../assets/design/shop-corner-kitchen.jpg");
+export const resqFoodLogoPhoto = require("../../assets/design/resq-food-logo.png");
+export const capybaraProfilePhoto = require("../../assets/design/profile-capybara.png");
+export const cornerKitchenOwnerPhoto = require("../../assets/design/corner-kitchen-owner.png");
 export const dropAlertFoodPhoto = require("../../assets/design/food-chicken-rice.jpg");
 export const sharingStationPhoto = require("../../assets/design/category-sharing-corner.jpg");
 export const sharingMapPhoto = require("../../assets/design/sharing-station-map.jpg");

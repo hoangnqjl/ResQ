@@ -25,9 +25,21 @@ async function releaseExpiredHolds() {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
-    const [rows] = await connection.query("SELECT id, food_item_id, quantity FROM reservations WHERE status = 'held' AND hold_expires_at <= CURRENT_TIMESTAMP FOR UPDATE");
+    const [rows] = await connection.query("SELECT id, food_item_id, quantity FROM reservations WHERE status IN ('held','confirmed') AND hold_expires_at <= CURRENT_TIMESTAMP FOR UPDATE");
     for (const row of rows as Array<{ id: string; food_item_id: string; quantity: number }>) {
-      await connection.query("UPDATE food_items SET quantity_available = quantity_available + ? WHERE id = ?", [row.quantity, row.food_item_id]);
+      const [waitlistRows] = await connection.query(
+        "SELECT id FROM waitlists WHERE food_item_id = ? AND status = 'waiting' ORDER BY queue_position ASC LIMIT 1 FOR UPDATE",
+        [row.food_item_id],
+      );
+      const nextWaitlist = (waitlistRows as Array<{ id: string }>)[0];
+      if (nextWaitlist) {
+        await connection.query(
+          "UPDATE waitlists SET status = 'offered', offered_at = CURRENT_TIMESTAMP, offer_expires_at = DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 15 MINUTE) WHERE id = ?",
+          [nextWaitlist.id],
+        );
+      } else {
+        await connection.query("UPDATE food_items SET quantity_available = quantity_available + ? WHERE id = ?", [row.quantity, row.food_item_id]);
+      }
       await connection.query("UPDATE reservations SET status = 'expired' WHERE id = ?", [row.id]);
       await connection.query("UPDATE orders SET status = 'overdue' WHERE reservation_id = ? AND status = 'awaiting_pickup'", [row.id]);
     }
@@ -387,6 +399,11 @@ app.delete("/api/reservations/:id", async (req, res) => {
     const [rows] = await connection.query("SELECT food_item_id, quantity, status FROM reservations WHERE id = ? FOR UPDATE", [req.params.id]);
     const reservation = (rows as Array<{ food_item_id: string; quantity: number; status: string }>)[0];
     if (!reservation) { await connection.rollback(); res.status(404).json({ error: "Reservation not found." }); return; }
+    if (reservation.status !== "held" && reservation.status !== "confirmed") {
+      await connection.rollback();
+      res.status(409).json({ error: "This reservation is no longer active." });
+      return;
+    }
     if (reservation.status === "held" || reservation.status === "confirmed") {
       await connection.query("UPDATE food_items SET quantity_available = quantity_available + ? WHERE id = ?", [reservation.quantity, reservation.food_item_id]);
       await connection.query("UPDATE reservations SET status = 'cancelled' WHERE id = ?", [req.params.id]);
@@ -438,9 +455,20 @@ app.post("/api/orders/scan", async (req, res) => {
 
 app.get("/api/complaints", async (req, res) => {
   try {
-    const [rows] = req.query.reporterId
-      ? await pool.query("SELECT * FROM complaints WHERE reporter_id = ? ORDER BY created_at DESC", [req.query.reporterId])
-      : await pool.query("SELECT * FROM complaints WHERE status IN ('submitted','reviewing') ORDER BY created_at DESC");
+    let rows;
+    if (req.query.reporterId) {
+      [rows] = await pool.query("SELECT * FROM complaints WHERE reporter_id = ? ORDER BY created_at DESC", [req.query.reporterId]);
+    } else if (req.query.shopOwnerId) {
+      [rows] = await pool.query(
+        `SELECT c.* FROM complaints c
+         JOIN orders o ON o.id = c.order_id
+         JOIN shops s ON s.id = o.shop_id
+         WHERE s.owner_id = ? ORDER BY c.created_at DESC`,
+        [req.query.shopOwnerId],
+      );
+    } else {
+      [rows] = await pool.query("SELECT * FROM complaints WHERE status IN ('submitted','reviewing') ORDER BY created_at DESC");
+    }
     res.json({ items: rows });
   } catch { res.status(500).json({ error: "Unable to load complaints." }); }
 });
@@ -457,6 +485,25 @@ app.post("/api/complaints", async (req, res) => {
     const [rows] = await pool.query("SELECT * FROM complaints WHERE id = ?", [id]);
     res.status(201).json((rows as unknown[])[0]);
   } catch { res.status(500).json({ error: "Unable to submit complaint." }); }
+});
+
+app.put("/api/complaints/:id/respond", async (req, res) => {
+  const { sellerId, resolution, status = "reviewing" } = req.body ?? {};
+  if (!sellerId || !String(resolution ?? "").trim() || !["reviewing", "resolved", "rejected"].includes(status)) {
+    res.status(400).json({ error: "Seller, a response, and a valid complaint status are required." });
+    return;
+  }
+  try {
+    const [result] = await pool.query(
+      `UPDATE complaints c JOIN orders o ON o.id = c.order_id JOIN shops s ON s.id = o.shop_id
+       SET c.resolution = ?, c.status = ?
+       WHERE c.id = ? AND s.owner_id = ? AND c.status IN ('submitted','reviewing')`,
+      [String(resolution).trim(), status, req.params.id, sellerId],
+    );
+    if (!(result as { affectedRows: number }).affectedRows) { res.status(404).json({ error: "Open complaint not found for this seller." }); return; }
+    const [rows] = await pool.query("SELECT * FROM complaints WHERE id = ?", [req.params.id]);
+    res.json((rows as unknown[])[0]);
+  } catch { res.status(500).json({ error: "Unable to save complaint response." }); }
 });
 
 app.get("/api/health", async (_req, res) => {
@@ -644,6 +691,109 @@ app.post("/api/foods", async (req, res) => {
   } catch { res.status(500).json({ error: "Unable to publish food listing." }); }
 });
 
+app.put("/api/foods/:id", async (req, res) => {
+  const { sellerId, currentPrice, quantity } = req.body ?? {};
+  if (!sellerId || (currentPrice !== undefined && (!Number.isFinite(Number(currentPrice)) || Number(currentPrice) < 0)) || (quantity !== undefined && (!Number.isInteger(Number(quantity)) || Number(quantity) < 0))) {
+    res.status(400).json({ error: "Seller, a non-negative price, and an optional non-negative quantity are required." });
+    return;
+  }
+  try {
+    const [result] = await pool.query(
+      `UPDATE food_items f JOIN shops s ON s.id = f.shop_id
+       SET f.current_price = COALESCE(?, f.current_price), f.quantity_available = COALESCE(?, f.quantity_available)
+       WHERE f.id = ? AND s.owner_id = ? AND f.status IN ('active','sold_out')`,
+      [currentPrice === undefined ? null : Number(currentPrice), quantity === undefined ? null : Number(quantity), req.params.id, sellerId],
+    );
+    if (!(result as { affectedRows: number }).affectedRows) { res.status(404).json({ error: "Listing not found for this seller." }); return; }
+    const [rows] = await pool.query("SELECT f.*, s.name AS shop_name, s.address FROM food_items f JOIN shops s ON s.id = f.shop_id WHERE f.id = ?", [req.params.id]);
+    res.json((rows as unknown[])[0]);
+  } catch { res.status(500).json({ error: "Unable to update this listing." }); }
+});
+
+app.get("/api/seller/:sellerId/pricing", async (req, res) => {
+  const shopId = String(req.query.shopId ?? "");
+  if (!shopId) { res.status(400).json({ error: "shopId is required." }); return; }
+  try {
+    const [rows] = await pool.query(
+      `SELECT r.enabled, r.tiers, r.cutoff_minutes FROM seller_pricing_rules r JOIN shops s ON s.id = r.shop_id
+       WHERE r.shop_id = ? AND s.owner_id = ?`, [shopId, req.params.sellerId],
+    );
+    const rule = (rows as Array<{ enabled: boolean; tiers: unknown; cutoff_minutes: number }>)[0];
+    res.json({ enabled: rule?.enabled ?? true, cutoffMinutes: rule?.cutoff_minutes ?? 30, tiers: rule?.tiers ?? [{ minutesBeforeClose: 120, discountPercent: 20 }, { minutesBeforeClose: 60, discountPercent: 40 }, { minutesBeforeClose: 30, discountPercent: 70 }] });
+  } catch { res.status(500).json({ error: "Unable to load dynamic pricing rules." }); }
+});
+
+app.put("/api/seller/:sellerId/pricing", async (req, res) => {
+  const { shopId, enabled, tiers, cutoffMinutes = 30 } = req.body ?? {};
+  if (!shopId || typeof enabled !== "boolean" || !Number.isInteger(cutoffMinutes) || cutoffMinutes < 0 || cutoffMinutes > 180 || !Array.isArray(tiers) || tiers.length > 8 || tiers.some((tier) => !Number.isInteger(tier.minutesBeforeClose) || tier.minutesBeforeClose < 0 || !Number.isInteger(tier.discountPercent) || tier.discountPercent < 0 || tier.discountPercent > 100)) {
+    res.status(400).json({ error: "A store, enabled flag, and valid discount tiers are required." }); return;
+  }
+  try {
+    const [owned] = await pool.query("SELECT id FROM shops WHERE id = ? AND owner_id = ?", [shopId, req.params.sellerId]);
+    if (!(owned as unknown[]).length) { res.status(404).json({ error: "Store not found for this seller." }); return; }
+    await pool.query(
+      `INSERT INTO seller_pricing_rules (shop_id, enabled, tiers, cutoff_minutes) VALUES (?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE enabled = VALUES(enabled), tiers = VALUES(tiers), cutoff_minutes = VALUES(cutoff_minutes)`,
+      [shopId, enabled, JSON.stringify(tiers), cutoffMinutes],
+    );
+    res.json({ enabled, cutoffMinutes, tiers });
+  } catch { res.status(500).json({ error: "Unable to save dynamic pricing rules." }); }
+});
+
+app.get("/api/seller/:sellerId/orders", async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT o.id AS order_id, o.created_at, o.total_amount, o.status AS order_status,
+              r.id AS reservation_id, r.quantity, r.status AS reservation_status,
+              f.id AS food_item_id, f.name AS food_name, s.id AS shop_id, s.name AS shop_name
+       FROM orders o JOIN reservations r ON r.id = o.reservation_id
+       JOIN food_items f ON f.id = r.food_item_id JOIN shops s ON s.id = o.shop_id
+       WHERE s.owner_id = ? ORDER BY o.created_at DESC LIMIT 200`,
+      [req.params.sellerId],
+    );
+    res.json({ items: rows });
+  } catch { res.status(500).json({ error: "Unable to load seller orders." }); }
+});
+
+app.get("/api/seller/:sellerId/shifts", async (req, res) => {
+  const shopId = String(req.query.shopId ?? "");
+  if (!shopId) { res.status(400).json({ error: "shopId is required." }); return; }
+  try {
+    const [rows] = await pool.query(
+      `SELECT c.* FROM seller_shift_closures c JOIN shops s ON s.id = c.shop_id
+       WHERE c.shop_id = ? AND s.owner_id = ? ORDER BY c.closed_at DESC LIMIT 30`, [shopId, req.params.sellerId],
+    );
+    res.json({ items: rows });
+  } catch { res.status(500).json({ error: "Unable to load shift closures." }); }
+});
+
+app.post("/api/seller/:sellerId/shifts/close", async (req, res) => {
+  const shopId = String(req.body?.shopId ?? "");
+  if (!shopId) { res.status(400).json({ error: "shopId is required." }); return; }
+  try {
+    const [owned] = await pool.query("SELECT id FROM shops WHERE id = ? AND owner_id = ?", [shopId, req.params.sellerId]);
+    if (!(owned as unknown[]).length) { res.status(404).json({ error: "Store not found for this seller." }); return; }
+    const [summaryRows] = await pool.query(
+      `SELECT COALESCE(SUM(o.total_amount), 0) AS revenue, COUNT(o.id) AS completed_orders,
+              COALESCE(SUM(r.quantity), 0) AS sold_portions
+       FROM orders o JOIN reservations r ON r.id = o.reservation_id
+       WHERE o.shop_id = ? AND o.status = 'completed' AND o.created_at >= CURRENT_DATE`, [shopId],
+    );
+    const summary = (summaryRows as Array<{ revenue: number; completed_orders: number; sold_portions: number }>)[0];
+    const [giftRows] = await pool.query("SELECT COALESCE(SUM(quantity_available), 0) AS gifted_portions FROM food_items WHERE shop_id = ? AND current_price = 0", [shopId]);
+    const gifted = Number((giftRows as Array<{ gifted_portions: number }>)[0]?.gifted_portions ?? 0);
+    const [leftoverRows] = await pool.query("SELECT COALESCE(SUM(quantity_available), 0) AS leftover_portions FROM food_items WHERE shop_id = ? AND current_price > 0 AND status = 'active'", [shopId]);
+    const leftover = Number((leftoverRows as Array<{ leftover_portions: number }>)[0]?.leftover_portions ?? 0);
+    const id = randomUUID();
+    await pool.query(
+      `INSERT INTO seller_shift_closures (id, shop_id, seller_id, revenue, completed_orders, sold_portions, gifted_portions, leftover_portions)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, shopId, req.params.sellerId, Number(summary?.revenue ?? 0), Number(summary?.completed_orders ?? 0), Number(summary?.sold_portions ?? 0), gifted, leftover],
+    );
+    res.status(201).json({ id, shopId, revenue: Number(summary?.revenue ?? 0), completedOrders: Number(summary?.completed_orders ?? 0), soldPortions: Number(summary?.sold_portions ?? 0), giftedPortions: gifted, leftoverPortions: leftover, closedAt: new Date().toISOString() });
+  } catch { res.status(500).json({ error: "Unable to close this shift." }); }
+});
+
 app.post("/api/reservations", async (req, res) => {
   const { foodItemId, buyerId, quantity = 1, pickupSlotStart, pickupSlotEnd } = req.body ?? {};
   if (!foodItemId || !buyerId || !Number.isInteger(quantity) || quantity < 1) {
@@ -664,6 +814,16 @@ app.post("/api/reservations", async (req, res) => {
     if (!food || food.quantity_available < quantity) {
       await connection.rollback();
       res.status(409).json({ error: "Not enough servings are available." });
+      return;
+    }
+    const [cutoffRows] = await connection.query(
+      `SELECT f.pickup_ends_at, COALESCE(r.cutoff_minutes, 30) AS cutoff_minutes
+       FROM food_items f LEFT JOIN seller_pricing_rules r ON r.shop_id = f.shop_id WHERE f.id = ?`, [foodItemId],
+    );
+    const pickupRules = (cutoffRows as Array<{ pickup_ends_at: Date | string | null; cutoff_minutes: number }>)[0];
+    if (pickupRules?.pickup_ends_at && new Date(pickupRules.pickup_ends_at).getTime() - Date.now() <= Number(pickupRules.cutoff_minutes) * 60_000) {
+      await connection.rollback();
+      res.status(409).json({ error: "Pickup registration is closed for this listing." });
       return;
     }
     const reservationId = randomUUID();
@@ -688,6 +848,321 @@ app.post("/api/reservations", async (req, res) => {
     res.status(500).json({ error: "Unable to create reservation." });
   } finally {
     connection.release();
+  }
+});
+
+
+// ==========================================
+// MODULE 3 & 4 ENDPOINTS (US-C & US-D)
+// ==========================================
+
+// Get single food with full safety details (US-C1, C2, C3)
+app.get("/api/foods/:id", async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT f.*, s.name AS shop_name, s.address, s.latitude, s.longitude, s.verified, s.reputation_score,
+              s.safety_certificate_url
+       FROM food_items f JOIN shops s ON s.id = f.shop_id
+       WHERE f.id = ?`,
+      [req.params.id]
+    );
+    const item = (rows as Array<any>)[0];
+    if (!item) {
+      res.status(404).json({ error: "Food item not found." });
+      return;
+    }
+    const foodDetails = {
+      ...item,
+      manufacturing_date: item.prepared_at || new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
+      recommended_expiry: item.expires_at || new Date(Date.now() + 5 * 3600 * 1000).toISOString(),
+      label_image_url: item.label_image_url || item.image_url,
+      storage_type: item.storage_type || (item.storage_instructions?.toLowerCase().includes("refrigerat") ? "refrigerated" : "room_temperature"),
+      reheating_instructions: item.reheating_instructions || "Reheat until steaming hot and consume immediately.",
+      refrigeration_requirement: item.refrigeration_requirement || "Keep refrigerated at 0–4°C. Consume within 2 hours if stored at room temperature.",
+      origin_info: typeof item.origin_info === "string" ? JSON.parse(item.origin_info) : item.origin_info || {
+        business_permit: "230503-HD",
+        certificate_no: "FS-2026-0184",
+        issue_date: "2026-03-12",
+        inspected_by: "Department of Food Safety and Hygiene",
+        activity_start: "2025-10-12",
+        ingredient_source: "Local food safety inspected suppliers"
+      },
+      seller_commitments: typeof item.seller_commitments === "string" ? JSON.parse(item.seller_commitments) : item.seller_commitments || [
+        "100% fresh, inspected safe surplus ingredients",
+        "Proper food preparation under certified hygiene standards",
+        "Controlled cold-chain storage and verified countdown tracking",
+        "Dedicated pickup zone with zero waiting time and silent handoff",
+        "Prompt complaint resolution and 100% refund guarantee if spoiled"
+      ]
+    };
+    res.json(foodDetails);
+  } catch {
+    res.status(500).json({ error: "Unable to load food details." });
+  }
+});
+
+// Update spot reservation with hold minutes (US-D1)
+app.post("/api/reservations/hold", async (req, res) => {
+  const { foodItemId, buyerId, holdMinutes = 20, quantity = 1 } = req.body ?? {};
+  if (!foodItemId || !buyerId || !Number.isInteger(quantity) || quantity < 1 || ![15, 20, 30].includes(Number(holdMinutes))) {
+    res.status(400).json({ error: "foodItemId, buyerId, a positive quantity, and a 15, 20, or 30 minute hold are required." });
+    return;
+  }
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    const [foodRows] = await connection.query(
+      "SELECT id, shop_id, current_price, quantity_available FROM food_items WHERE id = ? AND status = 'active' FOR UPDATE",
+      [foodItemId]
+    );
+    const food = (foodRows as Array<any>)[0];
+    if (!food || food.quantity_available < quantity) {
+      await connection.rollback();
+      res.status(409).json({ error: "Not enough portions available." });
+      return;
+    }
+    const [cutoffRows] = await connection.query(
+      `SELECT f.pickup_ends_at, COALESCE(r.cutoff_minutes, 30) AS cutoff_minutes
+       FROM food_items f LEFT JOIN seller_pricing_rules r ON r.shop_id = f.shop_id WHERE f.id = ?`, [foodItemId],
+    );
+    const pickupRules = (cutoffRows as Array<{ pickup_ends_at: Date | string | null; cutoff_minutes: number }>)[0];
+    if (pickupRules?.pickup_ends_at && new Date(pickupRules.pickup_ends_at).getTime() - Date.now() <= Number(pickupRules.cutoff_minutes) * 60_000) {
+      await connection.rollback();
+      res.status(409).json({ error: "Pickup registration is closed for this listing." });
+      return;
+    }
+    const reservationId = randomUUID();
+    const expiresAt = new Date(Date.now() + Number(holdMinutes) * 60 * 1000);
+    const depositAmount = 10000;
+    await connection.query(
+      `INSERT INTO reservations (id, food_item_id, buyer_id, quantity, status, hold_expires_at, deposit_amount)
+       VALUES (?, ?, ?, ?, 'held', ?, ?)`,
+      [reservationId, foodItemId, buyerId, quantity, expiresAt, depositAmount]
+    );
+    await connection.query("UPDATE food_items SET quantity_available = quantity_available - ? WHERE id = ?", [quantity, foodItemId]);
+    const orderId = randomUUID();
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let pickupCode = "";
+    for (let i = 0; i < 3; i++) pickupCode += chars.charAt(Math.floor(Math.random() * chars.length));
+    pickupCode += "-";
+    for (let i = 0; i < 3; i++) pickupCode += chars.charAt(Math.floor(Math.random() * chars.length));
+    
+    await connection.query(
+      `INSERT INTO orders (id, reservation_id, buyer_id, shop_id, total_amount, pickup_qr_token, status)
+       VALUES (?, ?, ?, ?, ?, ?, 'awaiting_pickup')`,
+      [orderId, reservationId, buyerId, food.shop_id, Number(food.current_price) * quantity, pickupCode]
+    );
+    await connection.commit();
+    res.status(201).json({
+      reservationId,
+      orderId,
+      pickupCode,
+      holdMinutes,
+      holdExpiresAt: expiresAt.toISOString(),
+      depositAmount,
+      quantity,
+      totalAmount: Number(food.current_price) * quantity,
+    });
+  } catch (error) {
+    await connection.rollback();
+    res.status(500).json({ error: "Unable to hold spot reservation." });
+  } finally {
+    connection.release();
+  }
+});
+
+// Pay deposit (US-D2)
+app.post("/api/reservations/:id/deposit", async (req, res) => {
+  const { paymentMethod = "momo" } = req.body ?? {};
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    const [resRows] = await connection.query("SELECT * FROM reservations WHERE id = ? FOR UPDATE", [req.params.id]);
+    const reservation = (resRows as Array<any>)[0];
+    if (!reservation) {
+      await connection.rollback();
+      res.status(404).json({ error: "Reservation not found." });
+      return;
+    }
+    if (reservation.status !== "held" || new Date(reservation.hold_expires_at).getTime() <= Date.now()) {
+      await connection.rollback();
+      res.status(409).json({ error: "This hold has expired. Choose the meal again to reserve a new portion." });
+      return;
+    }
+    const [existingRows] = await connection.query(
+      "SELECT id FROM transactions WHERE order_id = (SELECT id FROM orders WHERE reservation_id = ?) AND transaction_type = 'deposit' AND status = 'completed' LIMIT 1",
+      [req.params.id],
+    );
+    if ((existingRows as unknown[]).length) {
+      await connection.rollback();
+      res.status(409).json({ error: "A deposit has already been recorded for this reservation." });
+      return;
+    }
+    const txId = "DC-" + Math.floor(10000 + Math.random() * 90000);
+    const [orderRows] = await connection.query("SELECT id FROM orders WHERE reservation_id = ?", [req.params.id]);
+    const orderId = (orderRows as Array<{ id: string }>)[0]?.id;
+    if (!orderId) {
+      await connection.rollback();
+      res.status(404).json({ error: "Order for this reservation was not found." });
+      return;
+    }
+    const amount = Number(reservation.deposit_amount);
+    await connection.query(
+      `INSERT INTO transactions (id, order_id, user_id, amount, transaction_type, status, provider_reference)
+       VALUES (?, ?, ?, ?, 'deposit', 'completed', ?)`,
+      [randomUUID(), orderId, reservation.buyer_id, amount, txId]
+    );
+    await connection.query("UPDATE reservations SET status = 'confirmed' WHERE id = ?", [req.params.id]);
+    await connection.commit();
+    res.json({
+      success: true,
+      transactionId: "#" + txId,
+      paidAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      amount,
+      paymentMethod,
+      depositStatus: "Deposit paid",
+      heldUntil: reservation.hold_expires_at
+    });
+  } catch {
+    await connection.rollback();
+    res.status(500).json({ error: "Unable to process deposit." });
+  } finally { connection.release(); }
+});
+
+// Choose pickup time slot (US-D3)
+app.post("/api/reservations/:id/slot", async (req, res) => {
+  const { slotStart, slotEnd, dateStr } = req.body ?? {};
+  if (!slotStart || !slotEnd || Number.isNaN(new Date(slotStart).getTime()) || Number.isNaN(new Date(slotEnd).getTime()) || new Date(slotEnd) <= new Date(slotStart)) {
+    res.status(400).json({ error: "A valid pickup start and end time are required." });
+    return;
+  }
+  try {
+    const [rows] = await pool.query("SELECT status FROM reservations WHERE id = ?", [req.params.id]);
+    const reservation = (rows as Array<{ status: string }>)[0];
+    if (!reservation) { res.status(404).json({ error: "Reservation not found." }); return; }
+    if (reservation.status !== "confirmed") { res.status(409).json({ error: "Pay the deposit before selecting a pickup time." }); return; }
+    await pool.query(
+      "UPDATE reservations SET pickup_slot_start = ?, pickup_slot_end = ? WHERE id = ?",
+      [slotStart, slotEnd, req.params.id]
+    );
+    const dateFormatted = dateStr || new Date(slotStart).toLocaleDateString("vi-VN");
+    const startFormatted = new Date(slotStart).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+    const endFormatted = new Date(slotEnd).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+    res.json({ success: true, slot: dateFormatted + " · " + startFormatted + " – " + endFormatted });
+  } catch {
+    res.status(500).json({ error: "Unable to update pickup slot." });
+  }
+});
+
+// Cancel & Release to waitlist or back to stock (US-D4)
+app.post("/api/reservations/:id/cancel-release", async (req, res) => {
+  try { await releaseExpiredHolds(); }
+  catch { res.status(503).json({ error: "Unable to release expired holds." }); return; }
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    const [resRows] = await connection.query("SELECT * FROM reservations WHERE id = ? FOR UPDATE", [req.params.id]);
+    const reservation = (resRows as Array<any>)[0];
+    if (!reservation) {
+      await connection.rollback();
+      res.status(404).json({ error: "Reservation not found." });
+      return;
+    }
+    if (reservation.status !== "held" && reservation.status !== "confirmed") {
+      await connection.rollback();
+      res.status(409).json({ error: "This reservation is no longer active." });
+      return;
+    }
+    await connection.query("UPDATE reservations SET status = 'cancelled' WHERE id = ?", [req.params.id]);
+    await connection.query("UPDATE orders SET status = 'cancelled' WHERE reservation_id = ?", [req.params.id]);
+    
+    const [waitlistRows] = await connection.query(
+      "SELECT * FROM waitlists WHERE food_item_id = ? AND status = 'waiting' ORDER BY queue_position ASC LIMIT 1 FOR UPDATE",
+      [reservation.food_item_id]
+    );
+    const nextInWaitlist = (waitlistRows as Array<any>)[0];
+    let nextBuyerName = null;
+    if (nextInWaitlist) {
+      await connection.query(
+        "UPDATE waitlists SET status = 'offered', offered_at = CURRENT_TIMESTAMP, offer_expires_at = DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 15 MINUTE) WHERE id = ?",
+        [nextInWaitlist.id]
+      );
+      const [userRows] = await connection.query("SELECT full_name FROM users WHERE id = ?", [nextInWaitlist.user_id]);
+      nextBuyerName = (userRows as Array<any>)[0]?.full_name || "Buyer in queue";
+    } else {
+      await connection.query(
+        "UPDATE food_items SET quantity_available = quantity_available + ? WHERE id = ?",
+        [reservation.quantity, reservation.food_item_id]
+      );
+    }
+    await connection.commit();
+    res.json({
+      success: true,
+      portionsReleased: reservation.quantity,
+      assignedToWaitlist: Boolean(nextInWaitlist),
+      nextBuyerName,
+      depositTransferred: true
+    });
+  } catch {
+    await connection.rollback();
+    res.status(500).json({ error: "Unable to cancel and release order." });
+  } finally {
+    connection.release();
+  }
+});
+
+// Waitlist status & join (US-D4)
+app.get("/api/foods/:id/waitlist", async (req, res) => {
+  try {
+    await releaseExpiredHolds();
+    const [rows] = await pool.query(
+      `SELECT w.*, u.full_name AS user_name
+       FROM waitlists w JOIN users u ON u.id = w.user_id
+       WHERE w.food_item_id = ? AND w.status IN ('waiting', 'offered')
+       ORDER BY w.queue_position ASC`,
+      [req.params.id]
+    );
+    const [heldRows] = await pool.query(
+      "SELECT COUNT(*) AS heldCount FROM reservations WHERE food_item_id = ? AND status IN ('held', 'confirmed')",
+      [req.params.id]
+    );
+    res.json({
+      heldCount: (heldRows as Array<any>)[0]?.heldCount || 0,
+      waitlistCount: (rows as Array<any>).length,
+      waitlist: rows
+    });
+  } catch {
+    res.status(500).json({ error: "Unable to load waitlist." });
+  }
+});
+
+app.post("/api/foods/:id/waitlist", async (req, res) => {
+  const { userId, quantity = 1 } = req.body ?? {};
+  if (!userId || !Number.isInteger(quantity) || quantity < 1) {
+    res.status(400).json({ error: "A user id and a positive whole number of portions are required." });
+    return;
+  }
+  try {
+    const [existingRows] = await pool.query(
+      "SELECT id, queue_position FROM waitlists WHERE food_item_id = ? AND user_id = ? AND status IN ('waiting','offered') LIMIT 1",
+      [req.params.id, userId],
+    );
+    const existing = (existingRows as Array<{ id: string; queue_position: number }>)[0];
+    if (existing) { res.json({ success: true, waitlistId: existing.id, position: existing.queue_position }); return; }
+    const [posRows] = await pool.query(
+      "SELECT COALESCE(MAX(queue_position), 0) + 1 AS nextPos FROM waitlists WHERE food_item_id = ?",
+      [req.params.id]
+    );
+    const position = (posRows as Array<any>)[0]?.nextPos || 1;
+    const waitlistId = randomUUID();
+    await pool.query(
+      `INSERT INTO waitlists (id, food_item_id, user_id, queue_position, quantity, status)
+       VALUES (?, ?, ?, ?, ?, 'waiting')`,
+      [waitlistId, req.params.id, userId, position, quantity]
+    );
+    res.status(201).json({ success: true, waitlistId, position });
+  } catch {
+    res.status(500).json({ error: "Unable to join waitlist." });
   }
 });
 

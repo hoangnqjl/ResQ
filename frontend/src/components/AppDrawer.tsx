@@ -1,252 +1,82 @@
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, fontSizes } from "../theme";
+import { capybaraProfilePhoto, resqFoodLogoPhoto } from "../data/designPhotos";
 
 type Item = [string, string, string];
 const groups: [string, Item[]][] = [
-  [
-    "PRIMARY NAVIGATION",
-    [
-      ["home-outline", "Home", "home"],
-      ["grid-outline", "Explore", "explore"],
-      ["map-outline", "Food Heatmap", "maps"],
-      ["bookmark-outline", "Saved Items", "saved"],
-      ["receipt-outline", "My Orders", "orders"],
-      ["person-outline", "Hồ sơ người mua", "buyerProfile"],
-      ["storefront-outline", "Hồ sơ người bán", "sellerProfile"],
-      ["create-outline", "Chỉnh sửa hồ sơ", "editProfile"],
-      ["location-outline", "Vị trí & Huy hiệu uy tín", "storeLocation"],
-      ["document-text-outline", "Giấy chứng nhận ATVSTP", "certificate"],
-    ],
-  ],
-  [
-    "COMMUNITY & SPECIALS",
-    [
-      ["gift-outline", "0đ Sharing Corner", "sharing"],
-      ["pricetag-outline", "Budget Mystery Bags", "budgetBags"],
-      ["map-outline", "0đ Sharing Station Map", "stationMap"],
-      ["storefront-outline", "Shop Detail", "shopDetail"],
-      ["notifications-outline", "Drop Alert Feed", "myDropAlert"],
-      ["options-outline", "Drop Alert Center", "dropAlert"],
-    ],
-  ],
-  [
-    "SAFETY & POLICIES",
-    [
-      ["shield-checkmark-outline", "Food Safety & Storage", "safety"],
-      ["document-text-outline", "Complaint & Refund Policy", "complaints"],
-    ],
-  ],
-  [
-    "PREFERENCES",
-    [
-      ["alert-circle-outline", "Dị ứng thực phẩm", "foodAllergies"],
-      ["eye-off-outline", "Chế độ ẩn danh", "privacy"],
-      ["eye-outline", "Xem trước hồ sơ ẩn danh", "incognitoPreview"],
-      ["restaurant-outline", "Thiết lập chế độ ăn", "diet"],
-      ["radio-outline", "Cài đặt bán kính thông báo", "notificationRadius"],
-      ["leaf-outline", "Dietary & Allergy Filters", "buyerSetup"],
-      ["help-circle-outline", "Help & Support Center", "help"],
-    ],
-  ],
+  ["PRIMARY NAVIGATION", [["home-outline", "Home", "home"], ["grid-outline", "Explore", "explore"], ["map-outline", "Food Heatmap", "maps"], ["bookmark-outline", "Saved Items", "saved"], ["receipt-outline", "My Orders", "orders"]]],
+  ["COMMUNITY & SPECIALS", [["gift-outline", "0₫ Sharing Corner", "sharing"], ["notifications-outline", "Secret Box", "budgetBags"]]],
+  ["SELLER & IMPACT", [["add-circle-outline", "Seller Studio · M6", "sellerStudio"], ["bar-chart-outline", "Shift & Impact · M7", "shiftImpact"]]],
+  ["SAFETY & POLICIES", [["shield-checkmark-outline", "Food Safety & Storage", "safety"], ["document-text-outline", "Complaint & Refund Policy", "complaints"]]],
+  ["TRUST & SAFETY", [["shield-outline", "Trust & Complaints · M8", "trustComplaints"]]],
+  ["PREFERENCES", [["leaf-outline", "Dietary & Allergy Filters", "buyerSetup"], ["lock-closed-outline", "Incognito & Privacy", "privacy"], ["help-circle-outline", "Help & Support Center", "help"]]],
 ];
 
-export function AppDrawer({
-  visible,
-  name,
-  role = "buyer",
-  onClose,
-  onNavigate,
-  onMerchant,
-  onLogout,
-}: {
-  visible: boolean;
-  name: string;
-  role?: "buyer" | "seller" | "admin";
-  onClose: () => void;
-  onNavigate: (route: string) => void;
-  onMerchant: () => void;
-  onLogout: () => void;
+export function AppDrawer({ visible, name, role = "buyer", activeTab = "Home", onClose, onNavigate, onMerchant, onOpenSettings, onSellerDashboard, onLogout }: {
+  visible: boolean; name: string; role?: "buyer" | "seller" | "admin"; activeTab?: string;
+  onClose: () => void; onNavigate: (route: string) => void; onMerchant: () => void; onOpenSettings?: () => void; onSellerDashboard?: () => void; onLogout: () => void;
 }) {
-  return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <View style={s.scrim}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Close menu" />
-        <View style={s.drawer}>
-          <View style={s.topLine}>
-            <View style={s.brandLockup}>
-              <View style={s.logoDot}>
-                <Text style={s.logoMark}>R</Text>
-              </View>
-              <Text style={s.brandName}>ResQ Food</Text>
-            </View>
-            <Pressable onPress={onClose} style={s.close}>
-              <Text style={s.closeText}>×</Text>
-            </Pressable>
-          </View>
-          <Pressable
-            onPress={() => onNavigate(role === "seller" ? "sellerProfile" : "buyerProfile")}
-            style={s.profileRow}
-          >
-            <View style={s.photo}>
-              <Text style={s.photoText}>{(name || "R").slice(0, 1).toUpperCase()}</Text>
-            </View>
-            <View style={s.profileText}>
-              <Text style={s.profileName}>{name || "ResQ member"}</Text>
-              <Text style={s.profileHandle}>
-                {role === "seller" ? "Store Owner · Tap to view" : "@resqmember · Tap to view"}
-              </Text>
-            </View>
-          </Pressable>
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.menuScroll}>
-            {groups.map(([heading, items]) => (
-              <View key={heading} style={s.group}>
-                <Text style={s.groupHeading}>{heading}</Text>
-                {items.map(([icon, label, route]) => (
-                  <Pressable key={route} onPress={() => onNavigate(route)} style={s.menuItem}>
-                    <Ionicons
-                      name={icon as keyof typeof Ionicons.glyphMap}
-                      size={17}
-                      color={colors.ink}
-                      style={s.menuIcon}
-                    />
-                    <Text style={s.menuLabel}>{label}</Text>
-                  </Pressable>
-                ))}
-              </View>
-            ))}
-            <Pressable onPress={onMerchant} style={s.merchant}>
-              <Ionicons
-                name={role === "seller" ? "person-outline" : "storefront-outline"}
-                size={17}
-                color={colors.white}
-              />
-              <Text style={s.merchantText}>
-                {role === "seller" ? "Switch to Buyer Mode" : "Switch to Merchant Mode"}
-              </Text>
-            </Pressable>
-            <View style={s.footer}>
-              <Pressable onPress={() => onNavigate("settings")}>
-                <Text style={s.footerLink}>Settings</Text>
-              </Pressable>
-              <Pressable onPress={onLogout}>
-                <Text style={s.footerLinkStrong}>Log out</Text>
-              </Pressable>
-            </View>
-          </ScrollView>
+  return <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <View style={s.scrim}>
+      <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Close menu" />
+      <View style={s.drawer}>
+        <View style={s.brandRow}>
+          <Image source={resqFoodLogoPhoto} style={s.brandLogo} />
+          <Text style={s.brand}>ResQ Food</Text>
+          <Pressable onPress={onClose} style={s.close}><Ionicons name="close" size={21} color={colors.ink} /></Pressable>
         </View>
+        <Pressable onPress={() => onNavigate(role === "seller" ? "sellerProfile" : "buyerProfile")} style={s.profileRow}>
+          <Image source={capybaraProfilePhoto} style={s.avatar} />
+          <View style={s.profileCopy}><Text numberOfLines={1} style={s.profileName}>{name || "ResQ member"}</Text><Text style={s.handle}>{role === "seller" ? "Store Owner · Tap to view" : "@Capibaras"}</Text></View>
+        </Pressable>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.menuScroll}>
+          {groups.map(([heading, items], groupIndex) => <View key={heading} style={s.group}>
+            <Text style={s.groupHeading}>{heading}</Text>
+          {items.map(([icon, label, route], index) => {
+              const active = groupIndex === 0 && ["Home", "Explore", "Maps", "Saved"].indexOf(activeTab) === index;
+              return <Pressable key={route} onPress={() => onNavigate(route)} style={[s.menuItem, active && s.activeItem]}>
+                <Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={18} color={active ? colors.primary : colors.muted} style={s.itemIcon} />
+                <Text style={[s.menuLabel, active && s.activeLabel]}>{label}</Text>
+              </Pressable>;
+            })}
+          </View>)}
+          {role === "seller" && <Pressable onPress={onSellerDashboard} style={s.menuItem}>
+            <Ionicons name="storefront-outline" size={18} color={colors.muted} style={s.itemIcon} />
+            <Text style={s.menuLabel}>Seller Dashboard</Text>
+          </Pressable>}
+          {role !== "seller" && <Pressable onPress={onMerchant} style={s.merchant}>
+            <Ionicons name="storefront-outline" size={17} color={colors.white} />
+            <Text style={s.merchantText}>Switch to Merchant Mode</Text>
+          </Pressable>}
+          <View style={s.footer}>
+            <Pressable onPress={onOpenSettings ?? (() => onNavigate("accountSettings"))}><Text style={s.footerLink}>Settings</Text></Pressable>
+            <Pressable onPress={onLogout}><Text style={s.logout}>Log out</Text></Pressable>
+          </View>
+        </ScrollView>
       </View>
-    </Modal>
-  );
+    </View>
+  </Modal>;
 }
 
 const s = StyleSheet.create({
-  scrim: {
-    flex: 1,
-    backgroundColor: "rgba(25,34,28,0.28)",
-    flexDirection: "row",
-    alignItems: "stretch",
-  },
-  drawer: {
-    width: 300,
-    maxWidth: "84%",
-    marginVertical: 24,
-    marginLeft: 14,
-    backgroundColor: colors.white,
-    borderRadius: 20,
-    paddingTop: 16,
-    paddingHorizontal: 16,
-    paddingBottom: 14,
-    elevation: 12,
-  },
-  topLine: {
-    height: 38,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 2,
-  },
-  brandLockup: { flexDirection: "row", alignItems: "center", gap: 8 },
-  logoDot: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "#e8f1e7",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  logoMark: { color: colors.primary, fontSize: fontSizes.bodyLarge, fontWeight: "900" },
-  brandName: { color: colors.ink, fontSize: fontSizes.bodyLarge, fontWeight: "800" },
-  close: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: colors.pale,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  closeText: { color: colors.ink, fontSize: fontSizes.title, lineHeight: 22 },
-  profileRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginTop: 12,
-    marginBottom: 16,
-  },
-  photo: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#dce9db",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  photoText: { color: colors.primary, fontSize: fontSizes.title, fontWeight: "900" },
-  profileText: { gap: 2 },
-  profileName: { color: colors.ink, fontSize: fontSizes.bodyLarge, fontWeight: "800" },
-  profileHandle: { color: colors.muted, fontSize: fontSizes.caption },
-  menuScroll: { paddingBottom: 10 },
-  group: { marginBottom: 14 },
-  groupHeading: {
-    color: "#748278",
-    fontSize: fontSizes.micro,
-    letterSpacing: 0.8,
-    fontWeight: "800",
-    marginBottom: 6,
-    marginLeft: 4,
-  },
-  menuItem: {
-    height: 36,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingHorizontal: 8,
-    borderRadius: 12,
-  },
-  menuIcon: { width: 18, color: colors.ink, textAlign: "center" },
-  menuLabel: { color: "#304538", fontSize: fontSizes.bodySmall, fontWeight: "500" },
-  merchant: {
-    minHeight: 42,
-    backgroundColor: colors.primary,
-    borderRadius: 21,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    marginTop: 8,
-  },
-  merchantText: { color: colors.white, fontSize: fontSizes.bodySmall, fontWeight: "800" },
-  footer: {
-    marginTop: 14,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 4,
-  },
-  footerLink: { color: colors.muted, fontSize: fontSizes.caption },
-  footerLinkStrong: {
-    color: colors.primary,
-    fontSize: fontSizes.caption,
-    fontWeight: "800",
-    textDecorationLine: "underline",
-  },
+  scrim: { flex: 1, flexDirection: "row", backgroundColor: "rgba(0,0,0,0.32)" },
+  drawer: { width: 335, maxWidth: "88%", marginTop: 59, backgroundColor: colors.white, borderTopRightRadius: 25, borderBottomRightRadius: 25, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 12, elevation: 12 },
+  brandRow: { height: 46, flexDirection: "row", alignItems: "center", gap: 8 },
+  brandLogo: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.pale },
+  brand: { flex: 1, color: colors.ink, fontSize: fontSizes.bodyLarge, fontWeight: "600" },
+  close: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.pale, alignItems: "center", justifyContent: "center" },
+  profileRow: { flexDirection: "row", alignItems: "center", gap: 12, height: 66, marginTop: 2, marginBottom: 10 },
+  avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: "#e4eee3" },
+  profileCopy: { flex: 1, gap: 2 }, profileName: { color: colors.ink, fontSize: fontSizes.subtitle, fontWeight: "600" },
+  handle: { color: colors.ink, fontSize: fontSizes.caption, letterSpacing: 0.2 },
+  menuScroll: { paddingBottom: 4 }, group: { marginBottom: 8 },
+  groupHeading: { color: colors.muted, fontSize: fontSizes.micro, letterSpacing: 0.8, fontWeight: "600", marginBottom: 4, marginLeft: 4 },
+  menuItem: { minHeight: 34, flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 8, borderRadius: 18 },
+  activeItem: { backgroundColor: colors.pale }, itemIcon: { width: 18, textAlign: "center" },
+  menuLabel: { color: colors.ink, fontSize: fontSizes.bodySmall, fontWeight: "400" }, activeLabel: { fontWeight: "700" },
+  merchant: { height: 44, backgroundColor: colors.primary, borderRadius: 24, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 6 },
+  merchantText: { color: colors.white, fontSize: fontSizes.bodySmall, fontWeight: "600" },
+  footer: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 4, marginTop: 10 },
+  footerLink: { color: colors.muted, fontSize: fontSizes.caption, fontWeight: "600" }, logout: { color: colors.ink, fontSize: fontSizes.caption, fontWeight: "600", textDecorationLine: "underline" },
 });

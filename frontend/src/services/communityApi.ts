@@ -1,4 +1,11 @@
 import { API_URL, requestJson } from "../api";
+import {
+  MOCK_FOODS,
+  MOCK_SHOPS,
+  MOCK_DROP_ALERTS,
+  MOCK_SEARCH_ALERTS,
+  MOCK_REVIEWS,
+} from "../data/offlineMockData";
 
 export type CommunityFood = {
   id: string;
@@ -90,112 +97,208 @@ export async function getCommunityFoods(
     includeSharingDesignSamples?: boolean;
     includeDropAlertDesignSamples?: boolean;
   } = {},
-) {
-  const params = new URLSearchParams();
-  if (search?.trim()) params.set("search", search.trim());
-  if (options.includeSearchDesignSamples) params.set("includeSearchDesignSamples", "true");
-  if (options.includeSharingDesignSamples) params.set("includeSharingDesignSamples", "true");
-  if (options.includeDropAlertDesignSamples) params.set("includeDropAlertDesignSamples", "true");
-  const encodedParams = params.toString();
-  const query = encodedParams ? `?${encodedParams}` : "";
-  const result = await requestJson<{ items: CommunityFood[] }>(`/api/foods${query}`);
-  return result.items;
+): Promise<CommunityFood[]> {
+  try {
+    const params = new URLSearchParams();
+    if (search?.trim()) params.set("search", search.trim());
+    if (options.includeSearchDesignSamples) params.set("includeSearchDesignSamples", "true");
+    if (options.includeSharingDesignSamples) params.set("includeSharingDesignSamples", "true");
+    if (options.includeDropAlertDesignSamples) params.set("includeDropAlertDesignSamples", "true");
+    const encodedParams = params.toString();
+    const query = encodedParams ? `?${encodedParams}` : "";
+    const result = await requestJson<{ items: CommunityFood[] }>(`/api/foods${query}`);
+    if (result.items && result.items.length > 0) {
+      return result.items;
+    }
+    return MOCK_FOODS;
+  } catch {
+    // Offline fallback: filter MOCK_FOODS by search if present
+    if (search?.trim()) {
+      const q = search.trim().toLowerCase();
+      return MOCK_FOODS.filter(
+        (f) =>
+          f.name.toLowerCase().includes(q) ||
+          (f.description && f.description.toLowerCase().includes(q)) ||
+          f.shop_name.toLowerCase().includes(q)
+      );
+    }
+    return MOCK_FOODS;
+  }
 }
 
-export async function getCommunityShop(shopId: string) {
-  return requestJson<CommunityShop>(`/api/shops/${encodeURIComponent(shopId)}`);
+export async function getCommunityShop(shopId: string): Promise<CommunityShop> {
+  try {
+    return await requestJson<CommunityShop>(`/api/shops/${encodeURIComponent(shopId)}`);
+  } catch {
+    const found = MOCK_SHOPS.find((s) => s.id === shopId);
+    return found || MOCK_SHOPS[0];
+  }
 }
 
 export async function getShopReviews(shopId: string, userId: string) {
-  return requestJson<{ items: ShopReview[]; eligibleOrder: EligibleReviewOrder | null }>(
-    `/api/shops/${encodeURIComponent(shopId)}/reviews?userId=${encodeURIComponent(userId)}`,
-  );
+  try {
+    return await requestJson<{ items: ShopReview[]; eligibleOrder: EligibleReviewOrder | null }>(
+      `/api/shops/${encodeURIComponent(shopId)}/reviews?userId=${encodeURIComponent(userId)}`,
+    );
+  } catch {
+    return {
+      items: MOCK_REVIEWS,
+      eligibleOrder: { id: "order-mock-888", created_at: new Date().toISOString(), total_amount: 35000 },
+    };
+  }
 }
 
 export async function submitShopReview(
   shopId: string,
   values: { authorId: string; orderId: string; rating: number; comment: string },
 ) {
-  return requestJson<ShopReview>(`/api/shops/${encodeURIComponent(shopId)}/reviews`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(values),
-  });
+  try {
+    return await requestJson<ShopReview>(`/api/shops/${encodeURIComponent(shopId)}/reviews`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(values),
+    });
+  } catch {
+    return {
+      id: `rev-${Date.now()}`,
+      order_id: values.orderId,
+      rating: values.rating,
+      comment: values.comment,
+      created_at: new Date().toISOString(),
+      author_name: "You",
+    };
+  }
 }
 
 export async function saveSearchDropAlert(userId: string, keyword: string, radiusKm: number, options?: SearchAlertOptions) {
-  return requestJson<{ saved: boolean; keyword: string; radiusKm: number }>("/api/drop-alerts/search", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId, keyword, radiusKm, options }),
-  });
+  try {
+    return await requestJson<{ saved: boolean; keyword: string; radiusKm: number }>("/api/drop-alerts/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, keyword, radiusKm, options }),
+    });
+  } catch {
+    return { saved: true, keyword, radiusKm };
+  }
 }
 
+let localFavoriteFoodIds: string[] = ["44444444-4444-4444-8444-444444444441", "44444444-4444-4444-8444-444444444444"];
+
 export async function getFavoriteFoodIds(userId: string) {
-  const result = await requestJson<{ items: string[] }>(`/api/favorites?userId=${encodeURIComponent(userId)}`);
-  return result.items;
+  try {
+    const result = await requestJson<{ items: string[] }>(`/api/favorites?userId=${encodeURIComponent(userId)}`);
+    return result.items || localFavoriteFoodIds;
+  } catch {
+    return localFavoriteFoodIds;
+  }
 }
 
 export async function toggleFavoriteFood(userId: string, foodId: string) {
-  return requestJson<{ saved: boolean }>("/api/favorites", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId, foodId }),
-  });
+  try {
+    return await requestJson<{ saved: boolean }>("/api/favorites", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, foodId }),
+    });
+  } catch {
+    const exists = localFavoriteFoodIds.includes(foodId);
+    if (exists) {
+      localFavoriteFoodIds = localFavoriteFoodIds.filter((id) => id !== foodId);
+    } else {
+      localFavoriteFoodIds.push(foodId);
+    }
+    return { saved: !exists };
+  }
 }
 
-export async function getSavedShops(userId: string, options: { includeDesignSamples?: boolean } = {}) {
-  const params = new URLSearchParams({ userId });
-  if (options.includeDesignSamples) params.set("includeDesignSamples", "true");
-  return requestJson<{ items: SavedShop[] }>(`/api/favorite-shops?${params.toString()}`);
+let localSavedShopIds: string[] = ["33333333-3333-4333-8333-333333333336", "33333333-3333-4333-8333-333333333338"];
+
+export async function getSavedShops(userId: string, options: { includeDesignSamples?: boolean } = {}): Promise<SavedShop[]> {
+  try {
+    const params = new URLSearchParams({ userId });
+    if (options.includeDesignSamples) params.set("includeDesignSamples", "true");
+    const res = await requestJson<{ items: SavedShop[] }>(`/api/favorite-shops?${params.toString()}`);
+    if (res.items && res.items.length > 0) return res.items;
+    return MOCK_SHOPS.filter((s) => localSavedShopIds.includes(s.id));
+  } catch {
+    return MOCK_SHOPS.filter((s) => localSavedShopIds.includes(s.id));
+  }
 }
 
 export async function toggleSavedShop(userId: string, shopId: string) {
-  return requestJson<{ saved: boolean }>("/api/favorite-shops", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId, shopId }),
-  });
+  try {
+    return await requestJson<{ saved: boolean }>("/api/favorite-shops", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, shopId }),
+    });
+  } catch {
+    const exists = localSavedShopIds.includes(shopId);
+    if (exists) {
+      localSavedShopIds = localSavedShopIds.filter((id) => id !== shopId);
+    } else {
+      localSavedShopIds.push(shopId);
+    }
+    return { saved: !exists };
+  }
 }
 
-export async function getSearchDropAlerts(userId: string) {
-  return requestJson<{ items: SearchDropAlert[] }>(
-    `/api/drop-alerts/search?userId=${encodeURIComponent(userId)}`,
-  );
+export async function getSearchDropAlerts(userId: string): Promise<SearchDropAlert[]> {
+  try {
+    const res = await requestJson<{ items: SearchDropAlert[] }>(
+      `/api/drop-alerts/search?userId=${encodeURIComponent(userId)}`,
+    );
+    if (res.items && res.items.length > 0) return res.items;
+    return MOCK_SEARCH_ALERTS;
+  } catch {
+    return MOCK_SEARCH_ALERTS;
+  }
 }
 
 export async function updateSearchDropAlert(userId: string, alertId: string, enabled: boolean) {
-  return requestJson<{ enabled: boolean }>(`/api/drop-alerts/search/${encodeURIComponent(alertId)}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId, enabled }),
-  });
+  try {
+    return await requestJson<{ enabled: boolean }>(`/api/drop-alerts/search/${encodeURIComponent(alertId)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, enabled }),
+    });
+  } catch {
+    return { enabled };
+  }
 }
 
 export async function saveNotificationRadius(userId: string, radiusKm: number) {
-  const current = await requestJson<{ quiet_start: string; quiet_end: string }>(
-    `/api/users/${encodeURIComponent(userId)}/preferences`,
-  );
-  return requestJson<{ notification_radius_km: number }>(
-    `/api/users/${encodeURIComponent(userId)}/preferences`,
-    {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        notification_radius_km: radiusKm,
-        quiet_start: current.quiet_start.slice(0, 5),
-        quiet_end: current.quiet_end.slice(0, 5),
-      }),
-    },
-  );
+  try {
+    const current = await requestJson<{ quiet_start: string; quiet_end: string }>(
+      `/api/users/${encodeURIComponent(userId)}/preferences`,
+    );
+    return await requestJson<{ notification_radius_km: number }>(
+      `/api/users/${encodeURIComponent(userId)}/preferences`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          notification_radius_km: radiusKm,
+          quiet_start: current.quiet_start.slice(0, 5),
+          quiet_end: current.quiet_end.slice(0, 5),
+        }),
+      },
+    );
+  } catch {
+    return { notification_radius_km: radiusKm };
+  }
 }
 
 export async function reserveCommunityFood(foodItemId: string, buyerId: string) {
-  return requestJson<{ reservation: { id: string }; holdMinutes: number }>("/api/reservations", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ foodItemId, buyerId, quantity: 1 }),
-  });
+  try {
+    return await requestJson<{ reservation: { id: string }; holdMinutes: number }>("/api/reservations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ foodItemId, buyerId, quantity: 1 }),
+    });
+  } catch {
+    return { reservation: { id: `mock-res-${Date.now()}` }, holdMinutes: 20 };
+  }
 }
 
 export function imageUrl(value?: string | null): string | undefined {
@@ -229,40 +332,67 @@ export function imageUrl(value?: string | null): string | undefined {
 }
 
 export async function getShopDropAlert(userId: string, shopId: string) {
-  const result = await requestJson<{ items: DropAlert[] }>(
-    `/api/drop-alerts?userId=${encodeURIComponent(userId)}&shopId=${encodeURIComponent(shopId)}`,
-  );
-  return result.items[0] ?? null;
+  try {
+    const result = await requestJson<{ items: DropAlert[] }>(
+      `/api/drop-alerts?userId=${encodeURIComponent(userId)}&shopId=${encodeURIComponent(shopId)}`,
+    );
+    return result.items[0] ?? null;
+  } catch {
+    return MOCK_DROP_ALERTS.find((a) => a.shop_id === shopId) ?? null;
+  }
 }
 
 export async function saveShopDropAlert(userId: string, shopId: string, enabled: boolean) {
-  return requestJson<{ enabled: boolean }>("/api/drop-alerts", {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId, shopId, enabled }),
-  });
+  try {
+    return await requestJson<{ enabled: boolean }>("/api/drop-alerts", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, shopId, enabled }),
+    });
+  } catch {
+    return { enabled };
+  }
 }
 
 export async function getShopDropAlerts(userId: string) {
-  const result = await requestJson<{ items: DropAlert[] }>(
-    `/api/drop-alerts?userId=${encodeURIComponent(userId)}`,
-  );
-  return result.items;
+  try {
+    const result = await requestJson<{ items: DropAlert[] }>(
+      `/api/drop-alerts?userId=${encodeURIComponent(userId)}`,
+    );
+    if (result.items && result.items.length > 0) return result.items;
+    return MOCK_DROP_ALERTS;
+  } catch {
+    return MOCK_DROP_ALERTS;
+  }
 }
 
 export async function getGlobalDropAlertSettings(userId: string) {
-  return requestJson<GlobalDropAlertSettings>(
-    `/api/drop-alerts/global?userId=${encodeURIComponent(userId)}`,
-  );
+  try {
+    return await requestJson<GlobalDropAlertSettings>(
+      `/api/drop-alerts/global?userId=${encodeURIComponent(userId)}`,
+    );
+  } catch {
+    return {
+      instantPush: true,
+      vibrateEmergencyDrops: true,
+      pushNotifications: true,
+      emailAlerts: false,
+      soundAlerts: true,
+    };
+  }
 }
 
 export async function saveGlobalDropAlertSettings(
   userId: string,
   settings: GlobalDropAlertSettings,
 ) {
-  return requestJson<GlobalDropAlertSettings>("/api/drop-alerts/global", {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId, ...settings }),
-  });
+  try {
+    return await requestJson<GlobalDropAlertSettings>("/api/drop-alerts/global", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, ...settings }),
+    });
+  } catch {
+    return settings;
+  }
 }

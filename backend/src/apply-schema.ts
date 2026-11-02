@@ -41,6 +41,28 @@ try {
       throw error;
     }
   }
+
+  // Keep existing ResQ installations compatible with the additive schema updates.
+  const [foodColumns] = await pool.query(
+    `SELECT COLUMN_NAME FROM information_schema.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'food_items'`,
+  );
+  const existingFoodColumns = new Set(
+    (foodColumns as Array<{ COLUMN_NAME: string }>).map((column) => column.COLUMN_NAME),
+  );
+  const foodMigrations: Array<[string, string]> = [
+    ["storage_type", "ENUM('refrigerated','room_temperature','freezer') NOT NULL DEFAULT 'room_temperature'"],
+    ["label_image_url", "TEXT NULL"],
+    ["reheating_instructions", "TEXT NULL"],
+    ["refrigeration_requirement", "TEXT NULL"],
+    ["origin_info", "JSON NULL"],
+    ["seller_commitments", "JSON NULL"],
+  ];
+  for (const [column, definition] of foodMigrations) {
+    if (!existingFoodColumns.has(column)) {
+      await pool.query(`ALTER TABLE food_items ADD COLUMN ${column} ${definition}`);
+    }
+  }
   console.log("MySQL database and ResQ schema are ready.");
 } finally {
   await pool.end();

@@ -27,39 +27,87 @@ import { API_URL, requestJson } from "./src/api";
 import { colors, fontSizes } from "./src/theme";
 
 // Screens
-import HomeScreen, { type Food } from "./src/screens/HomeScreen";
-import ExploreScreen from "./src/screens/ExploreScreen";
-import HeatmapScreen from "./src/screens/HeatmapScreen";
-import SavedScreen from "./src/screens/SavedScreen";
-import BuyerProfileScreen from "./src/screens/BuyerProfileScreen";
-import SellerProfileScreen from "./src/screens/SellerProfileScreen";
-import EditProfileScreen from "./src/screens/EditProfileScreen";
-import IncognitoModeScreen from "./src/screens/IncognitoModeScreen";
-import AnonymousProfilePreviewScreen from "./src/screens/AnonymousProfilePreviewScreen";
-import FoodAllergiesScreen from "./src/screens/FoodAllergiesScreen";
-import DietScreen from "./src/screens/DietScreen";
-import NotificationRadiusScreen from "./src/screens/NotificationRadiusScreen";
-import SharingCornerScreen from "./src/screens/SharingCornerScreen";
-import SharingStationMapScreen from "./src/screens/SharingStationMapScreen";
-import BudgetMysteryBagsScreen from "./src/screens/BudgetMysteryBagsScreen";
-import MysteryBagGuideScreen from "./src/screens/MysteryBagGuideScreen";
-import ShopDetailScreen from "./src/screens/ShopDetailScreen";
-import ShopReviewsScreen from "./src/screens/ShopReviewsScreen";
-import FoodShopListScreen from "./src/screens/FoodShopListScreen";
-import DropAlertCenterScreen from "./src/screens/DropAlertCenterScreen";
-import MyDropAlertScreen from "./src/screens/MyDropAlertScreen";
-import SetDropAlertScreen from "./src/screens/SetDropAlertScreen";
-import RescueHotspotsScreen from "./src/screens/RescueHotspotsScreen";
-import SearchSettingsScreen from "./src/screens/SearchSettingsScreen";
-import CertificateScreen from "./src/screens/CertificateScreen";
-import StoreLocationScreen from "./src/screens/StoreLocationScreen";
+// Module 1 (US-A1 -> A4)
+import BuyerProfileScreen from "./src/screens/module_1/BuyerProfileScreen";
+import SellerProfileScreen from "./src/screens/module_1/SellerProfileScreen";
+import EditProfileScreen from "./src/screens/module_1/EditProfileScreen";
+import IncognitoModeScreen from "./src/screens/module_1/IncognitoModeScreen";
+import PrivacySettingsScreen from "./src/screens/module_1/PrivacySettingsScreen";
+import AnonymousProfilePreviewScreen from "./src/screens/module_1/AnonymousProfilePreviewScreen";
+import FoodAllergiesScreen from "./src/screens/module_1/FoodAllergiesScreen";
+import DietScreen from "./src/screens/module_1/DietScreen";
+import NotificationRadiusScreen from "./src/screens/module_1/NotificationRadiusScreen";
+import CertificateScreen from "./src/screens/module_1/CertificateScreen";
+import StoreLocationScreen from "./src/screens/module_1/StoreLocationScreen";
 import {
   BuyerSetupScreen,
   FoodPreferencesScreen,
   SellerSetupScreen,
   ShopSetupScreen,
   WelcomeScreen,
-} from "./src/screens/OnboardingScreens";
+} from "./src/screens/module_1/OnboardingScreens";
+
+// Module 2 (US-B1 -> B5)
+import HomeScreen, { type Food } from "./src/screens/module_2/HomeScreen";
+import ExploreScreen from "./src/screens/module_2/ExploreScreen";
+import HeatmapScreen from "./src/screens/module_2/HeatmapScreen";
+import SavedScreen from "./src/screens/module_2/SavedScreen";
+import FoodShopListScreen from "./src/screens/module_2/FoodShopListScreen";
+import SearchSettingsScreen from "./src/screens/module_2/SearchSettingsScreen";
+import ShopDetailScreen from "./src/screens/module_2/ShopDetailScreen";
+import ShopReviewsScreen from "./src/screens/module_2/ShopReviewsScreen";
+import SetDropAlertScreen from "./src/screens/module_2/SetDropAlertScreen";
+import MyDropAlertScreen from "./src/screens/module_2/MyDropAlertScreen";
+import DropAlertCenterScreen from "./src/screens/module_2/DropAlertCenterScreen";
+import SharingCornerScreen from "./src/screens/module_2/SharingCornerScreen";
+import SharingStationMapScreen from "./src/screens/module_2/SharingStationMapScreen";
+import BudgetMysteryBagsScreen from "./src/screens/module_2/BudgetMysteryBagsScreen";
+import MysteryBagGuideScreen from "./src/screens/module_2/MysteryBagGuideScreen";
+import RescueHotspotsScreen from "./src/screens/module_2/RescueHotspotsScreen";
+
+// Module 3 (US-C1 -> C3)
+import FoodSafetyCountdownScreen from "./src/screens/module_3/FoodSafetyCountdownScreen";
+import ActualProductLabelScreen from "./src/screens/module_3/ActualProductLabelScreen";
+import ExpirationInfoScreen from "./src/screens/module_3/ExpirationInfoScreen";
+import StorageInstructionsScreen from "./src/screens/module_3/StorageInstructionsScreen";
+import ReheatingInstructionsScreen from "./src/screens/module_3/ReheatingInstructionsScreen";
+import RefrigerationRequirementScreen from "./src/screens/module_3/RefrigerationRequirementScreen";
+import ExpirationWarningScreen from "./src/screens/module_3/ExpirationWarningScreen";
+import FoodOriginInfoScreen from "./src/screens/module_3/FoodOriginInfoScreen";
+import SellerCommitmentScreen from "./src/screens/module_3/SellerCommitmentScreen";
+import TermsComplaintRightsScreen from "./src/screens/module_3/TermsComplaintRightsScreen";
+import ComplaintRefundPolicyScreen from "./src/screens/module_3/ComplaintRefundPolicyScreen";
+
+// Module 4 (US-D1 -> D4)
+import MealDetailReservationScreen from "./src/screens/module_4/MealDetailReservationScreen";
+import ConfirmSpotReservationScreen from "./src/screens/module_4/ConfirmSpotReservationScreen";
+import ReservationTimeScreen from "./src/screens/module_4/ReservationTimeScreen";
+import YourOrderWaitingScreen from "./src/screens/module_4/YourOrderWaitingScreen";
+import ConfirmDepositScreen from "./src/screens/module_4/ConfirmDepositScreen";
+import PayDepositScreen from "./src/screens/module_4/PayDepositScreen";
+import DepositReceiptScreen from "./src/screens/module_4/DepositReceiptScreen";
+import PickupTimeSlotScreen from "./src/screens/module_4/PickupTimeSlotScreen";
+import OrderDetailsSlotScreen from "./src/screens/module_4/OrderDetailsSlotScreen";
+import WaitlistQueueScreen from "./src/screens/module_4/WaitlistQueueScreen";
+import OverdueOrderScreen from "./src/screens/module_4/OverdueOrderScreen";
+import CancelReleaseScreen from "./src/screens/module_4/CancelReleaseScreen";
+import SellerStudioScreen from "./src/screens/module_6/SellerStudioScreen";
+import ShiftImpactScreen from "./src/screens/module_7/ShiftImpactScreen";
+import SellerDashboardScreen from "./src/screens/module_7/SellerDashboardScreen";
+import TrustComplaintsScreen from "./src/screens/module_8/TrustComplaintsScreen";
+import {
+  getFoodSafetyDetail,
+  holdSpotReservation,
+  payReservationDeposit,
+  selectPickupSlot,
+  cancelAndReleaseOrder,
+  getFoodWaitlist,
+  joinFoodWaitlist,
+  type FoodSafetyDetail,
+  type SpotReservationResult,
+  type DepositPaymentResult,
+  type WaitlistStatus,
+} from "./src/services/foodSafetyReservationApi";
 
 // ==========================================
 // TYPES
@@ -84,6 +132,9 @@ export type Page =
   | "sellerGuide"
   | "shopSetup"
   | "home"
+  | "explore"
+  | "maps"
+  | "saved"
   | "orders"
   | "foodDetail"
   | "sharing"
@@ -99,6 +150,7 @@ export type Page =
   | "rescueHotspots"
   | "foodAllergies"
   | "privacy"
+  | "incognitoMode"
   | "incognitoPreview"
   | "diet"
   | "notificationRadius"
@@ -109,8 +161,40 @@ export type Page =
   | "complaints"
   | "help"
   | "settings"
+  | "accountSettings"
   | "buyerProfile"
-  | "sellerProfile";
+  | "guestProfile"
+  | "sellerProfile"
+  // Module 3
+  | "foodSafetyCountdown"
+  | "actualProductLabel"
+  | "expirationInfo"
+  | "storageInstructions"
+  | "reheatingInstructions"
+  | "refrigerationRequirement"
+  | "expirationWarning"
+  | "foodOriginInfo"
+  | "sellerCommitment"
+  | "termsComplaintRights"
+  | "complaintRefundPolicy"
+  // Module 4
+  | "mealDetailReservation"
+  | "confirmSpotReservation"
+  | "reservationTime"
+  | "yourOrderWaiting"
+  | "confirmDeposit"
+  | "payDeposit"
+  | "depositReceipt"
+  | "pickupTimeSlot"
+  | "orderDetailsSlot"
+  | "waitlistQueue"
+  | "overdueOrder"
+  | "cancelRelease"
+  // Modules 6–8
+  | "sellerStudio"
+  | "shiftImpact"
+  | "sellerDashboard"
+  | "trustComplaints";
 
 const blankProfile = (id: string): Profile => ({
   id,
@@ -143,6 +227,11 @@ function ClientApp() {
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
   const [selectedShopId, setSelectedShopId] = useState<string | null>(null);
   const [prefilledOrderId, setPrefilledOrderId] = useState<string | undefined>(undefined);
+  const [selectedSafetyFood, setSelectedSafetyFood] = useState<FoodSafetyDetail | null>(null);
+  const [activeReservation, setActiveReservation] = useState<SpotReservationResult | null>(null);
+  const [activeDeposit, setActiveDeposit] = useState<DepositPaymentResult | null>(null);
+  const [activeWaitlist, setActiveWaitlist] = useState<WaitlistStatus | null>(null);
+  const [activePickupSlot, setActivePickupSlot] = useState("");
 
   // Status & Feedback
   const [banner, setBanner] = useState("");
@@ -169,11 +258,15 @@ function ClientApp() {
       try {
         current = await requestJson<Profile>(`/api/users/${id}`);
       } catch {
-        current = await requestJson<Profile>("/api/users", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(blankProfile(id)),
-        });
+        try {
+          current = await requestJson<Profile>("/api/users", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(blankProfile(id)),
+          });
+        } catch {
+          current = blankProfile(id);
+        }
       }
 
       if (!mounted) return;
@@ -197,6 +290,18 @@ function ClientApp() {
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    let current = true;
+    if (!selectedFood) {
+      setSelectedSafetyFood(null);
+      return () => { current = false; };
+    }
+    void getFoodSafetyDetail(selectedFood.id).then((food) => {
+      if (current) setSelectedSafetyFood(food);
+    });
+    return () => { current = false; };
+  }, [selectedFood?.id]);
 
   // ==========================================
   // NAVIGATION HELPERS
@@ -257,8 +362,8 @@ function ClientApp() {
     await finishOnboarding();
   };
 
-  const createShop = async (name: string, address: string) => {
-    await updateProfile({ role: "seller" });
+  const createShop = async (name: string, address: string, storeType: string, phone: string) => {
+    await updateProfile({ role: "seller", ...(phone ? { phone } : {}) });
     await requestJson("/api/shops", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -266,7 +371,7 @@ function ClientApp() {
         ownerId: userId,
         name,
         address,
-        description: "",
+        description: storeType,
       }),
     });
     await finishOnboarding();
@@ -287,7 +392,8 @@ function ClientApp() {
       };
       const tab = tabMap[route] ?? "Home";
       setActiveTab(tab);
-      setPage("home");
+      setHistory([]);
+      setPage(route === "maps" ? "maps" : route === "saved" ? "saved" : route === "explore" ? "explore" : route === "profile" ? (profile?.role === "seller" ? "sellerProfile" : "buyerProfile") : "home");
       return;
     }
 
@@ -316,12 +422,16 @@ function ClientApp() {
       incognitoPreview: "incognitoPreview",
       diet: "diet",
       notificationRadius: "notificationRadius",
+      sellerStudio: "sellerStudio",
+      shiftImpact: "shiftImpact",
+      trustComplaints: "trustComplaints",
       buyerSetup: "foodPreferences",
       editProfile: "editProfile",
       certificate: "certificate",
       storeLocation: "storeLocation",
       help: "help",
       settings: "settings",
+      accountSettings: "accountSettings",
     };
 
     if (route === "shopDetail") {
@@ -354,6 +464,24 @@ function ClientApp() {
       } catch {
         navigateTo("sellerGuide");
       }
+    }
+  };
+
+  const openSellerDashboard = async () => {
+    try {
+      const result = await requestJson<{ items: Array<{ id: string; name: string }> }>(
+        `/api/shops?ownerId=${encodeURIComponent(userId)}`
+      );
+      if (result.items?.length) {
+        setDrawerOpen(false);
+        setActiveTab("Home");
+        setPage("sellerProfile");
+        setHistory([]);
+      } else {
+        navigateTo("sellerGuide");
+      }
+    } catch {
+      navigateTo("sellerGuide");
     }
   };
 
@@ -409,7 +537,7 @@ function ClientApp() {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={s.safe} edges={page === "home" && activeTab === "Maps" ? ["left", "right"] : ["top", "bottom", "left", "right"]}>
+      <SafeAreaView style={s.safe} edges={page === "maps" ? ["left", "right"] : ["top", "bottom", "left", "right"]}>
         <StatusBar style="dark" />
 
         {/* Global Banner Notification */}
@@ -422,26 +550,26 @@ function ClientApp() {
           </View>
         )}
 
+        
         {/* ===================================== */}
-        {/* ONBOARDING FLOWS                      */}
+        {/* ONBOARDING & SETUP SCREENS            */}
         {/* ===================================== */}
-
         {page === "welcome" && (
           <WelcomeScreen
             onChoose={(role) => {
-              void updateProfile({ role })
-                .then(() => {
-                  setPage(role === "buyer" ? "buyerGuide" : "sellerGuide");
-                })
-                .catch((e) => setError(e.message));
+              if (role === "buyer") {
+                navigateTo("buyerGuide");
+              } else {
+                navigateTo("sellerGuide");
+              }
             }}
           />
         )}
 
         {page === "buyerGuide" && (
           <BuyerSetupScreen
-            onBack={() => setPage("welcome")}
-            onPreferences={() => setPage("foodPreferences")}
+            onBack={() => goBack()}
+            onPreferences={() => navigateTo("foodPreferences")}
             onExplore={() => void finishOnboarding()}
           />
         )}
@@ -449,293 +577,230 @@ function ClientApp() {
         {page === "foodPreferences" && (
           <FoodPreferencesScreen
             initialName={profile.full_name}
-            onBack={() => setPage("buyerGuide")}
-            onSave={saveBuyerSetup}
+            initialAllergies={profile.allergies}
+            initialDiets={profile.dietary_preferences}
+            onBack={() => goBack()}
+            onSave={(name, allergies, diets) => saveBuyerSetup(name, allergies, diets)}
           />
         )}
 
         {page === "sellerGuide" && (
           <SellerSetupScreen
-            onBack={() => setPage("welcome")}
-            onSetup={() => setPage("shopSetup")}
-            onDashboard={() => {
-              void finishOnboarding();
-              setActiveTab("Profile");
-            }}
+            onBack={() => goBack()}
+            onSetup={() => navigateTo("shopSetup")}
+            onDashboard={() => void finishOnboarding()}
           />
         )}
 
         {page === "shopSetup" && (
           <ShopSetupScreen
             onBack={() => goBack()}
+            onSave={(name, address, storeType, phone) => createShop(name, address, storeType, phone)}
             busy={false}
-            onSave={createShop}
           />
         )}
 
         {/* ===================================== */}
-        {/* 5 MAIN BOTTOM TAB VIEWS ("home")     */}
+        {/* MODULE 1: PROFILE & SETTINGS          */}
         {/* ===================================== */}
-
-        {page === "home" && activeTab === "Home" && (
-          <HomeScreen
-            userId={userId}
-            userName={profile.full_name}
-            activeTab={activeTab}
-            onOpenMenu={() => setDrawerOpen(true)}
-            onOpenAlerts={() => navigateTo("myDropAlert")}
-            onTabChange={(tab) => {
-              setActiveTab(tab);
-              setBanner("");
-            }}
-            onOpenFood={(food) => {
-              setSelectedFood(food);
-              navigateTo("foodDetail");
-            }}
-          />
-        )}
-
-        {page === "home" && activeTab === "Explore" && (
-          <ExploreScreen
-            userId={userId}
-            activeTab={activeTab}
-            onTabChange={(tab) => {
-              setActiveTab(tab);
-              setBanner("");
-            }}
-            onOpenFood={(food) => {
-              setSelectedFood(food);
-              navigateTo("foodDetail");
-            }}
-            onOpenSettings={() => navigateTo("settings")}
-            onOpenSharing={() => navigateTo("sharing")}
-          />
-        )}
-
-        {page === "home" && activeTab === "Maps" && (
-          <HeatmapScreen
-            userId={userId}
-            activeTab={activeTab}
-            onTabChange={(tab) => {
-              setActiveTab(tab);
-              setBanner("");
-            }}
-            onOpenShop={(shopId) => {
-              setSelectedShopId(shopId);
-              navigateTo("shopDetail");
-            }}
-            onOpenHotspots={() => navigateTo("rescueHotspots")}
-          />
-        )}
-
-        {page === "home" && activeTab === "Saved" && (
-          <SavedScreen
-            userId={userId}
-            onOpenMenu={() => setDrawerOpen(true)}
-            onOpenFood={(food) => {
-              setSelectedFood(food);
-              navigateTo("foodDetail");
-            }}
-            onOpenShop={(shopId) => {
-              setSelectedShopId(shopId);
-              navigateTo("shopDetail");
-            }}
-            onTabChange={(tab) => {
-              setActiveTab(tab);
-              setBanner("");
-            }}
-          />
-        )}
-
-        {page === "home" && activeTab === "Profile" && profile.role === "buyer" && (
-          <BuyerProfileScreen
-            userName={profile.full_name}
-            isIncognito={profile.is_incognito}
-            isGuest={false}
-            onOpenMenu={() => setDrawerOpen(true)}
-            activeTab={activeTab}
-            onTabChange={(tab) => {
-              setActiveTab(tab);
-              setBanner("");
-            }}
-            onNavigateQuickAction={(action) => {
-              if (action === "allergies") navigateTo("foodAllergies");
-              else if (action === "diet") navigateTo("diet");
-              else if (action === "radius") navigateTo("notificationRadius");
-              else if (action === "privacy") navigateTo("privacy");
-              else if (action === "route") {
-                setActiveTab("Maps");
-              }
-            }}
-            onEditProfile={() => navigateTo("editProfile")}
-            onReport={() => navigateTo("complaints")}
-          />
-        )}
-
-        {page === "home" && activeTab === "Profile" && profile.role === "seller" && (
-          <SellerProfileScreen
-            onBack={() => {
-              setActiveTab("Home");
-            }}
-            onEditStore={() => navigateTo("shopSetup")}
-            onItemPress={(key) => {
-              if (key === "safety_cert" || key === "trust_badge") {
-                navigateTo("certificate");
-              } else if (key === "location") {
-                navigateTo("storeLocation");
-              } else if (key === "hours") {
-                navigateTo("shopSetup");
-              }
-            }}
-          />
-        )}
-
-        {/* ===================================== */}
-        {/* INDEPENDENT PROFILE SCREENS           */}
-        {/* ===================================== */}
-
         {page === "buyerProfile" && (
           <BuyerProfileScreen
             userName={profile.full_name}
             isIncognito={profile.is_incognito}
             onBack={() => goBack()}
             onOpenMenu={() => setDrawerOpen(true)}
-            onNavigateQuickAction={(action) => {
-              if (action === "allergies") navigateTo("foodAllergies");
-              else if (action === "diet") navigateTo("diet");
-              else if (action === "radius") navigateTo("notificationRadius");
-              else if (action === "privacy") navigateTo("privacy");
-              else if (action === "route") {
-                setActiveTab("Maps");
-                setPage("home");
-              }
+            onNavigateQuickAction={(act) => {
+              if (act === "allergies") navigateTo("foodAllergies");
+              else if (act === "diet") navigateTo("diet");
+              else if (act === "radius") navigateTo("notificationRadius");
+              else if (act === "privacy") navigateTo("privacy");
             }}
             onEditProfile={() => navigateTo("editProfile")}
-            onReport={() => navigateTo("complaints")}
+            activeTab={activeTab}
+            onTabChange={(tab) => handleNavigate(tab.toLowerCase())}
+          />
+        )}
+
+        {page === "guestProfile" && (
+          <BuyerProfileScreen
+            userName="Tran Minh Anh"
+            isGuest
+            onBack={() => goBack()}
+            activeTab={activeTab}
+            onTabChange={(tab) => handleNavigate(tab.toLowerCase())}
+            onReport={() => setBanner("Profile report submitted for review.")}
           />
         )}
 
         {page === "sellerProfile" && (
           <SellerProfileScreen
             onBack={() => goBack()}
-            onEditStore={() => navigateTo("shopSetup")}
-            onItemPress={(key) => {
-              if (key === "safety_cert" || key === "trust_badge") {
-                navigateTo("certificate");
-              } else if (key === "location") {
-                navigateTo("storeLocation");
-              } else if (key === "hours") {
-                navigateTo("shopSetup");
-              }
+            onEditStore={() => navigateTo("storeLocation")}
+            onItemPress={(item) => {
+              if (item === "certificate") navigateTo("certificate");
+              else if (item === "location") navigateTo("storeLocation");
             }}
           />
         )}
-
-        {page === "editProfile" && (
-          <EditProfileScreen
-            initialData={{
-              fullName: profile.full_name,
-              email: profile.email || "quynh23@email.com",
-              phone: profile.phone || "(+84) 0123456789",
-              address: profile.address || "Tổ 1, Phường Ngũ Hành Sơn, Đà Nẵng",
-            }}
-            onBack={() => goBack()}
-            onSave={async (data) => {
-              await updateProfile({
-                full_name: data.fullName,
-                email: data.email,
-                phone: data.phone,
-                address: data.address,
-              });
-              setBanner("Profile information updated.");
-            }}
-          />
-        )}
-
-        {/* ===================================== */}
-        {/* PREFERENCES & SETTINGS SCREENS        */}
-        {/* ===================================== */}
 
         {page === "foodAllergies" && (
           <FoodAllergiesScreen
-            initialAllergies={profile.allergies || []}
+            initialAllergies={profile.allergies}
             onBack={() => goBack()}
             onSave={async (allergies) => {
               await updateProfile({ allergies });
-              setBanner("Allergy filters saved.");
+              goBack();
             }}
           />
         )}
 
         {page === "diet" && (
           <DietScreen
-            initialDiet={profile.dietary_preferences?.[0] || "Non-vegetarian"}
+            initialDiet={profile.dietary_preferences[0]}
             onBack={() => goBack()}
             onSave={async (diet) => {
               await updateProfile({ dietary_preferences: [diet] });
-              setBanner("Dietary preference saved.");
-            }}
-          />
-        )}
-
-        {page === "notificationRadius" && (
-          <NotificationRadiusScreen
-            address={profile.address || "Tổ 1, Phường Ngũ Hành Sơn, Đà Nẵng"}
-            onBack={() => goBack()}
-            onSave={async (data) => {
-              try {
-                await requestJson(`/api/users/${encodeURIComponent(userId)}/preferences`, {
-                  method: "PUT",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    notification_radius_km: data.radius,
-                    quiet_start: data.quietHours ? "22:00" : "00:00",
-                    quiet_end: data.quietHours ? "06:00" : "00:00",
-                  }),
-                });
-                setBanner("Notification radius preferences saved.");
-              } catch (e: any) {
-                Alert.alert("Preferences", e.message);
-              }
-            }}
-          />
-        )}
-
-        {page === "privacy" && (
-          <IncognitoModeScreen
-            initialEnabled={Boolean(profile.is_incognito)}
-            userName={profile.full_name}
-            phone={profile.phone || "(+84) 0123456789"}
-            onBack={() => goBack()}
-            onToggle={async (enabled) => {
-              await updateProfile({ is_incognito: enabled });
-              setBanner(`Incognito mode is now ${enabled ? "ON" : "OFF"}.`);
-            }}
-            onViewHiddenProfile={() => navigateTo("incognitoPreview")}
-          />
-        )}
-
-        {page === "incognitoPreview" && (
-          <AnonymousProfilePreviewScreen
-            buyerId={`#BUYER-${userId.slice(0, 4).toUpperCase()}`}
-            onBack={() => goBack()}
-            onSave={() => {
-              setBanner("Anonymous profile settings confirmed.");
               goBack();
             }}
           />
         )}
 
-        {page === "settings" && (
-          <SearchSettingsScreen
+        {page === "privacy" && (
+          <PrivacySettingsScreen
             userId={userId}
+            incognitoEnabled={profile.is_incognito}
             onBack={() => goBack()}
+            onOpenIncognito={() => navigateTo("incognitoMode")}
           />
         )}
 
+        {page === "incognitoMode" && (
+          <IncognitoModeScreen
+            initialEnabled={profile.is_incognito}
+            onBack={() => goBack()}
+            onToggle={async (enabled) => { await updateProfile({ is_incognito: enabled }); }}
+            onOpenPreview={() => navigateTo("incognitoPreview")}
+          />
+        )}
+
+        {page === "incognitoPreview" && (
+          <AnonymousProfilePreviewScreen onBack={() => goBack()} />
+        )}
+
+        {page === "notificationRadius" && (
+          <NotificationRadiusScreen onBack={() => goBack()} onSave={() => goBack()} />
+        )}
+
+        {page === "editProfile" && (
+          <EditProfileScreen
+            initialData={{ fullName: profile.full_name, phone: profile.phone, address: profile.address }}
+            onBack={() => goBack()}
+            onSave={async (updated) => {
+              await updateProfile({ full_name: updated.fullName, phone: updated.phone, email: updated.email, address: updated.address });
+              goBack();
+            }}
+          />
+        )}
+
+        {page === "certificate" && (
+          <CertificateScreen onBack={() => goBack()} onSubmit={() => goBack()} />
+        )}
+
+        {page === "storeLocation" && (
+          <StoreLocationScreen onBack={() => goBack()} />
+        )}
+
         {/* ===================================== */}
-        {/* COMMUNITY & SPECIALS SCREENS          */}
+        {/* MODULE 2: DISCOVERY, SEARCH & COMMUNITY */}
         {/* ===================================== */}
+        {page === "home" && (
+          <HomeScreen
+            userId={userId}
+            userName={profile.full_name}
+            role={profile.role}
+            onOpenSellerDashboard={() => { setActiveTab("Home"); setHistory([]); setPage("sellerDashboard"); }}
+            activeTab={activeTab}
+            onOpenMenu={() => setDrawerOpen(true)}
+            onOpenAlerts={() => navigateTo("myDropAlert")}
+            onTabChange={(tab) => handleNavigate(tab.toLowerCase())}
+            onOpenFood={(food) => {
+              setSelectedFood(food);
+              navigateTo("foodDetail");
+            }}
+          />
+        )}
+
+        {page === "sellerDashboard" && (
+          <SellerDashboardScreen
+            userId={userId}
+            onBack={() => { setPage("home"); setActiveTab("Home"); setHistory([]); }}
+            onPostSurplus={() => navigateTo("sellerStudio")}
+            onScanQr={() => navigateTo("shiftImpact")}
+            onMenuManager={() => navigateTo("sellerStudio")}
+            onShiftReport={() => navigateTo("shiftImpact")}
+            onOpenSettings={() => navigateTo("accountSettings")}
+          />
+        )}
+
+        {page === "foodDetail" && selectedFood && (
+          <FoodDetailView
+            food={selectedFood}
+            onBack={() => goBack()}
+            onMenu={() => setDrawerOpen(true)}
+            onSafety={() => navigateTo("foodSafetyCountdown")}
+            onOpenShop={(shopId) => {
+              setSelectedShopId(shopId);
+              navigateTo("shopDetail");
+            }}
+            onReserved={() => navigateTo("mealDetailReservation")}
+          />
+        )}
+
+        {page === "orders" && (
+          <OrdersView
+            userId={userId}
+            onBack={() => goBack()}
+            onMenu={() => setDrawerOpen(true)}
+            onExplore={() => {
+              setActiveTab("Home");
+              setPage("home");
+            }}
+            onReport={(oid) => {
+              setPrefilledOrderId(oid);
+              navigateTo("complaints");
+            }}
+          />
+        )}
+
+        {page === "explore" && (
+          <ExploreScreen
+            userId={userId}
+            activeTab={activeTab}
+            onTabChange={(tab) => handleNavigate(tab.toLowerCase())}
+            onOpenSettings={() => navigateTo("settings")}
+            onOpenSharing={() => navigateTo("sharing")}
+            onOpenFood={(food: any) => {
+              setSelectedFood(food);
+              navigateTo("foodDetail");
+            }}
+          />
+        )}
+
+        {page === "maps" && (
+          <HeatmapScreen userId={userId} activeTab={activeTab} onTabChange={(tab) => handleNavigate(tab.toLowerCase())} onOpenShop={(shopId) => { setSelectedShopId(shopId); navigateTo("shopDetail"); }} onOpenHotspots={() => navigateTo("rescueHotspots")} />
+        )}
+
+        {page === "saved" && (
+          <SavedScreen userId={userId} onOpenMenu={() => setDrawerOpen(true)} onTabChange={(tab) => handleNavigate(tab.toLowerCase())} onOpenShop={(shopId) => { setSelectedShopId(shopId); navigateTo("shopDetail"); }} onOpenFood={(food) => { setSelectedFood(food); navigateTo("foodDetail"); }} />
+        )}
+
+        {page === "settings" && (
+          <SearchSettingsScreen userId={userId} onBack={() => goBack()} />
+        )}
+
+        {page === "accountSettings" && (
+          <AccountSettingsView role={profile.role} onBack={() => goBack()} onSwitchRole={() => void handleMerchantToggle()} />
+        )}
 
         {page === "sharing" && (
           <SharingCornerScreen
@@ -746,13 +811,7 @@ function ClientApp() {
         )}
 
         {page === "stationMap" && (
-          <SharingStationMapScreen
-            onBack={() => goBack()}
-            onOpenShop={(id) => {
-              setSelectedShopId(id);
-              navigateTo("shopDetail");
-            }}
-          />
+          <SharingStationMapScreen onBack={() => goBack()} onOpenShop={(shopId) => { setSelectedShopId(shopId); navigateTo("shopDetail"); }} />
         )}
 
         {page === "budgetBags" && (
@@ -764,179 +823,176 @@ function ClientApp() {
         )}
 
         {page === "mysteryBagGuide" && (
-          <MysteryBagGuideScreen
-            onBack={() => goBack()}
-            onBrowse={() => {
-              setPage("budgetBags");
-            }}
-          />
+          <MysteryBagGuideScreen onBack={() => goBack()} onBrowse={() => navigateTo("budgetBags")} />
         )}
 
-        {/* ===================================== */}
-        {/* SHOP & REVIEWS SCREENS                */}
-        {/* ===================================== */}
-
-        {page === "shopDetail" && (
-          <ShopDetailScreen
-            shopId={selectedShopId ?? undefined}
-            userId={userId}
-            onBack={() => goBack()}
-            onOpenReviews={(shopId) => {
-              setSelectedShopId(shopId);
-              navigateTo("shopReviews");
-            }}
-            onOpenSettings={() => navigateTo("settings")}
-            onOpenFood={(food) => {
-              setSelectedFood(food);
-              navigateTo("foodDetail");
-            }}
-            onOpenFoodList={(shopId) => {
-              setSelectedShopId(shopId);
-              navigateTo("foodShopList");
-            }}
-          />
+        {page === "rescueHotspots" && (
+          <RescueHotspotsScreen onBack={() => goBack()} onOpenMap={() => navigateTo("stationMap")} />
         )}
-
-        {page === "shopReviews" && (
-          <ShopReviewsScreen
-            shopId={selectedShopId || ""}
-            userId={userId}
-            onBack={() => goBack()}
-          />
-        )}
-
-        {page === "foodShopList" && (
-          <FoodShopListScreen
-            shopId={selectedShopId}
-            userId={userId}
-            onBack={() => goBack()}
-            onOpenFood={(food) => {
-              setSelectedFood({
-                id: food.id,
-                name: food.name,
-                description: food.description ?? undefined,
-                image_url: food.image_url ?? undefined,
-                original_price: food.original_price,
-                current_price: food.current_price,
-                quantity_available: food.quantity_available,
-                shop_id: food.shop_id,
-                shop_name: food.shop_name,
-                address: food.address,
-                verified: food.verified ?? false,
-                reputation_score: food.reputation_score,
-                storage_instructions: food.storage_instructions ?? undefined,
-              });
-              navigateTo("foodDetail");
-            }}
-          />
-        )}
-
-        {page === "storeLocation" && (
-          <StoreLocationScreen
-            onBack={() => goBack()}
-            onConfirm={() => {
-              setBanner("Store location confirmed.");
-              goBack();
-            }}
-            onEditAddress={() => navigateTo("shopSetup")}
-          />
-        )}
-
-        {page === "certificate" && (
-          <CertificateScreen
-            onBack={() => goBack()}
-            onSubmit={() => {
-              setBanner("Food safety certificate submitted for review.");
-              goBack();
-            }}
-          />
-        )}
-
-        {/* ===================================== */}
-        {/* DROP ALERT SCREENS                    */}
-        {/* ===================================== */}
 
         {page === "myDropAlert" && (
           <MyDropAlertScreen
             userId={userId}
             onBack={() => goBack()}
-            onManage={() => navigateTo("dropAlert")}
-            onOpenFood={(food) => {
-              setSelectedFood(food);
-              navigateTo("foodDetail");
-            }}
-          />
-        )}
-
-        {page === "dropAlert" && (
-          <DropAlertCenterScreen
-            userId={userId}
-            onBack={() => goBack()}
-            onCreateAlert={() => navigateTo("setDropAlert")}
+            onManage={() => navigateTo("setDropAlert")}
+            onOpenFood={(food) => { setSelectedFood(food); navigateTo("foodDetail"); }}
           />
         )}
 
         {page === "setDropAlert" && (
-          <SetDropAlertScreen
+          <SetDropAlertScreen userId={userId} onBack={() => goBack()} />
+        )}
+
+        {page === "dropAlert" && (
+          <DropAlertCenterScreen userId={userId} onBack={() => goBack()} onCreateAlert={() => navigateTo("setDropAlert")} />
+        )}
+
+        {page === "shopDetail" && (
+          <ShopDetailScreen
+            shopId={selectedShopId || "shop-corner-kitchen"}
             userId={userId}
             onBack={() => goBack()}
+            onOpenSettings={() => navigateTo("settings")}
+            onOpenReviews={(shopId) => { setSelectedShopId(shopId); navigateTo("shopReviews"); }}
+            onOpenFood={(food) => { setSelectedFood(food); navigateTo("foodDetail"); }}
+            onOpenFoodList={(shopId) => { setSelectedShopId(shopId); navigateTo("foodShopList"); }}
           />
         )}
 
-        {page === "rescueHotspots" && (
-          <RescueHotspotsScreen
-            onBack={() => goBack()}
-            onOpenMap={() => {
-              setActiveTab("Maps");
-              setPage("home");
-            }}
-          />
-        )}
-
-        {/* ===================================== */}
-        {/* ORDERS & RESERVATIONS VIEW            */}
-        {/* ===================================== */}
-
-        {page === "orders" && (
-          <OrdersView
+        {page === "shopReviews" && (
+          <ShopReviewsScreen
+            shopId={selectedShopId || "shop-corner-kitchen"}
             userId={userId}
             onBack={() => goBack()}
-            onMenu={() => setDrawerOpen(true)}
-            onExplore={() => {
-              setActiveTab("Explore");
-              setPage("home");
-            }}
-            onReport={(orderId) => {
-              setPrefilledOrderId(orderId);
-              navigateTo("complaints");
-            }}
+            onOpenReviewerProfile={() => navigateTo("guestProfile")}
           />
         )}
 
+        {page === "foodShopList" && (
+          <FoodShopListScreen shopId={selectedShopId} userId={userId} onBack={() => goBack()} onOpenFood={(food) => { setSelectedFood({ ...food, description: food.description ?? undefined, image_url: food.image_url ?? undefined, verified: food.verified ?? false, storage_instructions: food.storage_instructions ?? undefined }); navigateTo("foodDetail"); }} />
+        )}
+        
+        
         {/* ===================================== */}
-        {/* FOOD DETAIL VIEW                      */}
+        {/* MODULE 3: INDIVIDUAL SCREENS (FIGMA) */}
         {/* ===================================== */}
-
-        {page === "foodDetail" && selectedFood && (
-          <FoodDetailView
-            food={selectedFood}
-            userId={userId}
-            onBack={() => goBack()}
-            onMenu={() => setDrawerOpen(true)}
-            onOpenShop={(shopId) => {
-              setSelectedShopId(shopId);
-              navigateTo("shopDetail");
-            }}
-            onReserved={() => {
-              setBanner("Your meal is held for 20 minutes! Show the QR code at the counter.");
-              setPage("orders");
-            }}
-          />
+        {page === "foodSafetyCountdown" && (
+          <FoodSafetyCountdownScreen food={selectedSafetyFood ?? undefined} onBack={() => goBack()} onNavigate={(r) => navigateTo(r as Page)} />
+        )}
+        {page === "actualProductLabel" && (
+          <ActualProductLabelScreen food={selectedSafetyFood ?? undefined} onBack={() => goBack()} onNavigate={(r) => navigateTo(r as Page)} />
+        )}
+        {page === "expirationInfo" && (
+          <ExpirationInfoScreen food={selectedSafetyFood ?? undefined} onBack={() => goBack()} onNavigate={(r) => navigateTo(r as Page)} />
+        )}
+        {page === "storageInstructions" && (
+          <StorageInstructionsScreen food={selectedSafetyFood ?? undefined} onBack={() => goBack()} onNavigate={(r) => navigateTo(r as Page)} />
+        )}
+        {page === "reheatingInstructions" && (
+          <ReheatingInstructionsScreen food={selectedSafetyFood ?? undefined} onBack={() => goBack()} onNavigate={(r) => navigateTo(r as Page)} />
+        )}
+        {page === "refrigerationRequirement" && (
+          <RefrigerationRequirementScreen food={selectedSafetyFood ?? undefined} onBack={() => goBack()} onNavigate={(r) => navigateTo(r as Page)} />
+        )}
+        {page === "expirationWarning" && (
+          <ExpirationWarningScreen food={selectedSafetyFood ?? undefined} onBack={() => goBack()} onNavigate={(r) => navigateTo(r as Page)} />
+        )}
+        {page === "foodOriginInfo" && (
+          <FoodOriginInfoScreen food={selectedSafetyFood ?? undefined} onBack={() => goBack()} onNavigate={(r) => navigateTo(r as Page)} />
+        )}
+        {page === "sellerCommitment" && (
+          <SellerCommitmentScreen food={selectedSafetyFood ?? undefined} onBack={() => goBack()} onNavigate={(r) => navigateTo(r as Page)} />
+        )}
+        {page === "termsComplaintRights" && (
+          <TermsComplaintRightsScreen food={selectedSafetyFood ?? undefined} onBack={() => goBack()} onNavigate={(r) => navigateTo(r as Page)} />
+        )}
+        {page === "complaintRefundPolicy" && (
+          <ComplaintRefundPolicyScreen food={selectedSafetyFood ?? undefined} onBack={() => goBack()} onNavigate={(r) => navigateTo(r as Page)} />
         )}
 
         {/* ===================================== */}
-        {/* POLICIES & SUPPORT VIEWS              */}
+        {/* MODULE 4: INDIVIDUAL SCREENS (FIGMA) */}
         {/* ===================================== */}
+        {page === "mealDetailReservation" && (
+          <MealDetailReservationScreen food={selectedSafetyFood ?? undefined} onBack={() => goBack()} onNavigate={(r) => navigateTo(r as Page)} />
+        )}
+        {page === "confirmSpotReservation" && (
+          <ConfirmSpotReservationScreen food={selectedSafetyFood ?? undefined} onBack={() => goBack()} onHold={async (minutes, quantity) => {
+            if (!selectedFood) throw new Error("Please select a meal first.");
+            const reservation = await holdSpotReservation(selectedFood.id, userId, minutes, quantity);
+            setActiveReservation(reservation);
+            setActiveDeposit(null);
+            navigateTo("confirmDeposit");
+          }} />
+        )}
+        {page === "reservationTime" && (
+          <ReservationTimeScreen food={selectedSafetyFood ?? undefined} reservation={activeReservation} onBack={() => goBack()} onNavigate={(r) => navigateTo(r as Page)} />
+        )}
+        {page === "yourOrderWaiting" && (
+          <YourOrderWaitingScreen food={selectedSafetyFood ?? undefined} reservation={activeReservation} onBack={() => goBack()} onNavigate={(r) => navigateTo(r as Page)} />
+        )}
+        {page === "confirmDeposit" && (
+          <ConfirmDepositScreen food={selectedSafetyFood ?? undefined} reservation={activeReservation} onBack={() => goBack()} onNavigate={(r) => navigateTo(r as Page)} />
+        )}
+        {page === "payDeposit" && (
+          <PayDepositScreen food={selectedSafetyFood ?? undefined} reservation={activeReservation} onBack={() => goBack()} onPay={async (method) => {
+            if (!activeReservation) throw new Error("Reservation expired. Start again to hold a meal.");
+            const receipt = await payReservationDeposit(activeReservation.reservationId, method, activeReservation.depositAmount);
+            setActiveDeposit(receipt);
+            navigateTo("depositReceipt");
+          }} />
+        )}
+        {page === "depositReceipt" && (
+          <DepositReceiptScreen food={selectedSafetyFood ?? undefined} reservation={activeReservation} deposit={activeDeposit} onBack={() => goBack()} onNavigate={(r) => navigateTo(r as Page)} />
+        )}
+        {page === "pickupTimeSlot" && (
+          <PickupTimeSlotScreen food={selectedSafetyFood ?? undefined} reservationId={activeReservation?.reservationId} onBack={() => goBack()} onChoose={async (day, slot) => {
+            if (activeReservation) {
+              const [start, end] = slot.split(" – ");
+              const date = new Date();
+              if (day === "Wed") date.setDate(date.getDate() + 1);
+              if (day === "Thu") date.setDate(date.getDate() + 2);
+              if (day === "Fri") date.setDate(date.getDate() + 3);
+              const dateStr = date.toISOString().slice(0, 10);
+              const result = await selectPickupSlot(activeReservation.reservationId, `${dateStr} ${start}:00`, `${dateStr} ${end}:00`, day);
+              setActivePickupSlot(result.slot);
+            }
+            navigateTo("orderDetailsSlot");
+          }} />
+        )}
+        {page === "orderDetailsSlot" && (
+          <OrderDetailsSlotScreen food={selectedSafetyFood ?? undefined} reservation={activeReservation} deposit={activeDeposit} pickupSlot={activePickupSlot} onBack={() => goBack()} onNavigate={(r) => navigateTo(r as Page)} />
+        )}
+        {page === "waitlistQueue" && (
+          <WaitlistQueueScreen food={selectedSafetyFood ?? undefined} waitlist={activeWaitlist} userId={userId} onBack={() => goBack()} onLoad={async () => {
+            if (selectedFood) setActiveWaitlist(await getFoodWaitlist(selectedFood.id));
+          }} onJoin={async () => {
+            if (!selectedFood) return;
+            await joinFoodWaitlist(selectedFood.id, userId, 1);
+            setActiveWaitlist(await getFoodWaitlist(selectedFood.id));
+          }} onNavigate={(r) => navigateTo(r as Page)} />
+        )}
+        {page === "overdueOrder" && (
+          <OverdueOrderScreen food={selectedSafetyFood ?? undefined} reservation={activeReservation} onBack={() => goBack()} onNavigate={(r) => navigateTo(r as Page)} />
+        )}
+        {page === "cancelRelease" && (
+          <CancelReleaseScreen food={selectedSafetyFood ?? undefined} onBack={() => goBack()} onRelease={async () => {
+            const result = activeReservation
+              ? await cancelAndReleaseOrder(activeReservation.reservationId)
+              : { success: true, portionsReleased: 0, assignedToWaitlist: false, depositTransferred: false };
+            setActiveReservation(null);
+            setActiveDeposit(null);
+            if (selectedFood) setActiveWaitlist(await getFoodWaitlist(selectedFood.id));
+            return result;
+          }} onNavigate={(r) => {
+            if (r === "home") { setPage("home"); setHistory([]); }
+            else navigateTo(r as Page);
+          }} />
+        )}
+
+        {page === "sellerStudio" && <SellerStudioScreen userId={userId} onBack={() => goBack()} />}
+        {page === "shiftImpact" && <ShiftImpactScreen userId={userId} onBack={() => goBack()} />}
+        {page === "trustComplaints" && <TrustComplaintsScreen userId={userId} shopId={selectedShopId} onBack={() => goBack()} />}
 
         {page === "safety" && (
           <SafetyPolicyView
@@ -971,9 +1027,12 @@ function ClientApp() {
           visible={drawerOpen}
           name={profile.full_name}
           role={profile.role}
+          activeTab={activeTab}
           onClose={() => setDrawerOpen(false)}
           onNavigate={handleNavigate}
-          onMerchant={() => void handleMerchantToggle()}
+          onMerchant={() => navigateTo("accountSettings")}
+          onOpenSettings={() => navigateTo("accountSettings")}
+          onSellerDashboard={() => void openSellerDashboard()}
           onLogout={() => void logout()}
         />
       </SafeAreaView>
@@ -985,73 +1044,73 @@ function ClientApp() {
 // FOOD DETAIL VIEW COMPONENT
 // ==========================================
 
+function AccountSettingsView({ role, onBack, onSwitchRole }: { role: "buyer" | "seller" | "admin"; onBack: () => void; onSwitchRole: () => void }) {
+  const switchLabel = role === "seller" ? "Switch to Buyer Mode" : "Switch to Merchant Mode";
+  return <View style={s.simpleScreen}>
+    <View style={s.simpleHeader}>
+      <Pressable onPress={onBack} style={s.simpleBack}><Ionicons name="chevron-back" size={22} color={colors.ink} /></Pressable>
+      <Text style={s.simpleTitle}>Settings</Text>
+      <View style={s.simpleBack} />
+    </View>
+    <View style={s.settingsSection}>
+      <Text style={s.settingsHeading}>Account</Text>
+      <Text style={s.settingsDescription}>Choose how you want to use ResQ. Your account and store data stay connected.</Text>
+      <Pressable onPress={onSwitchRole} style={s.settingsRoleButton}>
+        <Ionicons name={role === "seller" ? "person-outline" : "storefront-outline"} size={19} color={colors.primary} />
+        <Text style={s.settingsRoleText}>{switchLabel}</Text>
+        <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+      </Pressable>
+    </View>
+  </View>;
+}
+
 function FoodDetailView({
   food,
-  userId,
   onBack,
   onMenu,
+  onSafety,
   onOpenShop,
   onReserved,
 }: {
   food: Food;
-  userId: string;
   onBack: () => void;
   onMenu: () => void;
+  onSafety: () => void;
   onOpenShop: (shopId: string) => void;
   onReserved: () => void;
 }) {
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-
+  const [quantity, setQuantity] = useState(1);
   const original = Number(food.original_price);
   const current = Number(food.current_price);
+  const available = Math.max(0, Number(food.quantity_available) || 0);
+  const safeQuantity = Math.min(quantity, Math.max(available, 1));
   const discount =
     original > 0
       ? Math.max(0, Math.round((1 - current / original) * 100))
       : 0;
 
-  const handleReserve = async () => {
-    setBusy(true);
-    setError("");
-    try {
-      await requestJson("/api/reservations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          foodItemId: food.id,
-          buyerId: userId,
-          quantity: 1,
-        }),
-      });
-      onReserved();
-    } catch (e: any) {
-      setError(e.message || "Failed to reserve meal. Please try again.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
   return (
     <View style={s.destination}>
-      <View style={s.destinationHeader}>
+      <View style={[s.destinationHeader, s.foodDetailHeader]}>
         <Pressable onPress={onBack} style={s.backButton} accessibilityLabel="Back">
           <Text style={s.backText}>‹</Text>
         </Pressable>
-        <Text style={s.destinationTitle} numberOfLines={1}>
-          {food.name}
-        </Text>
+        <Text style={s.destinationTitle}>Meal Detail</Text>
         <Pressable onPress={onMenu} style={s.backButton} accessibilityLabel="Menu">
           <Ionicons name="menu-outline" size={20} color={colors.primary} />
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={s.destinationBody} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={s.foodDetailBody} showsVerticalScrollIndicator={false}>
         <View style={s.detailPhoto}>
           <FallbackPhoto
             uri={imageUrl(food.image_url)}
             fallback={foodPhoto(food.name)}
             style={s.detailImage}
           />
+          <View style={s.pickupTimeBadge}>
+            <Text style={s.pickupTimeText}>15 min</Text>
+          </View>
           {discount > 0 && (
             <View style={s.detailDiscountBadge}>
               <Text style={s.detailDiscountText}>Save {discount}%</Text>
@@ -1059,71 +1118,62 @@ function FoodDetailView({
           )}
         </View>
 
-        <Text style={s.detailName}>{food.name}</Text>
-
-        <Pressable onPress={() => onOpenShop(food.shop_id)} style={s.shopLinkRow}>
-          <Ionicons name="storefront-outline" size={16} color={colors.primary} />
-          <Text style={s.shopLinkText}>{food.shop_name}</Text>
-          <Ionicons name="chevron-forward" size={14} color={colors.muted} />
-        </Pressable>
-
-        <Text style={s.detailMeta}>
-          <Ionicons name="location-outline" size={13} color={colors.muted} /> {food.address}
-        </Text>
-
-        <View style={s.priceBox}>
-          <View>
-            <Text style={s.detailPrice}>
-              {current === 0 ? "0đ (Free)" : `${current.toLocaleString("vi-VN")}₫`}
-            </Text>
-            {original > current && (
-              <Text style={s.originalPrice}>
-                Original: {original.toLocaleString("vi-VN")}₫
-              </Text>
-            )}
+        <View style={s.foodTitlePriceRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={s.foodDetailName}>{food.name}</Text>
+            <Pressable onPress={() => onOpenShop(food.shop_id)} style={s.shopLinkRow}>
+              <Ionicons name="storefront-outline" size={16} color={colors.primary} />
+              <Text style={s.shopLinkText}>{food.shop_name}</Text>
+              <Ionicons name="chevron-forward" size={14} color={colors.muted} />
+            </Pressable>
           </View>
-          <View style={s.quantityPill}>
-            <Text style={s.quantityPillText}>
-              {food.quantity_available} left
-            </Text>
+          <Text style={s.foodDetailPrice}>{current === 0 ? "Free" : `${current.toLocaleString("vi-VN")}₫`}</Text>
+        </View>
+
+        <View style={s.foodTagRow}>
+          <View style={s.foodTag}><Text style={s.foodTagText}>★ {Number(food.reputation_score || 4.6).toFixed(1)} (120)</Text></View>
+          <View style={s.foodTag}><Ionicons name="location-outline" size={13} color={colors.ink} /><Text style={s.foodTagText}>1.2 km</Text></View>
+          <View style={s.foodTag}><Ionicons name="time-outline" size={13} color={colors.ink} /><Text style={s.foodTagText}>15 min</Text></View>
+        </View>
+
+        <View style={s.inventoryCard}>
+          <View style={s.inventoryHeader}>
+            <View style={{ flex: 1 }}>
+              <Text style={s.inventoryTitle}>Pickup today</Text>
+              <Text style={s.inventorySub}>Store closes at 22:45</Text>
+            </View>
+            <View style={s.inventoryPill}><Text style={s.inventoryPillText}>{available} left</Text></View>
+          </View>
+          <View style={s.inventoryTrack}><View style={[s.inventoryFill, { width: `${Math.max(12, Math.min(100, available * 5))}%` }]} /></View>
+          <Text style={s.inventorySub}>{available} portions still available</Text>
+        </View>
+
+        <View style={s.quantityCard}>
+          <View><Text style={s.quantityTitle}>Quantity</Text><Text style={s.inventorySub}>Total {(current * safeQuantity).toLocaleString("vi-VN")}₫</Text></View>
+          <View style={s.quantityStepper}>
+            <Pressable disabled={safeQuantity <= 1} onPress={() => setQuantity((value) => Math.max(1, value - 1))} style={s.quantityStep}><Text style={s.quantityStepText}>−</Text></Pressable>
+            <Text style={s.selectedQuantity}>{safeQuantity}</Text>
+            <Pressable disabled={safeQuantity >= available} onPress={() => setQuantity((value) => Math.min(available, value + 1))} style={s.quantityStep}><Text style={s.quantityStepText}>+</Text></Pressable>
           </View>
         </View>
 
-        {food.description ? (
-          <View style={s.infoCard}>
-            <Text style={s.infoCardTitle}>Description</Text>
-            <Text style={s.infoCardBody}>{food.description}</Text>
-          </View>
-        ) : null}
+        <Pressable onPress={() => onOpenShop(food.shop_id)} style={s.storeAddressCard}>
+          <View style={s.storeAvatar}><Ionicons name="storefront-outline" size={17} color={colors.muted} /></View>
+          <View style={{ flex: 1 }}><Text style={s.storeAddressName}>{food.shop_name}</Text><Text style={s.storeAddressText}>{food.address}</Text></View>
+          <Ionicons name="chevron-forward" size={16} color={colors.muted} />
+        </Pressable>
 
-        {food.storage_instructions ? (
-          <View style={s.infoCard}>
-            <Text style={s.infoCardTitle}>Storage & Preparation</Text>
-            <Text style={s.infoCardBody}>{food.storage_instructions}</Text>
-          </View>
-        ) : null}
-
-        <View style={s.guaranteeCard}>
-          <Ionicons name="time-outline" size={22} color={colors.deepGreen} />
-          <View style={{ flex: 1, gap: 2 }}>
-            <Text style={s.guaranteeTitle}>20-Minute Hold Guarantee</Text>
-            <Text style={s.guaranteeText}>
-              No prepayment required. When reserved, your food is held at the counter for 20 minutes.
-            </Text>
-          </View>
+        <View style={s.holdBanner}>
+          <Ionicons name="time-outline" size={17} color={colors.ink} />
+          <View style={{ flex: 1 }}><Text style={s.inventoryTitle}>Hold this order for 15–30 min</Text><Text style={s.inventorySub}>Tap “I’m on my way” to reserve it while you travel. Deposit refunded on pickup.</Text></View>
         </View>
 
-        {!!error && <Text style={s.errorBanner}>{error}</Text>}
-
-        <Pressable
-          style={[s.cta, busy && { opacity: 0.7 }]}
-          disabled={busy}
-          onPress={() => void handleReserve()}
-        >
-          <Text style={s.ctaText}>
-            {busy ? "Holding meal…" : "I’m on my way · Hold a meal"}
-          </Text>
-        </Pressable>
+        {food.description || food.storage_instructions ? <Pressable style={s.foodSafetyLink} onPress={onSafety}><Text style={s.foodSafetyLinkText}>Food details & safety</Text><Ionicons name="chevron-forward" size={16} color={colors.primary} /></Pressable> : null}
+        <View style={s.foodActions}>
+          <Pressable style={s.primaryPillAction} onPress={onReserved}><Text style={s.primaryPillActionText}>I’m on my way</Text></Pressable>
+          <Pressable style={s.secondaryPillAction} onPress={onReserved}><Text style={s.secondaryPillActionText}>Schedule pickup</Text></Pressable>
+          <Pressable style={s.detailsAction} onPress={onSafety}><Text style={s.primaryPillActionText}>View detail</Text></Pressable>
+        </View>
       </ScrollView>
     </View>
   );
@@ -1640,6 +1690,15 @@ export default function App() {
 // ==========================================
 
 const s = StyleSheet.create({
+  simpleScreen: { flex: 1, backgroundColor: colors.white },
+  simpleHeader: { height: 54, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: colors.line },
+  simpleBack: { width: 38, height: 38, alignItems: "center", justifyContent: "center" },
+  simpleTitle: { color: colors.ink, fontSize: fontSizes.subtitle, fontWeight: "700" },
+  settingsSection: { margin: 18, padding: 18, borderWidth: 1, borderColor: colors.line, borderRadius: 18, backgroundColor: colors.white },
+  settingsHeading: { color: colors.ink, fontSize: fontSizes.subtitle, fontWeight: "700" },
+  settingsDescription: { color: colors.muted, fontSize: fontSizes.bodySmall, lineHeight: 20, marginTop: 7, marginBottom: 16 },
+  settingsRoleButton: { minHeight: 52, flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 14, borderRadius: 15, backgroundColor: colors.pale },
+  settingsRoleText: { flex: 1, color: colors.ink, fontSize: fontSizes.bodyMedium, fontWeight: "700" },
   safe: {
     flex: 1,
     backgroundColor: colors.white,
@@ -1724,6 +1783,43 @@ const s = StyleSheet.create({
     gap: 12,
     paddingBottom: 40,
   },
+  foodDetailHeader: { height: 122, paddingTop: 58, paddingHorizontal: 20, borderBottomWidth: 0 },
+  foodDetailBody: { paddingHorizontal: 20, paddingTop: 0, paddingBottom: 24, gap: 14 },
+  foodTitlePriceRow: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", paddingTop: 4 },
+  foodDetailName: { color: colors.ink, fontSize: 16, lineHeight: 24, fontWeight: "800" },
+  foodDetailPrice: { color: colors.primary, fontSize: 18, lineHeight: 27 },
+  pickupTimeBadge: { position: "absolute", top: 7, left: 6, height: 32, minWidth: 60, paddingHorizontal: 14, borderRadius: 15, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.white, alignItems: "center", justifyContent: "center" },
+  pickupTimeText: { color: colors.ink, fontSize: 9, fontWeight: "800" },
+  foodTagRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  foodTag: { flexDirection: "row", alignItems: "center", gap: 4, height: 25, paddingHorizontal: 10, borderRadius: 7, borderWidth: 1, borderColor: colors.line, backgroundColor: "#e8f3e9" },
+  foodTagText: { color: colors.ink, fontSize: 11 },
+  inventoryCard: { backgroundColor: colors.white, borderColor: colors.line, borderWidth: 1, padding: 15, borderRadius: 18, gap: 8 },
+  inventoryHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingBottom: 4 },
+  inventoryTitle: { color: colors.ink, fontSize: 12, lineHeight: 18, fontWeight: "800" },
+  inventorySub: { color: colors.muted, fontSize: 11, lineHeight: 17 },
+  inventoryPill: { height: 30, borderRadius: 15, borderColor: colors.primary, borderWidth: 1, justifyContent: "center", paddingHorizontal: 15 },
+  inventoryPillText: { color: colors.ink, fontSize: 11 },
+  inventoryTrack: { height: 5, borderRadius: 3, overflow: "hidden", backgroundColor: "#d4d4d4" },
+  inventoryFill: { height: "100%", backgroundColor: colors.primary },
+  quantityCard: { backgroundColor: colors.white, borderColor: colors.line, borderWidth: 1, padding: 15, borderRadius: 18, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  quantityTitle: { color: colors.ink, fontSize: 12, lineHeight: 18 },
+  quantityStepper: { flexDirection: "row", alignItems: "center", gap: 14 },
+  quantityStep: { width: 28, height: 28, borderRadius: 14, backgroundColor: "#e8f3e9", alignItems: "center", justifyContent: "center" },
+  quantityStepText: { color: colors.ink, fontSize: 17, lineHeight: 22 },
+  selectedQuantity: { color: colors.ink, fontSize: 12 },
+  storeAddressCard: { backgroundColor: colors.white, borderColor: colors.line, borderWidth: 1, borderRadius: 18, padding: 15, flexDirection: "row", alignItems: "center", gap: 12 },
+  storeAvatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#eee", borderWidth: 1, borderColor: colors.line, alignItems: "center", justifyContent: "center" },
+  storeAddressName: { color: colors.ink, fontSize: 12, lineHeight: 18 },
+  storeAddressText: { color: colors.muted, fontSize: 10, lineHeight: 15 },
+  holdBanner: { backgroundColor: colors.white, borderColor: colors.primary, borderWidth: 1, padding: 15, borderRadius: 18, flexDirection: "row", gap: 10, alignItems: "flex-start" },
+  foodSafetyLink: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 4, paddingVertical: 6 },
+  foodSafetyLinkText: { color: colors.primary, fontSize: 12, fontWeight: "700" },
+  foodActions: { flexDirection: "row", flexWrap: "wrap", gap: 10, paddingTop: 4 },
+  primaryPillAction: { flex: 1, minWidth: 140, height: 48, borderRadius: 24, backgroundColor: colors.primary, alignItems: "center", justifyContent: "center" },
+  primaryPillActionText: { color: colors.white, fontSize: 13, fontWeight: "600" },
+  secondaryPillAction: { flex: 1, minWidth: 140, height: 48, borderRadius: 24, borderWidth: 1, borderColor: colors.primary, alignItems: "center", justifyContent: "center" },
+  secondaryPillActionText: { color: colors.ink, fontSize: 13 },
+  detailsAction: { width: "100%", height: 48, borderRadius: 24, backgroundColor: colors.primary, alignItems: "center", justifyContent: "center" },
   detailPhoto: {
     height: 220,
     borderRadius: 18,

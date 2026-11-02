@@ -36,6 +36,12 @@ CREATE TABLE IF NOT EXISTS food_items (
   quantity_available INT NOT NULL DEFAULT 0,
   allergens JSON NOT NULL,
   storage_instructions TEXT,
+  storage_type ENUM('refrigerated','room_temperature','freezer') NOT NULL DEFAULT 'room_temperature',
+  label_image_url TEXT,
+  reheating_instructions TEXT,
+  refrigeration_requirement TEXT,
+  origin_info JSON,
+  seller_commitments JSON,
   prepared_at DATETIME,
   expires_at DATETIME,
   pickup_starts_at DATETIME,
@@ -165,4 +171,43 @@ CREATE TABLE IF NOT EXISTS reviews (
   CONSTRAINT fk_reviews_shop FOREIGN KEY (shop_id) REFERENCES shops(id),
   CONSTRAINT chk_review_rating CHECK (rating BETWEEN 1 AND 5),
   UNIQUE KEY uq_review_order_author (order_id, author_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS waitlists (
+  id CHAR(36) NOT NULL PRIMARY KEY,
+  food_item_id CHAR(36) NOT NULL,
+  user_id CHAR(36) NOT NULL,
+  queue_position INT NOT NULL DEFAULT 1,
+  quantity INT NOT NULL DEFAULT 1,
+  status ENUM('waiting','offered','claimed','expired','cancelled') NOT NULL DEFAULT 'waiting',
+  offered_at DATETIME,
+  offer_expires_at DATETIME,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_waitlists_food FOREIGN KEY (food_item_id) REFERENCES food_items(id) ON DELETE CASCADE,
+  CONSTRAINT fk_waitlists_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_waitlists_food_status (food_item_id, status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS seller_pricing_rules (
+  shop_id CHAR(36) NOT NULL PRIMARY KEY,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  tiers JSON NOT NULL,
+  cutoff_minutes INT NOT NULL DEFAULT 30,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_pricing_rules_shop FOREIGN KEY (shop_id) REFERENCES shops(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS seller_shift_closures (
+  id CHAR(36) NOT NULL PRIMARY KEY,
+  shop_id CHAR(36) NOT NULL,
+  seller_id CHAR(36) NOT NULL,
+  revenue DECIMAL(12,2) NOT NULL DEFAULT 0,
+  completed_orders INT NOT NULL DEFAULT 0,
+  sold_portions INT NOT NULL DEFAULT 0,
+  gifted_portions INT NOT NULL DEFAULT 0,
+  leftover_portions INT NOT NULL DEFAULT 0,
+  closed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_shift_closures_shop FOREIGN KEY (shop_id) REFERENCES shops(id) ON DELETE CASCADE,
+  CONSTRAINT fk_shift_closures_seller FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_shift_closures_shop_date (shop_id, closed_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

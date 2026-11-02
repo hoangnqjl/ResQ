@@ -10,8 +10,18 @@
       "backgroundColor": "#00000000",
       "translucent": true
     },
-    "android": { "package": "com.resq.foodapp", "adaptiveIcon": { "backgroundColor": "#176b48" } },
-    "ios": { "bundleIdentifier": "com.resq.foodapp", "supportsTablet": false },
-    "plugins": []
+    "android": {
+      "package": "com.resq.foodapp",
+      "adaptiveIcon": {
+        "backgroundColor": "#176b48"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.resq.foodapp",
+      "supportsTablet": false
+    },
+    "plugins": [
+      "expo-font"
+    ]
   }
 }
