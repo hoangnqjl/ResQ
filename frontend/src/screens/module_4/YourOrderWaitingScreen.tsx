@@ -21,10 +21,10 @@ export default function YourOrderWaitingScreen({ food, reservation, onBack, onNa
     <View style={s.container}>
       <View style={s.header}>
         <Pressable onPress={onBack} style={s.backBtn} hitSlop={10}>
-          <Ionicons name="arrow-back" size={24} color={colors.ink} />
+          <Text style={s.backIcon}>‹</Text>
         </Pressable>
-        <Text style={s.headerTitle}>Đơn của bạn (Đang chờ)</Text>
-        <View style={{ width: 24 }} />
+        <Text style={s.headerTitle}>Your Order (Pending)</Text>
+        <View style={{ width: 38 }} />
       </View>
 
       <ScrollView contentContainerStyle={s.content}>
@@ -46,50 +46,50 @@ export default function YourOrderWaitingScreen({ food, reservation, onBack, onNa
             </View>
           </View>
           <View style={s.stepLabels}>
-            <Text style={s.stepLabelTextActive}>Đã giữ chỗ</Text>
-            <Text style={s.stepLabelTextActive}>Đang đến lấy</Text>
-            <Text style={s.stepLabelText}>Đã nhận món</Text>
+            <Text style={s.stepLabelTextActive}>Reserved</Text>
+            <Text style={s.stepLabelTextActive}>On the way</Text>
+            <Text style={s.stepLabelText}>Picked up</Text>
           </View>
         </View>
 
         <View style={s.countdownBanner}>
           <Ionicons name="time" size={24} color={colors.primary} />
           <View style={{ flex: 1 }}>
-            <Text style={s.countdownTitle}>Suất đang được giữ trong {reservation?.holdMinutes ?? 20} phút</Text>
-            <Text style={s.countdownSub}>Cửa hàng đang đóng gói sẵn suất ăn của bạn</Text>
+            <Text style={s.countdownTitle}>Meal held for {reservation?.holdMinutes ?? 20} minutes</Text>
+            <Text style={s.countdownSub}>Store is packing your meal</Text>
           </View>
         </View>
 
         <View style={s.codeCard}>
-          <Text style={s.codeHeader}>MÃ NHẬN HÀNG NHANH</Text>
+          <Text style={s.codeHeader}>QUICK PICKUP CODE</Text>
           <Text style={s.codeValue}>{reservation?.pickupCode ?? "—"}</Text>
-          <Text style={s.codeSub}>Xuất trình cho nhân viên tại quầy</Text>
+          <Text style={s.codeSub}>Present this code to store staff</Text>
         </View>
 
         <View style={s.card}>
-          <Text style={s.cardTitle}>Thông tin cửa hàng</Text>
+          <Text style={s.cardTitle}>Store Information</Text>
           <Text style={s.shopName}>{food?.shop_name ?? "ResQ Demo Kitchen"}</Text>
           <Text style={s.shopAddress}>{food?.address ?? "Pickup address"}</Text>
 
           <View style={s.quickActions}>
             <Pressable style={s.quickBtn}>
               <Ionicons name="navigate-outline" size={18} color={colors.primary} />
-              <Text style={s.quickBtnText}>Mở bản đồ</Text>
+              <Text style={s.quickBtnText}>Open Map</Text>
             </Pressable>
             <Pressable style={s.quickBtn}>
               <Ionicons name="call-outline" size={18} color={colors.primary} />
-              <Text style={s.quickBtnText}>Gọi quán</Text>
+              <Text style={s.quickBtnText}>Call Store</Text>
             </Pressable>
           </View>
         </View>
 
         <View style={s.footerLinks}>
           <Pressable style={s.linkBtn} onPress={() => onNavigate("overdueOrder")}>
-            <Text style={s.linkBtnText}>Xem màn hình cảnh báo quá hạn (Screen 52)</Text>
+            <Text style={s.linkBtnText}>View Overdue Warning (Screen 52)</Text>
             <Ionicons name="arrow-forward" size={16} color={colors.primary} />
           </Pressable>
           <Pressable style={s.linkBtn} onPress={() => onNavigate("cancelRelease")}>
-            <Text style={[s.linkBtnText, { color: colors.danger }]}>Hủy & Giải phóng suất ăn (Screen 53)</Text>
+            <Text style={[s.linkBtnText, { color: colors.danger }]}>Cancel & Release Meal (Screen 53)</Text>
             <Ionicons name="arrow-forward" size={16} color={colors.danger} />
           </Pressable>
         </View>
@@ -101,17 +101,37 @@ export default function YourOrderWaitingScreen({ food, reservation, onBack, onNa
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.canvas },
   header: {
-    height: 52,
+    height: 56,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
+    paddingTop: 4,
     backgroundColor: colors.white,
     borderBottomWidth: 1,
     borderBottomColor: colors.line,
   },
-  backBtn: { padding: 4 },
-  headerTitle: { fontSize: fontSizes.subtitle, fontWeight: "700", color: colors.ink },
+  backBtn: {
+    height: 38,
+    width: 38,
+    borderRadius: 19,
+    borderWidth: 1,
+    borderColor: colors.line,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  backIcon: {
+    fontSize: 24,
+    color: colors.ink,
+    marginTop: -3,
+  },
+  headerTitle: {
+    fontSize: fontSizes.bodyLarge,
+    fontWeight: "800",
+    color: colors.ink,
+    flex: 1,
+    textAlign: "center",
+  },
   content: { padding: 16, gap: 14, paddingBottom: 60 },
   badgeBox: { alignItems: "flex-start" },
   badge: {

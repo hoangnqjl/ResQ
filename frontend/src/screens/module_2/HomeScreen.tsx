@@ -16,24 +16,12 @@ import { colors, fontSizes } from "../../theme";
 import { BottomNavBar } from "../../components/BottomNavBar";
 import { FallbackPhoto } from "../../components/FallbackPhoto";
 import { foodPhoto } from "../../data/designPhotos";
-import { imageUrl, type CommunityFood } from "../../services/communityApi";
+import { imageUrl } from "../../services/communityApi";
 import { MOCK_FOODS } from "../../data/offlineMockData";
 
-export type Food = {
-  id: string;
-  name: string;
-  description?: string;
-  image_url?: string;
-  original_price: number | string;
-  current_price: number | string;
-  quantity_available: number;
-  shop_id: string;
-  shop_name: string;
-  address: string;
-  verified: number | boolean;
-  reputation_score?: number | string;
-  storage_instructions?: string;
-};
+import type { CommunityFood } from "../../services/communityApi";
+
+export type Food = CommunityFood;
 
 type Props = {
   userId: string;
@@ -61,8 +49,6 @@ const money = (value: string | number) =>
 export default function HomeScreen({
   userId,
   userName,
-  role = "buyer",
-  onOpenSellerDashboard,
   activeTab,
   onOpenMenu,
   onOpenAlerts,
@@ -103,14 +89,14 @@ export default function HomeScreen({
       .then(([foodResult, savedResult]) => {
         if (!mounted) return;
 
-        const items = foodResult.items && foodResult.items.length > 0 ? foodResult.items as CommunityFood[] : MOCK_FOODS;
-        setFoods(items.map((food) => ({ ...food, description: food.description ?? undefined, image_url: food.image_url ?? undefined, verified: food.verified ?? false, storage_instructions: food.storage_instructions ?? undefined })));
+        const items = foodResult.items && foodResult.items.length > 0 ? (foodResult.items as Food[]) : MOCK_FOODS;
+        setFoods(items);
         setFavorites(savedResult.items ?? []);
         setError("");
       })
       .catch(() => {
         if (mounted) {
-          setFoods(MOCK_FOODS.map((food) => ({ ...food, description: food.description ?? undefined, image_url: food.image_url ?? undefined, verified: food.verified ?? false, storage_instructions: food.storage_instructions ?? undefined })));
+          setFoods(MOCK_FOODS);
           setFavorites(["44444444-4444-4444-8444-444444444441"]);
           setError("");
         }
@@ -138,9 +124,8 @@ export default function HomeScreen({
 
         if (
           query &&
-          !`${food.name} ${food.shop_name} ${
-            food.description ?? ""
-          }`
+          !`${food.name} ${food.shop_name} ${food.description ?? ""
+            }`
             .toLowerCase()
             .includes(query.toLowerCase())
         ) {
@@ -291,19 +276,6 @@ export default function HomeScreen({
         ) : (
           <>
             <Text style={s.pageTitle}>{title}</Text>
-
-            {role === "seller" && activeTab === "Home" && (
-              <View style={s.sellerDashboardCard}>
-                <View style={s.sellerDashboardCopy}>
-                  <Text style={s.sellerDashboardEyebrow}>SELLER DASHBOARD</Text>
-                  <Text style={s.sellerDashboardTitle}>Manage your store</Text>
-                  <Text style={s.sellerDashboardSubtitle}>Listings, shifts, and customer feedback</Text>
-                </View>
-                <Pressable onPress={onOpenSellerDashboard} style={s.sellerDashboardButton} accessibilityRole="button">
-                  <Ionicons name="arrow-forward" size={18} color={colors.white} />
-                </Pressable>
-              </View>
-            )}
 
             <Text style={s.subtitle}>
               {featured?.address ||
@@ -596,12 +568,6 @@ const s = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 24,
   },
-  sellerDashboardCard: { flexDirection: "row", alignItems: "center", backgroundColor: colors.pale, borderRadius: 18, padding: 16, marginTop: 18, marginBottom: 18, borderWidth: 1, borderColor: "#dce9df" },
-  sellerDashboardCopy: { flex: 1, gap: 4 },
-  sellerDashboardEyebrow: { color: colors.primary, fontSize: fontSizes.micro, fontWeight: "800", letterSpacing: 0.8 },
-  sellerDashboardTitle: { color: colors.ink, fontSize: fontSizes.subtitle, fontWeight: "800" },
-  sellerDashboardSubtitle: { color: colors.muted, fontSize: fontSizes.caption },
-  sellerDashboardButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.primary, alignItems: "center", justifyContent: "center" },
 
   pageTitle: {
     color: colors.ink,

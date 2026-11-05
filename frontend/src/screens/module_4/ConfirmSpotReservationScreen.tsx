@@ -37,10 +37,10 @@ export default function ConfirmSpotReservationScreen({ food, onBack, onHold }: P
     <View style={s.container}>
       <View style={s.header}>
         <Pressable onPress={onBack} style={s.backBtn} hitSlop={10}>
-          <Ionicons name="arrow-back" size={24} color={colors.ink} />
+          <Text style={s.backIcon}>‹</Text>
         </Pressable>
-        <Text style={s.headerTitle}>Xác nhận giữ chỗ</Text>
-        <View style={{ width: 24 }} />
+        <Text style={s.headerTitle}>Confirm Spot Reservation</Text>
+        <View style={{ width: 38 }} />
       </View>
 
       <ScrollView contentContainerStyle={s.content}>
@@ -53,15 +53,15 @@ export default function ConfirmSpotReservationScreen({ food, onBack, onHold }: P
             style={s.foodThumb}
           />
           <View style={{ flex: 1 }}>
-            <Text style={s.foodName}>{food?.name ?? "Combo Sushi & Cơm"} × {quantity}</Text>
+            <Text style={s.foodName}>{food?.name ?? "Combo Sushi & Rice"} × {quantity}</Text>
             <Text style={s.shopSub}>{food?.shop_name ?? "ResQ Demo Kitchen"} · {food?.address ?? "Pickup address"}</Text>
-            <Text style={s.closeTime}>Quán đóng cửa lúc 22:45</Text>
+            <Text style={s.closeTime}>Store closes at 22:45</Text>
             <Text style={s.priceHighlight}>{money(price * quantity)}</Text>
           </View>
         </View>
 
         <View style={s.card}>
-          <Text style={s.cardTitle}>Số lượng suất ăn:</Text>
+          <Text style={s.cardTitle}>Portion Quantity:</Text>
           <View style={s.qtyRow}>
             <Pressable
               style={[s.qtyBtn, quantity <= 1 && s.qtyBtnDisabled]}
@@ -83,11 +83,11 @@ export default function ConfirmSpotReservationScreen({ food, onBack, onHold }: P
 
         <View style={s.card}>
           <View style={s.rowBetween}>
-            <Text style={s.cardTitle}>Thời gian khóa giữ suất</Text>
-            <Text style={s.badgeHighlight}>{minutes} phút đã chọn</Text>
+            <Text style={s.cardTitle}>Holding Duration</Text>
+            <Text style={s.badgeHighlight}>{minutes} mins selected</Text>
           </View>
           <Text style={s.cardSub}>
-            Hệ thống khóa suất ăn tạm thời trong lúc bạn đang di chuyển đến quán.
+            The system temporarily locks this meal while you are heading to the store.
           </Text>
 
           <View style={s.timeRow}>
@@ -97,7 +97,7 @@ export default function ConfirmSpotReservationScreen({ food, onBack, onHold }: P
                 style={[s.timeBtn, minutes === m && s.timeBtnActive]}
                 onPress={() => setMinutes(m)}
               >
-                <Text style={[s.timeText, minutes === m && s.timeTextActive]}>{m} phút</Text>
+                <Text style={[s.timeText, minutes === m && s.timeTextActive]}>{m} mins</Text>
               </Pressable>
             ))}
           </View>
@@ -105,18 +105,18 @@ export default function ConfirmSpotReservationScreen({ food, onBack, onHold }: P
           <View style={s.alertNote}>
             <Ionicons name="information-circle-outline" size={20} color={colors.primary} />
             <Text style={s.alertText}>
-              Suất ăn được giữ riêng cho bạn. Sau khi hết thời gian mà chưa đến lấy, suất sẽ tự động giải phóng cho người khác hoặc chuyển qua Waitlist.
+              This meal is reserved specifically for you. If the time expires without pickup, it will automatically release to others or move to the waitlist.
             </Text>
           </View>
         </View>
 
         <View style={s.card}>
-          <Text style={s.cardTitle}>Khung giờ lấy món (Pickup Window)</Text>
+          <Text style={s.cardTitle}>Pickup Window</Text>
           <View style={s.windowRow}>
             <Ionicons name="bicycle-outline" size={24} color={colors.primary} />
             <View>
-              <Text style={s.windowTime}>Ước tính đến trước {calculateArrival()}</Text>
-            <Text style={s.windowSub}>Thời gian đến dự kiến được tính theo thời gian di chuyển của bạn.</Text>
+              <Text style={s.windowTime}>Estimated arrival before {calculateArrival()}</Text>
+              <Text style={s.windowSub}>Estimated arrival time based on your travel time.</Text>
             </View>
           </View>
         </View>
@@ -124,16 +124,16 @@ export default function ConfirmSpotReservationScreen({ food, onBack, onHold }: P
 
       <View style={s.bottom}>
         <View>
-          <Text style={s.cọcNotice}>Cọc giữ chỗ: 10.000đ (Hoàn 100%)</Text>
+          <Text style={s.cọcNotice}>Deposit: 10,000đ (100% Refundable)</Text>
           <Text style={s.bottomTotal}>{money(price * quantity)}</Text>
         </View>
         <Pressable style={[s.actionBtn, busy && { opacity: 0.65 }]} disabled={busy} onPress={async () => {
           setBusy(true);
           try { await onHold(minutes, quantity); }
-          catch (error) { Alert.alert("Không thể giữ suất", error instanceof Error ? error.message : "Vui lòng thử lại."); }
+          catch (error) { Alert.alert("Unable to hold spot", error instanceof Error ? error.message : "Please try again."); }
           finally { setBusy(false); }
         }}>
-          <Text style={s.actionBtnText}>{busy ? "Đang giữ suất…" : "Giữ suất và tiếp tục đặt cọc"}</Text>
+          <Text style={s.actionBtnText}>{busy ? "Reserving spot…" : "Hold Spot & Proceed to Deposit"}</Text>
           <Ionicons name="arrow-forward" size={18} color={colors.white} />
         </Pressable>
       </View>
@@ -144,17 +144,37 @@ export default function ConfirmSpotReservationScreen({ food, onBack, onHold }: P
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.canvas },
   header: {
-    height: 52,
+    height: 56,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
+    paddingTop: 4,
     backgroundColor: colors.white,
     borderBottomWidth: 1,
     borderBottomColor: colors.line,
   },
-  backBtn: { padding: 4 },
-  headerTitle: { fontSize: fontSizes.subtitle, fontWeight: "700", color: colors.ink },
+  backBtn: {
+    height: 38,
+    width: 38,
+    borderRadius: 19,
+    borderWidth: 1,
+    borderColor: colors.line,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  backIcon: {
+    fontSize: 24,
+    color: colors.ink,
+    marginTop: -3,
+  },
+  headerTitle: {
+    fontSize: fontSizes.bodyLarge,
+    fontWeight: "800",
+    color: colors.ink,
+    flex: 1,
+    textAlign: "center",
+  },
   content: { padding: 16, gap: 14, paddingBottom: 100 },
   badgeBox: { alignItems: "flex-start" },
   badge: {

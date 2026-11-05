@@ -27,10 +27,10 @@ export default function PickupTimeSlotScreen({ food, onBack, onChoose }: Props) 
     <View style={s.container}>
       <View style={s.header}>
         <Pressable onPress={onBack} style={s.backBtn} hitSlop={10}>
-          <Ionicons name="arrow-back" size={24} color={colors.ink} />
+          <Text style={s.backIcon}>‹</Text>
         </Pressable>
-        <Text style={s.headerTitle}>Khung giờ nhận món</Text>
-        <View style={{ width: 24 }} />
+        <Text style={s.headerTitle}>Pickup Time Slot</Text>
+        <View style={{ width: 38 }} />
       </View>
 
       <ScrollView contentContainerStyle={s.content}>
@@ -114,17 +114,37 @@ export default function PickupTimeSlotScreen({ food, onBack, onChoose }: Props) 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.canvas },
   header: {
-    height: 52,
+    height: 56,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
+    paddingTop: 4,
     backgroundColor: colors.white,
     borderBottomWidth: 1,
     borderBottomColor: colors.line,
   },
-  backBtn: { padding: 4 },
-  headerTitle: { fontSize: fontSizes.subtitle, fontWeight: "700", color: colors.ink },
+  backBtn: {
+    height: 38,
+    width: 38,
+    borderRadius: 19,
+    borderWidth: 1,
+    borderColor: colors.line,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  backIcon: {
+    fontSize: 24,
+    color: colors.ink,
+    marginTop: -3,
+  },
+  headerTitle: {
+    fontSize: fontSizes.bodyLarge,
+    fontWeight: "800",
+    color: colors.ink,
+    flex: 1,
+    textAlign: "center",
+  },
   content: { padding: 16, gap: 14, paddingBottom: 100 },
   badgeBox: { alignItems: "flex-start" },
   badge: {

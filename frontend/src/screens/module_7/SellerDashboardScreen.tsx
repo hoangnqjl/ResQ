@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { API_URL } from "../../api";
+import { MOCK_SHOPS, MOCK_FOODS } from "../../data/offlineMockData";
 
 type Props = { userId: string; onBack: () => void; onPostSurplus: () => void; onScanQr: () => void; onMenuManager: () => void; onShiftReport: () => void; onOpenSettings: () => void };
 type Shop = { id: string; name: string };
@@ -10,29 +11,51 @@ type Order = { order_id?: string; id?: string; shop_id: string; food_name?: stri
 
 const money = (value: number | string) => `${Number(value || 0).toLocaleString("vi-VN")}₫`;
 
+const FALLBACK_SHOPS: Shop[] = [
+  { id: "33333333-3333-4333-8333-333333333336", name: "The Corner Kitchen" },
+  { id: "33333333-3333-4333-8333-333333333333", name: "ResQ Central Kitchen" },
+];
+
+const FALLBACK_FOODS: Food[] = [
+  { id: "f-1", name: "Grilled Chicken Rice", shop_id: "33333333-3333-4333-8333-333333333336", current_price: 35000, original_price: 70000, quantity_available: 4 },
+  { id: "f-2", name: "Baguette Combo", shop_id: "33333333-3333-4333-8333-333333333336", current_price: 25000, original_price: 35000, quantity_available: 2 },
+];
+
+const FALLBACK_ORDERS: Order[] = [
+  { order_id: "ORD-84920", id: "ORD-84920", shop_id: "33333333-3333-4333-8333-333333333336", food_name: "Chicken Rice", order_status: "reserved", total_amount: 35000, quantity: 1 },
+  { order_id: "ORD-84920B", id: "ORD-84920B", shop_id: "33333333-3333-4333-8333-333333333336", food_name: "Baguette Combo", order_status: "reserved", total_amount: 25000, quantity: 1 },
+  { order_id: "ORD-84921", id: "ORD-84921", shop_id: "33333333-3333-4333-8333-333333333336", food_name: "Chicken Rice", order_status: "cancelled", total_amount: 35000, quantity: 1 },
+  { order_id: "ORD-84922", id: "ORD-84922", shop_id: "33333333-3333-4333-8333-333333333336", food_name: "Baguette Combo", order_status: "cancelled", total_amount: 25000, quantity: 1 },
+];
+
 export default function SellerDashboardScreen({ userId, onBack, onPostSurplus, onScanQr, onMenuManager, onShiftReport, onOpenSettings }: Props) {
-  const [shops, setShops] = useState<Shop[]>([]);
-  const [shopId, setShopId] = useState("");
-  const [foods, setFoods] = useState<Food[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [shops, setShops] = useState<Shop[]>(FALLBACK_SHOPS);
+  const [shopId, setShopId] = useState("33333333-3333-4333-8333-333333333336");
+  const [foods, setFoods] = useState<Food[]>(FALLBACK_FOODS);
+  const [orders, setOrders] = useState<Order[]>(FALLBACK_ORDERS);
+  const [loading, setLoading] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [shiftName, setShiftName] = useState("Evening shift");
 
   useEffect(() => {
     let active = true;
     void Promise.all([
-      fetch(`${API_URL}/api/shops?ownerId=${encodeURIComponent(userId)}`).then((r) => r.json()),
-      fetch(`${API_URL}/api/foods`).then((r) => r.json()),
-      fetch(`${API_URL}/api/seller/${encodeURIComponent(userId)}/orders`).then((r) => r.json()),
+      fetch(`${API_URL}/api/shops?ownerId=${encodeURIComponent(userId)}`).then((r) => r.json()).catch(() => ({})),
+      fetch(`${API_URL}/api/foods`).then((r) => r.json()).catch(() => ({})),
+      fetch(`${API_URL}/api/seller/${encodeURIComponent(userId)}/orders`).then((r) => r.json()).catch(() => ({})),
     ]).then(([shopResult, foodResult, orderResult]) => {
       if (!active) return;
-      const rows = shopResult.items ?? [];
-      setShops(rows);
-      setShopId(rows[0]?.id ?? "");
-      setFoods(foodResult.items ?? []);
-      setOrders(orderResult.items ?? []);
-    }).catch(() => {}).finally(() => { if (active) setLoading(false); });
+      if (shopResult?.items && shopResult.items.length > 0) {
+        setShops(shopResult.items);
+        setShopId(shopResult.items[0].id);
+      }
+      if (foodResult?.items && foodResult.items.length > 0) {
+        setFoods(foodResult.items);
+      }
+      if (orderResult?.items && orderResult.items.length > 0) {
+        setOrders(orderResult.items);
+      }
+    }).catch(() => {});
     return () => { active = false; };
   }, [userId]);
 
@@ -105,20 +128,188 @@ export default function SellerDashboardScreen({ userId, onBack, onPostSurplus, o
   </View>;
 }
 
-function discount(food: Food) { const original = Number(food.original_price); return original > 0 ? Math.max(0, Math.round((1 - Number(food.current_price) / original) * 100)) : 0; }
-function Metric({ label, value, hint, orange = false }: { label: string; value: string; hint: string; orange?: boolean }) { return <View style={s.metric}><Text style={s.metricLabel}>{label}</Text><View style={s.metricBottom}><Text numberOfLines={1} adjustsFontSizeToFit style={[s.metricValue, orange && s.orange]}>{value}</Text><Text style={s.hint}>{hint}</Text></View></View>; }
-function Section({ title, onViewAll, children }: { title: string; onViewAll: () => void; children: React.ReactNode }) { return <View style={s.section}><View style={s.sectionHeader}><Text style={s.sectionTitle}>{title}</Text><Pressable onPress={onViewAll}><Text style={s.viewAll}>View all</Text></Pressable></View>{children}</View>; }
-function Empty({ text }: { text: string }) { return <Text style={s.empty}>{text}</Text>; }
+function discount(food: Food) {
+  const original = Number(food.original_price);
+  return original > 0 ? Math.max(0, Math.round((1 - Number(food.current_price) / original) * 100)) : 0;
+}
 
-const c = { green: "#176c4a", dark: "#183c2b", ink: "#183c2b", white: "#ffffff", muted: "#738176", pale: "#e8f3ea", line: "#e3ebe4", orange: "#ed7200" };
+function Metric({
+  label,
+  value,
+  hint,
+  orange = false,
+}: {
+  label: string;
+  value: string;
+  hint: string;
+  orange?: boolean;
+}) {
+  return (
+    <View style={s.metric}>
+      <Text style={s.metricLabel}>{label}</Text>
+      <View style={s.metricBottom}>
+        <Text numberOfLines={1} style={[s.metricValue, orange && s.orange]}>
+          {value}
+        </Text>
+        <Text style={s.hint}>{hint}</Text>
+      </View>
+    </View>
+  );
+}
+
+function Section({
+  title,
+  onViewAll,
+  children,
+}: {
+  title: string;
+  onViewAll: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <View style={s.section}>
+      <View style={s.sectionHeader}>
+        <Text style={s.sectionTitle}>{title}</Text>
+        <Pressable onPress={onViewAll} hitSlop={8}>
+          <Text style={s.viewAll}>View all</Text>
+        </Pressable>
+      </View>
+      {children}
+    </View>
+  );
+}
+
+function Empty({ text }: { text: string }) {
+  return <Text style={s.empty}>{text}</Text>;
+}
+
+const c = {
+  green: "#176c4a",
+  dark: "#183c2b",
+  ink: "#183c2b",
+  white: "#ffffff",
+  muted: "#738176",
+  pale: "#e8f3ea",
+  line: "#e3ebe4",
+  orange: "#ed7200",
+};
+
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: c.white },
-  header: { minHeight: 63, paddingHorizontal: 16, paddingTop: 5, flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderBottomWidth: 1, borderColor: c.line, zIndex: 2 },
-  storeHeading: { flex: 1, gap: 2 }, titleTap: { flexDirection: "row", alignItems: "center", gap: 5 }, storeName: { color: c.ink, fontSize: 15, fontWeight: "800", maxWidth: 190 }, shiftLink: { flexDirection: "row", alignItems: "center", gap: 3 }, shiftText: { color: c.ink, fontSize: 10 },
-  headerActions: { flexDirection: "row", alignItems: "center", gap: 10 }, headerIcon: { width: 25, height: 32, alignItems: "center", justifyContent: "center" }, more: { width: 29, height: 29, borderRadius: 15, backgroundColor: "#f1f4f1", alignItems: "center", justifyContent: "center" },
-  popover: { position: "absolute", top: 52, right: 42, width: 150, backgroundColor: c.white, borderRadius: 12, padding: 6, elevation: 9, shadowColor: "#000", shadowOpacity: 0.14, shadowRadius: 10, zIndex: 5 }, popoverRow: { flexDirection: "row", alignItems: "center", gap: 8, padding: 8 }, popoverText: { color: c.ink, fontSize: 11 },
-  content: { padding: 14, paddingBottom: 28, gap: 9 }, shiftCard: { borderRadius: 16, backgroundColor: c.green, padding: 14, gap: 9 }, countdownRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }, closeTitle: { color: c.white, fontSize: 13, fontWeight: "800" }, closeSub: { color: "#d6ecdd", fontSize: 10, marginTop: 2 }, timer: { color: c.white, fontSize: 12, fontWeight: "800" }, actionsRow: { flexDirection: "row", gap: 9 }, postButton: { flex: 1, height: 34, flexDirection: "row", gap: 5, alignItems: "center", justifyContent: "center", borderRadius: 18, backgroundColor: "#105c3d" }, scanButton: { flex: 1, height: 34, alignItems: "center", justifyContent: "center", borderRadius: 18, backgroundColor: c.white }, actionLight: { color: c.white, fontSize: 11, fontWeight: "700" }, actionDark: { color: c.ink, fontSize: 11, fontWeight: "700" }, menuManager: { height: 29, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, backgroundColor: c.white, borderRadius: 16 }, menuManagerText: { color: c.ink, fontSize: 10, fontWeight: "600" },
-  shopPills: { gap: 7 }, shopPill: { paddingHorizontal: 11, paddingVertical: 7, borderRadius: 18, borderWidth: 1, borderColor: c.line }, shopPillActive: { backgroundColor: c.pale, borderColor: c.green }, shopPillText: { color: c.ink, fontSize: 10 }, shopPillTextActive: { color: c.green, fontWeight: "700" },
-  metricsRow: { flexDirection: "row", gap: 8 }, metric: { flex: 1, minHeight: 50, borderRadius: 11, borderWidth: 1, borderColor: c.line, paddingHorizontal: 10, paddingVertical: 7, justifyContent: "space-between" }, metricLabel: { color: c.ink, fontSize: 9 }, metricBottom: { flexDirection: "row", alignItems: "baseline", gap: 5 }, metricValue: { color: c.orange, fontSize: 15, fontWeight: "500", flexShrink: 1 }, orange: { color: c.orange }, hint: { color: "#8b958d", fontSize: 8 },
-  section: { gap: 6, marginTop: 2 }, sectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }, sectionTitle: { color: c.ink, fontSize: 12, fontWeight: "800" }, viewAll: { color: c.green, fontSize: 9, textDecorationLine: "underline" }, listCard: { borderRadius: 15, borderWidth: 1, borderColor: c.line, paddingHorizontal: 11, paddingVertical: 2 }, foodRow: { minHeight: 40, flexDirection: "row", alignItems: "center", gap: 7 }, orderRow: { minHeight: 39, flexDirection: "row", alignItems: "center", gap: 7 }, divider: { borderTopWidth: 1, borderColor: "#eef2ee" }, rowMain: { flex: 1, gap: 2 }, itemTitle: { color: c.ink, fontSize: 9, fontWeight: "600" }, discount: { color: c.ink, fontSize: 7, fontWeight: "400" }, itemSub: { color: c.muted, fontSize: 8 }, pricePill: { borderRadius: 12, paddingHorizontal: 7, paddingVertical: 5, backgroundColor: c.pale }, priceText: { color: c.green, fontSize: 7, fontWeight: "700" }, wasPrice: { color: c.muted, fontWeight: "400" }, depositPill: { borderRadius: 12, paddingHorizontal: 8, paddingVertical: 5, backgroundColor: c.pale }, depositText: { color: c.green, fontSize: 7, fontWeight: "600" }, cancelList: { borderRadius: 14, paddingHorizontal: 4 }, cancelRow: { minHeight: 24, flexDirection: "row", alignItems: "center", gap: 5 }, empty: { paddingVertical: 12, color: c.muted, fontSize: 9 },
+  root: { flex: 1, backgroundColor: "#f8faf8" },
+  header: {
+    height: 60,
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: c.white,
+    borderBottomWidth: 1,
+    borderColor: c.line,
+    zIndex: 2,
+  },
+  storeHeading: { flex: 1, gap: 3 },
+  titleTap: { flexDirection: "row", alignItems: "center", gap: 6 },
+  storeName: { color: c.ink, fontSize: 18, fontWeight: "800", maxWidth: 220 },
+  shiftLink: { flexDirection: "row", alignItems: "center", gap: 4 },
+  shiftText: { color: c.muted, fontSize: 13, fontWeight: "500" },
+  headerActions: { flexDirection: "row", alignItems: "center", gap: 12 },
+  headerIcon: { width: 34, height: 34, borderRadius: 17, backgroundColor: "#f3f6f3", alignItems: "center", justifyContent: "center" },
+  more: { width: 34, height: 34, borderRadius: 17, backgroundColor: "#f3f6f3", alignItems: "center", justifyContent: "center" },
+  popover: {
+    position: "absolute",
+    top: 54,
+    right: 16,
+    width: 170,
+    backgroundColor: c.white,
+    borderRadius: 14,
+    padding: 8,
+    elevation: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    zIndex: 10,
+    borderWidth: 1,
+    borderColor: c.line,
+  },
+  popoverRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10, paddingHorizontal: 10 },
+  popoverText: { color: c.ink, fontSize: 13, fontWeight: "500" },
+  content: { padding: 16, paddingBottom: 40, gap: 16 },
+  shiftCard: { borderRadius: 20, backgroundColor: c.green, padding: 18, gap: 14 },
+  countdownRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  closeTitle: { color: c.white, fontSize: 16, fontWeight: "800" },
+  closeSub: { color: "#d6ecdd", fontSize: 13, marginTop: 3 },
+  timer: { color: c.white, fontSize: 16, fontWeight: "800" },
+  actionsRow: { flexDirection: "row", gap: 12 },
+  postButton: {
+    flex: 1,
+    height: 44,
+    flexDirection: "row",
+    gap: 6,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 22,
+    backgroundColor: "#105c3d",
+  },
+  scanButton: {
+    flex: 1,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 22,
+    backgroundColor: c.white,
+  },
+  actionLight: { color: c.white, fontSize: 14, fontWeight: "700" },
+  actionDark: { color: c.ink, fontSize: 14, fontWeight: "700" },
+  menuManager: {
+    height: 40,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: c.white,
+    borderRadius: 20,
+  },
+  menuManagerText: { color: c.ink, fontSize: 13, fontWeight: "700" },
+  shopPills: { gap: 8 },
+  shopPill: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: c.line, backgroundColor: c.white },
+  shopPillActive: { backgroundColor: c.pale, borderColor: c.green },
+  shopPillText: { color: c.ink, fontSize: 13 },
+  shopPillTextActive: { color: c.green, fontWeight: "700" },
+  metricsRow: { flexDirection: "row", gap: 12 },
+  metric: {
+    flex: 1,
+    minHeight: 74,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: c.line,
+    backgroundColor: c.white,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    justifyContent: "space-between",
+  },
+  metricLabel: { color: c.muted, fontSize: 12, fontWeight: "600" },
+  metricBottom: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", marginTop: 4 },
+  metricValue: { color: c.orange, fontSize: 20, fontWeight: "800" },
+  orange: { color: c.orange },
+  hint: { color: "#8b958d", fontSize: 11, fontWeight: "600" },
+  section: { gap: 10, marginTop: 4 },
+  sectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  sectionTitle: { color: c.ink, fontSize: 16, fontWeight: "800" },
+  viewAll: { color: c.green, fontSize: 13, fontWeight: "600" },
+  listCard: { borderRadius: 16, borderWidth: 1, borderColor: c.line, backgroundColor: c.white, paddingHorizontal: 14, paddingVertical: 4 },
+  foodRow: { minHeight: 56, flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10 },
+  orderRow: { minHeight: 56, flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10 },
+  divider: { borderTopWidth: 1, borderColor: "#eef2ee" },
+  rowMain: { flex: 1, gap: 3 },
+  itemTitle: { color: c.ink, fontSize: 14, fontWeight: "700" },
+  discount: { color: c.orange, fontSize: 12, fontWeight: "700" },
+  itemSub: { color: c.muted, fontSize: 12 },
+  pricePill: { borderRadius: 14, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: c.pale },
+  priceText: { color: c.green, fontSize: 12, fontWeight: "700" },
+  wasPrice: { color: c.muted, fontWeight: "400", textDecorationLine: "line-through" },
+  depositPill: { borderRadius: 14, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: c.pale },
+  depositText: { color: c.green, fontSize: 12, fontWeight: "700" },
+  cancelList: { borderRadius: 16, borderWidth: 1, borderColor: c.line, backgroundColor: c.white, paddingHorizontal: 14, paddingVertical: 4 },
+  cancelRow: { minHeight: 50, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 8 },
+  empty: { paddingVertical: 18, color: c.muted, fontSize: 13, textAlign: "center" },
 });

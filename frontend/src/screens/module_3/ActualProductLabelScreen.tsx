@@ -29,15 +29,15 @@ export default function ActualProductLabelScreen({ food, onBack, onNavigate }: P
         <Pressable onPress={onBack} style={s.backBtn} hitSlop={10}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </Pressable>
-        <Text style={s.headerTitle}>Hình ảnh tem/mác thực tế</Text>
+        <Text style={s.headerTitle}>Actual Product Label</Text>
         <View style={{ width: 24 }} />
       </View>
 
       <ScrollView contentContainerStyle={s.content}>
         <View style={s.card}>
           <Text style={s.badge}>US - C1 - 31</Text>
-          <Text style={s.title}>Ảnh chụp nhãn thực phẩm tại quán</Text>
-          <Text style={s.sub}>Kiểm tra ngày sản xuất và hạn dùng trên tem mác</Text>
+          <Text style={s.title}>Store Product Label Photo</Text>
+          <Text style={s.sub}>Verify manufacturing and expiration dates on package label</Text>
 
           <Pressable style={[s.imageFrame, enlarged && s.imageFrameEnlarged]} onPress={() => setEnlarged(!enlarged)}>
             <FallbackPhoto
@@ -46,8 +46,8 @@ export default function ActualProductLabelScreen({ food, onBack, onNavigate }: P
               style={s.image}
             />
             <View style={s.labelOverlay}>
-              <Text style={s.labelOverlayText}>NSX: {formatSafetyDate(food?.manufacturing_date)}</Text>
-              <Text style={s.labelOverlayText}>HSD: {formatSafetyDate(food?.recommended_expiry)}</Text>
+              <Text style={s.labelOverlayText}>MFG: {formatSafetyDate(food?.manufacturing_date)}</Text>
+              <Text style={s.labelOverlayText}>EXP: {formatSafetyDate(food?.recommended_expiry)}</Text>
             </View>
             <View style={s.zoomBtn}>
               <Ionicons name={enlarged ? "contract" : "expand"} size={18} color={colors.white} />
@@ -56,21 +56,21 @@ export default function ActualProductLabelScreen({ food, onBack, onNavigate }: P
 
           <View style={s.infoBox}>
             <View style={s.infoRow}>
-              <Text style={s.infoKey}>Cửa hàng chụp:</Text>
+              <Text style={s.infoKey}>Store:</Text>
               <Text style={s.infoVal}>{food?.shop_name ?? "Seller has not provided a shop name"}</Text>
             </View>
             <View style={s.infoRow}>
-              <Text style={s.infoKey}>Quy cách niêm phong:</Text>
-              <Text style={s.infoVal}>Hộp giấy màng bọc vô trùng</Text>
+              <Text style={s.infoKey}>Packaging:</Text>
+              <Text style={s.infoVal}>Aseptic sealed food box</Text>
             </View>
             <View style={s.infoRow}>
-              <Text style={s.infoKey}>Trạng thái tem:</Text>
-              <Text style={s.infoValHighlight}>Còn nguyên vẹn</Text>
+              <Text style={s.infoKey}>Label Status:</Text>
+              <Text style={s.infoValHighlight}>Intact</Text>
             </View>
           </View>
 
           <Pressable style={s.nextBtn} onPress={() => onNavigate("storageInstructions")}>
-            <Text style={s.nextBtnText}>Xem hướng dẫn bảo quản (Screen 33)</Text>
+            <Text style={s.nextBtnText}>View Storage Instructions</Text>
             <Ionicons name="arrow-forward" size={18} color={colors.white} />
           </Pressable>
         </View>

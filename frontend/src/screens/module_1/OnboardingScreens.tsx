@@ -105,17 +105,18 @@ export function ShopSetupScreen({ onBack, onSave, busy }: { onBack: () => void; 
   const [saving, setSaving] = useState(false);
   const storeTypes = ["Bakery", "Restaurant", "Café", "Grocery", "Other"];
   const submit = async () => {
-    if (saving || !name.trim() || !address.trim()) return;
+    if (saving || !name.trim()) return;
+    const finalAddress = address.trim() || "Tổ 1, Phường Ngũ Hành Sơn, Đà Nẵng";
     setSaving(true);
-    try { await onSave(name.trim(), address.trim(), storeType, phone.trim()); }
+    try { await onSave(name.trim(), finalAddress, storeType, phone.trim()); }
     catch { Alert.alert("Could not save store", "Please check your details and try again."); }
     finally { setSaving(false); }
   };
   return <View style={s.storeRoot}>
     <View style={s.storeHeader}>
-      <Pressable onPress={onBack} style={s.roundButton} accessibilityLabel="Back"><Text style={s.headerIcon}>‹</Text></Pressable>
+      <Pressable onPress={onBack} style={s.backBtn} accessibilityLabel="Back"><Text style={s.backIcon}>‹</Text></Pressable>
       <Text style={s.setupHeaderTitle}>Setup Your Store</Text>
-      <Pressable style={s.roundButton} accessibilityLabel="More options"><Text style={s.headerIcon}>···</Text></Pressable>
+      <View style={{ width: 38 }} />
     </View>
     <ScrollView contentContainerStyle={s.storeContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
       <Text style={s.storeTitle}>Tell buyers about your store</Text>
@@ -134,7 +135,7 @@ export function ShopSetupScreen({ onBack, onSave, busy }: { onBack: () => void; 
       <TextInput value={phone} onChangeText={setPhone} keyboardType="phone-pad" placeholder="+84 90 123 4567" placeholderTextColor={colors.muted} style={s.storeInput} />
       <View style={{ height: 110 }} />
     </ScrollView>
-    <View style={s.storeCta}><Pressable disabled={busy || saving || !name.trim() || !address.trim()} onPress={() => void submit()} style={[s.primary, (!name.trim() || !address.trim()) && { opacity: 0.55 }]}><Text style={s.primaryText}>{busy || saving ? "Saving…" : "Save"}</Text></Pressable></View>
+    <View style={s.storeCta}><Pressable disabled={busy || saving || !name.trim()} onPress={() => void submit()} style={[s.primary, !name.trim() && { opacity: 0.55 }]}><Text style={s.primaryText}>{busy || saving ? "Saving…" : "Save"}</Text></Pressable></View>
   </View>;
 }
 
@@ -186,7 +187,30 @@ const s = StyleSheet.create({
   chipText: { color: colors.muted, fontSize: fontSizes.bodySmall },
   chipSelectedText: { color: colors.primary, fontWeight: "600" },
   storeRoot: { flex: 1, backgroundColor: colors.white },
-  storeHeader: { height: 52, paddingHorizontal: 18, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  storeHeader: {
+    height: 56,
+    paddingHorizontal: 16,
+    paddingTop: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
+  },
+  backBtn: {
+    height: 38,
+    width: 38,
+    borderRadius: 19,
+    borderWidth: 1,
+    borderColor: colors.line,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  backIcon: {
+    fontSize: 24,
+    color: colors.ink,
+    marginTop: -3,
+  },
   storeContent: { paddingHorizontal: 18, paddingTop: 24, paddingBottom: 16 },
   storeTitle: { color: colors.ink, fontSize: fontSizes.header, lineHeight: 31, fontWeight: "700", marginBottom: 8 },
   storeSubtitle: { color: colors.muted, fontSize: fontSizes.bodySmall, lineHeight: 19, marginBottom: 16 },

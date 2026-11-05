@@ -29,10 +29,10 @@ export default function MealDetailReservationScreen({ food, onBack, onNavigate }
     <View style={s.container}>
       <View style={s.header}>
         <Pressable onPress={onBack} style={s.backBtn} hitSlop={10}>
-          <Ionicons name="arrow-back" size={24} color={colors.ink} />
+          <Text style={s.backIcon}>‹</Text>
         </Pressable>
-        <Text style={s.headerTitle}>Chi tiết suất ăn (M4-D1)</Text>
-        <View style={{ width: 24 }} />
+        <Text style={s.headerTitle}>Meal Detail</Text>
+        <View style={{ width: 38 }} />
       </View>
 
       <ScrollView contentContainerStyle={s.content}>
@@ -43,13 +43,13 @@ export default function MealDetailReservationScreen({ food, onBack, onNavigate }
             style={s.image}
           />
           <View style={s.tag}>
-            <Text style={s.tagText}>Suất ăn có sẵn</Text>
+            <Text style={s.tagText}>Available meal</Text>
           </View>
         </View>
 
         <View style={s.infoCard}>
           <View style={s.rowBetween}>
-            <Text style={s.title}>{food?.name || "Combo Sushi & Cơm x2"}</Text>
+            <Text style={s.title}>{food?.name || "Combo Sushi & Rice x2"}</Text>
             <View style={s.rateBadge}>
               <Ionicons name="star" size={14} color="#f59e0b" />
               <Text style={s.rateText}>4.8</Text>
@@ -69,39 +69,39 @@ export default function MealDetailReservationScreen({ food, onBack, onNavigate }
             style={[s.tab, activeTab === "desc" && s.tabActive]}
             onPress={() => setActiveTab("desc")}
           >
-            <Text style={[s.tabText, activeTab === "desc" && s.tabTextActive]}>Mô tả món ăn</Text>
+            <Text style={[s.tabText, activeTab === "desc" && s.tabTextActive]}>Description</Text>
           </Pressable>
           <Pressable
             style={[s.tab, activeTab === "safety" && s.tabActive]}
             onPress={() => setActiveTab("safety")}
           >
-            <Text style={[s.tabText, activeTab === "safety" && s.tabTextActive]}>Thông tin an toàn</Text>
+            <Text style={[s.tabText, activeTab === "safety" && s.tabTextActive]}>Food Safety Info</Text>
           </Pressable>
         </View>
 
         {activeTab === "desc" ? (
           <View style={s.section}>
-            <Text style={s.sectionTitle}>Giới thiệu món ăn</Text>
+            <Text style={s.sectionTitle}>Meal Overview</Text>
             <Text style={s.descText}>{food?.description ?? "Seller has not added a description for this meal."}</Text>
             <Pressable style={s.cardBtn} onPress={() => onNavigate("confirmSpotReservation")}>
-              <Text style={s.cardBtnText}>Tiếp tục Xác nhận giữ chỗ (Screen 41)</Text>
+              <Text style={s.cardBtnText}>Proceed to Spot Reservation</Text>
               <Ionicons name="arrow-forward" size={18} color={colors.white} />
             </Pressable>
           </View>
         ) : (
           <View style={s.section}>
-            <Text style={s.sectionTitle}>Chi tiết an toàn thực phẩm</Text>
+            <Text style={s.sectionTitle}>Food Safety Details</Text>
             {[
-              { title: "Đồng hồ hạn an toàn", route: "foodSafetyCountdown" },
-              { title: "Ảnh chụp tem mác thực tế", route: "actualProductLabel" },
-              { title: "Mốc giờ hạn dùng", route: "expirationInfo" },
-              { title: "Hướng dẫn bảo quản", route: "storageInstructions" },
-              { title: "Yêu cầu hâm nóng", route: "reheatingInstructions" },
-              { title: "Yêu cầu tủ lạnh/đông", route: "refrigerationRequirement" },
-              { title: "Cảnh báo hạn dùng", route: "expirationWarning" },
-              { title: "Nguồn gốc món ăn", route: "foodOriginInfo" },
-              { title: "Cam kết người bán", route: "sellerCommitment" },
-              { title: "Quyền lợi khiếu nại", route: "termsComplaintRights" },
+              { title: "Safety Countdown Timer", route: "foodSafetyCountdown" },
+              { title: "Actual Product Label Photo", route: "actualProductLabel" },
+              { title: "Expiration Timeline", route: "expirationInfo" },
+              { title: "Storage Instructions", route: "storageInstructions" },
+              { title: "Reheating Instructions", route: "reheatingInstructions" },
+              { title: "Refrigeration Requirements", route: "refrigerationRequirement" },
+              { title: "Expiration Warnings", route: "expirationWarning" },
+              { title: "Food Origin Information", route: "foodOriginInfo" },
+              { title: "Seller Commitments", route: "sellerCommitment" },
+              { title: "Complaint & Refund Rights", route: "termsComplaintRights" },
             ].map((item, idx) => (
               <Pressable key={idx} style={s.specRow} onPress={() => onNavigate(item.route)}>
                 <Text style={s.specText}>{item.title}</Text>
@@ -114,11 +114,11 @@ export default function MealDetailReservationScreen({ food, onBack, onNavigate }
 
       <View style={s.bottom}>
         <View>
-          <Text style={s.priceLabel}>Giá giải cứu</Text>
+          <Text style={s.priceLabel}>Rescue Price</Text>
           <Text style={s.priceVal}>{money(price)}</Text>
         </View>
         <Pressable style={s.actionBtn} onPress={() => onNavigate("confirmSpotReservation")}>
-          <Text style={s.actionBtnText}>Tôi đang đến lấy (Giữ chỗ)</Text>
+          <Text style={s.actionBtnText}>Reserve Spot (I'm on my way)</Text>
         </Pressable>
       </View>
     </View>
@@ -128,17 +128,37 @@ export default function MealDetailReservationScreen({ food, onBack, onNavigate }
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.canvas },
   header: {
-    height: 52,
+    height: 56,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
+    paddingTop: 4,
     backgroundColor: colors.white,
     borderBottomWidth: 1,
     borderBottomColor: colors.line,
   },
-  backBtn: { padding: 4 },
-  headerTitle: { fontSize: fontSizes.subtitle, fontWeight: "700", color: colors.ink },
+  backBtn: {
+    height: 38,
+    width: 38,
+    borderRadius: 19,
+    borderWidth: 1,
+    borderColor: colors.line,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  backIcon: {
+    fontSize: 24,
+    color: colors.ink,
+    marginTop: -3,
+  },
+  headerTitle: {
+    fontSize: fontSizes.bodyLarge,
+    fontWeight: "800",
+    color: colors.ink,
+    flex: 1,
+    textAlign: "center",
+  },
   content: { paddingBottom: 100 },
   imageBox: { width: "100%", height: 220, position: "relative" },
   image: { width: "100%", height: "100%" },

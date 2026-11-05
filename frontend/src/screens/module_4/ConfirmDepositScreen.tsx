@@ -26,45 +26,45 @@ export default function ConfirmDepositScreen({ food, reservation, onBack, onNavi
     <View style={s.container}>
       <View style={s.header}>
         <Pressable onPress={onBack} style={s.backBtn} hitSlop={10}>
-          <Ionicons name="arrow-back" size={24} color={colors.ink} />
+          <Text style={s.backIcon}>‹</Text>
         </Pressable>
-        <Text style={s.headerTitle}>Xác nhận đặt cọc</Text>
-        <View style={{ width: 24 }} />
+        <Text style={s.headerTitle}>Confirm Deposit</Text>
+        <View style={{ width: 38 }} />
       </View>
 
       <ScrollView contentContainerStyle={s.content}>
         <View style={s.badgeBox}><Text style={s.badge}>US - D2 - 44</Text></View>
 
         <View style={s.card}>
-          <Text style={s.itemTitle}>{food?.name ?? "Combo Sushi & Cơm"} × {reservation?.quantity ?? 1}</Text>
+          <Text style={s.itemTitle}>{food?.name ?? "Combo Sushi & Rice"} × {reservation?.quantity ?? 1}</Text>
           <Text style={s.shopSub}>{food?.shop_name ?? "ResQ Demo Kitchen"}</Text>
-          <Text style={s.totalOrderVal}>Tổng tiền đơn: {total.toLocaleString("vi-VN")}đ</Text>
+          <Text style={s.totalOrderVal}>Order Total: {total.toLocaleString("vi-VN")}đ</Text>
 
           <View style={s.depositBox}>
-            <Text style={s.depLabel}>Tiền cọc giữ suất (Reservation deposit):</Text>
+            <Text style={s.depLabel}>Reservation deposit:</Text>
             <Text style={s.depVal}>{deposit.toLocaleString("vi-VN")}đ</Text>
-            <Text style={s.depNote}>Mức cọc quy định bảo đảm nhận hàng</Text>
+            <Text style={s.depNote}>Mandatory deposit to secure pickup</Text>
           </View>
         </View>
 
         <View style={s.card}>
-          <Text style={s.termsHeader}>Điều khoản tiền cọc (Deposit terms)</Text>
+          <Text style={s.termsHeader}>Deposit Terms</Text>
           <View style={s.bulletRow}>
             <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
             <Text style={s.bulletText}>
-              Hoàn cọc 100% khi bạn đến nhận món đúng khung giờ cam kết.
+              100% deposit refunded upon picking up on time.
             </Text>
           </View>
           <View style={s.bulletRow}>
             <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
             <Text style={s.bulletText}>
-              Hoàn cọc ngay lập tức nếu cửa hàng hết món hoặc hủy đơn.
+              Instant refund if store is out of stock or cancels order.
             </Text>
           </View>
           <View style={s.bulletRow}>
             <Ionicons name="alert-circle" size={18} color={colors.danger} />
             <Text style={s.bulletText}>
-              Mất tiền cọc nếu bạn không đến lấy sau thời gian giữ chỗ (+15 phút ân hạn). Tiền cọc sẽ chuyển vào quỹ chống lãng phí.
+              Deposit is forfeited if pickup is missed after holding window (+15m grace period). Forfeited funds go to food waste prevention fund.
             </Text>
           </View>
 
@@ -74,7 +74,7 @@ export default function ConfirmDepositScreen({ food, reservation, onBack, onNavi
               size={22}
               color={agreed ? colors.primary : colors.muted}
             />
-            <Text style={s.agreeText}>Tôi đồng ý với các điều khoản đặt cọc</Text>
+            <Text style={s.agreeText}>I agree with the deposit terms</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -85,7 +85,7 @@ export default function ConfirmDepositScreen({ food, reservation, onBack, onNavi
           onPress={() => onNavigate("payDeposit")}
           disabled={!agreed}
         >
-          <Text style={s.actionBtnText}>Tiến hành nộp cọc (Screen 45)</Text>
+          <Text style={s.actionBtnText}>Proceed to Deposit ({deposit.toLocaleString("vi-VN")}đ)</Text>
           <Ionicons name="arrow-forward" size={18} color={colors.white} />
         </Pressable>
       </View>
@@ -96,17 +96,37 @@ export default function ConfirmDepositScreen({ food, reservation, onBack, onNavi
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.canvas },
   header: {
-    height: 52,
+    height: 56,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
+    paddingTop: 4,
     backgroundColor: colors.white,
     borderBottomWidth: 1,
     borderBottomColor: colors.line,
   },
-  backBtn: { padding: 4 },
-  headerTitle: { fontSize: fontSizes.subtitle, fontWeight: "700", color: colors.ink },
+  backBtn: {
+    height: 38,
+    width: 38,
+    borderRadius: 19,
+    borderWidth: 1,
+    borderColor: colors.line,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  backIcon: {
+    fontSize: 24,
+    color: colors.ink,
+    marginTop: -3,
+  },
+  headerTitle: {
+    fontSize: fontSizes.bodyLarge,
+    fontWeight: "800",
+    color: colors.ink,
+    flex: 1,
+    textAlign: "center",
+  },
   content: { padding: 16, gap: 14, paddingBottom: 100 },
   badgeBox: { alignItems: "flex-start" },
   badge: {
