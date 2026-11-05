@@ -4,13 +4,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { CommunityHeader, communityColors as c } from "../../components/CommunityLayout";
 import { API_URL } from "../../api";
 
-type Props = { userId: string; onBack: () => void };
+type Props = { userId: string; onBack: () => void; mode?: "scan" | "report" };
 type Reservation = { id: string; order_id?: string; shop_id?: string; pickup_qr_token?: string; order_status?: string; total_amount?: string | number; status: string; quantity: number; created_at: string; food_item_id: string; food_name?: string };
 type Food = { id: string; name: string; shop_id: string; current_price: number | string; quantity_available: number };
 type Shop = { id: string; name: string };
 type ShiftClosure = { id: string; revenue: number | string; completed_orders: number; sold_portions: number; gifted_portions: number; leftover_portions: number; closed_at: string };
 
-export default function ShiftImpactScreen({ userId, onBack }: Props) {
+export default function ShiftImpactScreen({ userId, onBack, mode = "report" }: Props) {
   const [shops, setShops] = useState<Shop[]>([]);
   const [shopId, setShopId] = useState("");
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -134,13 +134,13 @@ export default function ShiftImpactScreen({ userId, onBack }: Props) {
   const totalAvailable = storeFoods.reduce((sum, food) => sum + Number(food.quantity_available), 0);
 
   return <View style={s.root}>
-    <CommunityHeader title="Shift & Impact" onBack={onBack} onMore={() => Alert.alert("Reports", "Totals reflect available order and inventory records.")} />
+    <CommunityHeader title={mode === "scan" ? "Scan pickup QR" : "Shift & Impact"} onBack={onBack} onMore={() => Alert.alert("Reports", "Totals reflect available order and inventory records.")} />
     <ScrollView contentContainerStyle={s.content}>
-      <View style={s.intro}><Text style={s.eyebrow}>MODULE 7 · STORE REPORTS</Text><Text style={s.title}>{shops.find((shop) => shop.id === shopId)?.name || "Your store"}</Text><Text style={s.muted}>Rescue volume, recovered revenue and shift close.</Text></View>
+      <View style={s.intro}><Text style={s.eyebrow}>{mode === "scan" ? "MODULE 7 · COMPLETE PICKUP" : "MODULE 7 · STORE REPORTS"}</Text><Text style={s.title}>{shops.find((shop) => shop.id === shopId)?.name || "Your store"}</Text><Text style={s.muted}>{mode === "scan" ? "Scan the buyer’s QR or enter the pickup token to complete the order." : "Rescue volume, recovered revenue and shift close."}</Text></View>
       {shops.length > 1 && <View style={s.pills}>{shops.map((shop) => <Pressable key={shop.id} onPress={() => setShopId(shop.id)} style={[s.pill, shop.id === shopId && s.pillActive]}><Text style={[s.pillText, shop.id === shopId && s.pillTextActive]}>{shop.name}</Text></Pressable>)}</View>}
-      <View style={s.periodRow}>{(["7 days", "30 days"] as const).map((value) => <Pressable key={value} onPress={() => setPeriod(value)} style={[s.period, period === value && s.periodActive]}><Text style={[s.periodText, period === value && s.periodTextActive]}>{value}</Text></Pressable>)}</View>
+      {mode === "report" && <View style={s.periodRow}>{(["7 days", "30 days"] as const).map((value) => <Pressable key={value} onPress={() => setPeriod(value)} style={[s.period, period === value && s.periodActive]}><Text style={[s.periodText, period === value && s.periodTextActive]}>{value}</Text></Pressable>)}</View>}
       {loading ? <ActivityIndicator color={c.green} /> : <>
-        <View style={s.card}><Text style={s.cardTitle}>Silent pickup · Scan buyer code</Text><Text style={s.muted}>Scan the buyer’s QR or enter the pickup token manually.</Text>{Platform.OS === "web" ? <Pressable onPress={() => { setCameraMessage(""); setCameraActive((active) => !active); }} style={s.outlineScanButton}><Ionicons name="scan-outline" size={17} color={c.green} /><Text style={s.scanLink}>{cameraActive ? "Stop camera" : "Open camera scanner"}</Text></Pressable> : null}{cameraActive ? <View ref={videoContainer} style={s.cameraPreview} /> : null}{cameraMessage ? <Text style={s.cameraMessage}>{cameraMessage}</Text> : null}<View style={s.scanRow}><TextInput value={scanToken} onChangeText={setScanToken} autoCapitalize="characters" placeholder="ABC-123 or QR token" style={s.scanInput} /><Pressable disabled={scanning || !scanToken.trim()} onPress={() => void confirmPickup()} style={[s.scanButton, (!scanToken.trim() || scanning) && { opacity: 0.5 }]}><Text style={s.buttonText}>{scanning ? "Checking…" : "Confirm"}</Text></Pressable></View></View>
+        {mode === "scan" ? <View style={s.card}><Text style={s.cardTitle}>Silent pickup · Scan buyer code</Text><Text style={s.muted}>Scan the buyer’s QR or enter the pickup token manually.</Text>{Platform.OS === "web" ? <Pressable onPress={() => { setCameraMessage(""); setCameraActive((active) => !active); }} style={s.outlineScanButton}><Ionicons name="scan-outline" size={17} color={c.green} /><Text style={s.scanLink}>{cameraActive ? "Stop camera" : "Open camera scanner"}</Text></Pressable> : null}{cameraActive ? <View ref={videoContainer} style={s.cameraPreview} /> : null}{cameraMessage ? <Text style={s.cameraMessage}>{cameraMessage}</Text> : null}<View style={s.scanRow}><TextInput value={scanToken} onChangeText={setScanToken} autoCapitalize="characters" placeholder="ABC-123 or QR token" style={s.scanInput} /><Pressable disabled={scanning || !scanToken.trim()} onPress={() => void confirmPickup()} style={[s.scanButton, (!scanToken.trim() || scanning) && { opacity: 0.5 }]}><Text style={s.buttonText}>{scanning ? "Checking…" : "Confirm"}</Text></Pressable></View></View> : <>
         <View style={s.metrics}>
           <Metric icon="fast-food-outline" value={String(meals)} label="Meals rescued" trend={`${completed.length} completed orders`} />
           <Metric icon="leaf-outline" value={`${(meals * 2.5).toFixed(1)} kg`} label="Waste prevented · est." trend="2.5 kg per meal" />
@@ -152,7 +152,7 @@ export default function ShiftImpactScreen({ userId, onBack }: Props) {
         <View style={s.card}><Text style={s.cardTitle}>Transaction history · {period}</Text>{periodOrders.slice(0, 8).map((order) => <View key={order.order_id || order.id} style={s.historyRow}><View style={{ flex: 1 }}><Text style={s.historyTitle}>{order.food_name || "ResQ meal"}</Text><Text style={s.caption}>{new Date(order.created_at).toLocaleString()} · {order.quantity} portion{order.quantity === 1 ? "" : "s"}</Text></View><View style={{ alignItems: "flex-end", gap: 3 }}><Text style={s.rowValue}>{Number(order.total_amount || 0).toLocaleString("vi-VN")}₫</Text><Text style={s.caption}>{(order.order_status || "pending").replaceAll("_", " ")}</Text></View></View>)}{!periodOrders.length && <Text style={s.caption}>No orders have been recorded for this period.</Text>}</View>
         <View style={s.card}><Text style={s.cardTitle}>Previous shift closures</Text>{closures.slice(0, 4).map((closure) => <Row key={closure.id} label={new Date(closure.closed_at).toLocaleString()} value={`${Number(closure.completed_orders)} orders`} />)}{!closures.length && <Text style={s.caption}>No shift reports saved yet.</Text>}</View>
         <View style={s.impact}><Ionicons name="leaf" size={23} color={c.green} /><View style={{ flex: 1, gap: 4 }}><Text style={s.cardTitle}>Equivalent green impact</Text><Text style={s.muted}>Your rescued meals prevented food waste and saved about 45 kg of CO₂ this month.</Text></View></View>
-      </>}
+      </>}</>}
     </ScrollView>
   </View>;
 }

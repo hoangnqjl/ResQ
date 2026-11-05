@@ -30,7 +30,7 @@ export default function PayDepositScreen({ food, reservation, onBack, onPay }: P
         <Pressable onPress={onBack} style={s.backBtn} hitSlop={10}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </Pressable>
-        <Text style={s.headerTitle}>Thanh toán tiền cọc</Text>
+        <Text style={s.headerTitle}>Pay Deposit</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -58,11 +58,11 @@ export default function PayDepositScreen({ food, reservation, onBack, onPay }: P
         </View>
 
         <View style={s.card}>
-          <Text style={s.cardTitle}>Phương thức thanh toán điện tử</Text>
+          <Text style={s.cardTitle}>Payment method</Text>
           {[
-            { id: "momo", name: "Ví MoMo", desc: "Thanh toán 1 chạm siêu tốc", icon: "wallet-outline" },
-            { id: "zalopay", name: "ZaloPay", desc: "Quét mã QR liên kết ngân hàng", icon: "qr-code-outline" },
-            { id: "shopee", name: "ShopeePay", desc: "Ví điện tử Shopee", icon: "card-outline" },
+            { id: "ewallet", name: "E-wallet", desc: "Pay with your wallet", icon: "wallet-outline" },
+            { id: "bank_qr", name: "Bank QR", desc: "Scan a bank payment QR code", icon: "qr-code-outline" },
+            { id: "card", name: "Debit/Credit", desc: "Pay with your card", icon: "card-outline" },
           ].map((m) => (
             <Pressable
               key={m.id}
@@ -84,14 +84,14 @@ export default function PayDepositScreen({ food, reservation, onBack, onPay }: P
         </View>
 
         <Text style={s.note}>
-          Số tiền còn lại {Math.max(0, total - deposit).toLocaleString("vi-VN")}đ bạn trả trực tiếp cho cửa hàng khi nhận món. Tiền cọc {deposit.toLocaleString("vi-VN")}đ được hoàn lại khi đối soát nhận hàng.
+          The remaining balance is paid to the store when you pick up your order. Your deposit is refunded on pickup.
         </Text>
       </ScrollView>
 
       <View style={s.bottom}>
         <View>
-          <Text style={s.bottomLabel}>Tổng thanh toán ngay</Text>
-          <Text style={s.bottomPrice}>{deposit.toLocaleString("vi-VN")}đ</Text>
+          <Text style={s.bottomLabel}>Pay now</Text>
+          <Text style={s.bottomPrice}>${(deposit / 28000).toFixed(2)}</Text>
         </View>
         <Pressable style={[s.payBtn, busy && { opacity: 0.65 }]} disabled={busy} onPress={async () => {
           setBusy(true);
@@ -99,9 +99,10 @@ export default function PayDepositScreen({ food, reservation, onBack, onPay }: P
           catch (error) { Alert.alert("Thanh toán chưa hoàn tất", error instanceof Error ? error.message : "Vui lòng thử lại."); }
           finally { setBusy(false); }
         }}>
-          <Text style={s.payBtnText}>{busy ? "Đang xử lý…" : "Thanh toán tiền cọc"}</Text>
+          <Text style={s.payBtnText}>{busy ? "Processing…" : "Pay"}</Text>
           <Ionicons name="arrow-forward" size={18} color={colors.white} />
         </Pressable>
+        <Pressable style={s.cancelBtn} onPress={onBack}><Text style={s.cancelText}>Cancel</Text></Pressable>
       </View>
     </View>
   );
@@ -169,6 +170,8 @@ const s = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
+    gap: 8,
+    flexWrap: "wrap",
   },
   bottomLabel: { fontSize: fontSizes.micro, color: colors.muted },
   bottomPrice: { fontSize: fontSizes.title, fontWeight: "800", color: colors.primary },
@@ -182,5 +185,7 @@ const s = StyleSheet.create({
     gap: 8,
   },
   payBtnText: { color: colors.white, fontWeight: "700", fontSize: fontSizes.body },
+  cancelBtn:{width:"100%",alignItems:"center",paddingVertical:7},
+  cancelText:{color:colors.muted,fontSize:fontSizes.bodyMedium,fontWeight:"600"},
 });
 

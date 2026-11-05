@@ -85,9 +85,10 @@ export default function ConfirmDepositScreen({ food, reservation, onBack, onNavi
           onPress={() => onNavigate("payDeposit")}
           disabled={!agreed}
         >
-          <Text style={s.actionBtnText}>Proceed to Deposit ({deposit.toLocaleString("vi-VN")}đ)</Text>
+          <Text style={s.actionBtnText}>Continue to payment</Text>
           <Ionicons name="arrow-forward" size={18} color={colors.white} />
         </Pressable>
+        <Pressable style={s.backAction} onPress={() => onNavigate("confirmOrderDetails")}><Text style={s.backActionText}>Back</Text></Pressable>
       </View>
     </View>
   );
@@ -167,6 +168,7 @@ const s = StyleSheet.create({
     borderTopColor: colors.line,
     paddingHorizontal: 16,
     paddingVertical: 12,
+    gap: 8,
   },
   actionBtn: {
     backgroundColor: colors.primary,
@@ -179,5 +181,7 @@ const s = StyleSheet.create({
   },
   actionBtnDisabled: { opacity: 0.5 },
   actionBtnText: { color: colors.white, fontWeight: "700", fontSize: fontSizes.body },
+  backAction: { alignItems: "center", paddingVertical: 8 },
+  backActionText: { color: colors.primary, fontWeight: "700", fontSize: fontSizes.bodyMedium },
 });
 

@@ -67,8 +67,11 @@ export default function OverdueOrderScreen({ food, reservation, onBack, onNaviga
       </ScrollView>
 
       <View style={s.bottom}>
+        <Pressable style={s.dismissBtn} onPress={() => onNavigate("sellerDashboard")}>
+          <Text style={s.dismissText}>Dismiss</Text>
+        </Pressable>
         <Pressable style={s.releaseBtn} onPress={() => onNavigate("cancelRelease")}>
-          <Text style={s.releaseBtnText}>Xem quy trình Chuyển nhượng (Screen 53)</Text>
+          <Text style={s.releaseBtnText}>Review & release</Text>
           <Ionicons name="arrow-forward" size={18} color={colors.white} />
         </Pressable>
       </View>
@@ -138,6 +141,7 @@ const s = StyleSheet.create({
     paddingVertical: 12,
   },
   releaseBtn: {
+    flex: 1,
     backgroundColor: colors.danger,
     flexDirection: "row",
     justifyContent: "center",
@@ -147,5 +151,7 @@ const s = StyleSheet.create({
     gap: 8,
   },
   releaseBtnText: { color: colors.white, fontWeight: "700", fontSize: fontSizes.body },
+  dismissBtn:{flex:1,minHeight:48,borderRadius:24,borderWidth:1,borderColor:colors.line,alignItems:"center",justifyContent:"center"},
+  dismissText:{color:colors.ink,fontSize:fontSizes.body,fontWeight:"700"},
 });
 

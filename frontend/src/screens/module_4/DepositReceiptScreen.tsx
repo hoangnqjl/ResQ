@@ -15,16 +15,18 @@ type Props = {
   deposit: DepositPaymentResult | null;
   onBack: () => void;
   onNavigate: (route: string) => void;
+  nextRoute?: string;
+  nextLabel?: string;
 };
 
-export default function DepositReceiptScreen({ food, reservation, deposit, onBack, onNavigate }: Props) {
+export default function DepositReceiptScreen({ food, reservation, deposit, onBack, onNavigate, nextRoute = "pickupTimeSlot", nextLabel = "Chọn khung giờ lấy món (Screen 47)" }: Props) {
   return (
     <View style={s.container}>
       <View style={s.header}>
         <Pressable onPress={onBack} style={s.backBtn} hitSlop={10}>
           <Ionicons name="arrow-back" size={24} color={colors.ink} />
         </Pressable>
-        <Text style={s.headerTitle}>Biên lai tiền cọc</Text>
+        <Text style={s.headerTitle}>Deposit received</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -35,43 +37,43 @@ export default function DepositReceiptScreen({ food, reservation, deposit, onBac
           <View style={s.iconWrap}>
             <Ionicons name="checkmark-circle" size={54} color={colors.primary} />
           </View>
-          <Text style={s.receiptTitle}>Đã nhận tiền cọc: {(deposit?.amount ?? reservation?.depositAmount ?? 10000).toLocaleString("vi-VN")}đ</Text>
-          <Text style={s.receiptSub}>Đơn hàng của bạn đang được khóa giữ an toàn</Text>
+          <Text style={s.receiptTitle}>Deposit received: ${(Number(deposit?.amount ?? reservation?.depositAmount ?? 10000) / 28000).toFixed(2)}</Text>
+          <Text style={s.receiptSub}>Your order is held</Text>
 
           <View style={s.divider} />
 
           <View style={s.table}>
             <View style={s.row}>
-              <Text style={s.key}>Mã giao dịch (Tx ID)</Text>
+              <Text style={s.key}>Transaction ID</Text>
               <Text style={s.val}>{deposit?.transactionId ?? "—"}</Text>
             </View>
             <View style={s.row}>
-              <Text style={s.key}>Thời gian nộp cọc</Text>
+              <Text style={s.key}>Paid at</Text>
               <Text style={s.val}>{deposit?.paidAt ?? "Vừa xong"}</Text>
             </View>
             <View style={s.row}>
-              <Text style={s.key}>Thời hạn giữ suất</Text>
+              <Text style={s.key}>Held until</Text>
               <Text style={s.valHighlight}>{reservation?.holdExpiresAt ? new Date(reservation.holdExpiresAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) : "—"}</Text>
             </View>
             <View style={s.row}>
-              <Text style={s.key}>Trạng thái tiền cọc</Text>
-              <Text style={s.valSafe}>Đang ký quỹ (Escrow)</Text>
+              <Text style={s.key}>Deposit status</Text>
+              <Text style={s.valSafe}>Held</Text>
             </View>
             <View style={s.row}>
-              <Text style={s.key}>Cơ chế giải ngân</Text>
-              <Text style={s.val}>Hoàn 100% khi nhận món</Text>
+              <Text style={s.key}>Refund</Text>
+              <Text style={s.val}>On pickup</Text>
             </View>
           </View>
 
           <View style={s.noteBox}>
             <Ionicons name="lock-closed-outline" size={20} color={colors.primary} />
             <Text style={s.noteText}>
-              Xác thực biên lai số tự động. Tiền cọc được khóa an toàn bởi ResQ Escrow và sẽ hoàn lại ngay khi nhân viên quét mã nhận món.
+              Your deposit is held securely and refunded when you pick up your order.
             </Text>
           </View>
 
-          <Pressable style={s.nextBtn} onPress={() => onNavigate("pickupTimeSlot")}>
-            <Text style={s.nextBtnText}>Chọn khung giờ lấy món (Screen 47)</Text>
+          <Pressable style={s.nextBtn} onPress={() => onNavigate(nextRoute)}>
+            <Text style={s.nextBtnText}>{nextLabel}</Text>
             <Ionicons name="arrow-forward" size={18} color={colors.white} />
           </Pressable>
         </View>

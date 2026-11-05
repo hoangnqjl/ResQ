@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import {
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -38,7 +37,9 @@ export default function ReservationTimeScreen({ food, reservation, onBack, onNav
   };
 
   const handleExtend = () => {
-    Alert.alert("Thời gian giữ chỗ", "Đồng hồ phản ánh thời hạn giữ suất đã xác nhận trong hệ thống.");
+    if (extended) return;
+    setExtended(true);
+    setSeconds((current) => current + 10 * 60);
   };
 
   return (
@@ -70,34 +71,29 @@ export default function ReservationTimeScreen({ food, reservation, onBack, onNav
               onPress={handleExtend}
             >
               <Ionicons name="time" size={16} color={colors.primary} />
-              <Text style={s.extendBtnText}>
-                {extended ? "Đã gia hạn (+10p)" : "Gia hạn thêm 10 phút (Tối đa 1 lần)"}
-              </Text>
+              <Text style={s.extendBtnText}>{extended ? "Extended 10 minutes" : "Extend 10 minutes"}</Text>
             </Pressable>
+            <Text style={s.extensionLimit}>Maximum 1 extension</Text>
           </View>
         </View>
 
         <View style={s.remindCard}>
           <Ionicons name="notifications-outline" size={24} color={colors.primary} />
           <View style={{ flex: 1 }}>
-            <Text style={s.remindTitle}>Chuông báo nhắc nhở</Text>
-            <Text style={s.remindDesc}>Hệ thống sẽ gửi chuông rung khi còn 5 phút.</Text>
+            <Text style={s.remindTitle}>Reminder</Text>
+            <Text style={s.remindDesc}>We’ll remind you when 5 minutes are left.</Text>
           </View>
         </View>
 
-        <Pressable style={s.nextBtn} onPress={() => onNavigate("yourOrderWaiting")}>
-          <Text style={s.nextBtnText}>Xem trạng thái đơn đang chờ (Screen 43)</Text>
-          <Ionicons name="arrow-forward" size={18} color={colors.white} />
-        </Pressable>
       </ScrollView>
 
       <View style={s.bottom}>
         <Pressable
           style={s.arrivedBtn}
-          onPress={() => Alert.alert("Đã đến", "Bạn đã thông báo đến quán! Đưa mã A7K-294 để nhận đồ ăn.")}
+          onPress={() => onNavigate("yourOrderWaiting")}
         >
           <Ionicons name="checkmark-done" size={20} color={colors.white} />
-          <Text style={s.arrivedBtnText}>Tôi đã đến nơi</Text>
+          <Text style={s.arrivedBtnText}>I've arrived</Text>
         </Pressable>
       </View>
     </View>
@@ -163,6 +159,7 @@ const s = StyleSheet.create({
   },
   extendBtnDisabled: { opacity: 0.5 },
   extendBtnText: { fontSize: fontSizes.caption, fontWeight: "700", color: colors.primary },
+  extensionLimit: { textAlign: "center", color: colors.muted, fontSize: fontSizes.micro, marginTop: 6 },
   remindCard: {
     flexDirection: "row",
     alignItems: "center",

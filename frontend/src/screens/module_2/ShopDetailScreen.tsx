@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Switch,
   Text,
+  TextInput,
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -20,11 +21,15 @@ import {
   getCommunityShop,
   getSavedShops,
   getShopDropAlert,
+  getShopReviews,
   imageUrl,
   saveShopDropAlert,
+  submitShopReview,
   toggleSavedShop,
   type CommunityFood,
   type CommunityShop,
+  type EligibleReviewOrder,
+  type ShopReview,
 } from "../../services/communityApi";
 import type { Food } from "./HomeScreen";
 
@@ -53,6 +58,11 @@ export default function ShopDetailScreen({
   const [alertBusy, setAlertBusy] = useState(false);
   const [error, setError] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [reviews, setReviews] = useState<ShopReview[]>([]);
+  const [eligibleOrder, setEligibleOrder] = useState<EligibleReviewOrder | null>(null);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewBusy, setReviewBusy] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -64,16 +74,19 @@ export default function ShopDetailScreen({
           if (active) setError("Chưa có cửa hàng nào để hiển thị.");
           return;
         }
-        const [shopDetails, shopAlert, savedShops] = await Promise.all([
+        const [shopDetails, shopAlert, savedShops, reviewResult] = await Promise.all([
           getCommunityShop(id),
           getShopDropAlert(userId, id),
           getSavedShops(userId),
+          getShopReviews(id, userId),
         ]);
         if (!active) return;
         setShop(shopDetails);
         setFoods(allFoods.filter((food) => food.shop_id === id));
         setDropAlert(Boolean(shopAlert?.enabled));
         setIsSaved(savedShops.some((savedShop) => savedShop.id === id));
+        setReviews(reviewResult.items);
+        setEligibleOrder(reviewResult.eligibleOrder);
       } catch (reason) {
         if (active) setError(reason instanceof Error ? reason.message : "Không thể tải thông tin cửa hàng.");
       } finally {
@@ -120,6 +133,30 @@ export default function ShopDetailScreen({
 
   const gallery = foods.filter((food) => imageUrl(food.image_url));
   const heroImage = imageUrl(gallery[0]?.image_url);
+  const ratingDistribution = [5, 4, 3, 2, 1].map((score) => reviews.filter((review) => Number(review.rating) === score).length);
+  const maxRatingCount = Math.max(1, ...ratingDistribution);
+  const reviewCount = Math.max(Number(shop?.review_count ?? 0), reviews.length);
+  const submitReview = async () => {
+    if (!shop || !eligibleOrder || reviewRating < 1 || reviewBusy) return;
+    setReviewBusy(true);
+    try {
+      const submitted = await submitShopReview(shop.id, { authorId: userId, orderId: eligibleOrder.id, rating: reviewRating, comment: reviewComment });
+      setReviews((current) => [submitted, ...current]);
+      setShop((current) => current ? {
+        ...current,
+        average_rating: ((Number(current.average_rating) * Number(current.review_count) + reviewRating) / (Number(current.review_count) + 1)).toFixed(1),
+        review_count: Number(current.review_count) + 1,
+      } : current);
+      setEligibleOrder(null);
+      setReviewRating(0);
+      setReviewComment("");
+      Alert.alert("Review submitted", "Thanks for sharing your experience.");
+    } catch (reason) {
+      Alert.alert("Shop review", reason instanceof Error ? reason.message : "Could not submit your review.");
+    } finally {
+      setReviewBusy(false);
+    }
+  };
 
   return (
     <View style={styles.root}>
@@ -195,6 +232,59 @@ export default function ShopDetailScreen({
               thumbColor={communityColors.white}
               ios_backgroundColor="#697a6d"
             />
+          </View>
+
+          <View style={styles.writeReviewCard}>
+            <Text style={styles.verifiedLabel}>VERIFIED PURCHASE</Text>
+            <View style={styles.reviewPromptRow}>
+              <Text style={styles.reviewPrompt}>How was your order?</Text>
+              <Text style={styles.orderId}>{eligibleOrder ? `Order #${eligibleOrder.id.slice(0, 8)}` : "No eligible order"}</Text>
+            </View>
+            {eligibleOrder ? <>
+              <View style={styles.rateStarsRow}>{[1, 2, 3, 4, 5].map((score) => (
+                <Pressable key={score} onPress={() => setReviewRating(score)} accessibilityLabel={`Rate ${score} stars`}>
+                  <Text style={[styles.rateStar, score <= reviewRating && styles.rateStarActive]}>{score <= reviewRating ? "★" : "☆"}</Text>
+                </Pressable>
+              ))}</View>
+              <TextInput value={reviewComment} onChangeText={setReviewComment} placeholder="Share your experience with this shop..." placeholderTextColor={communityColors.muted} style={styles.reviewInput} multiline />
+              <Pressable disabled={reviewBusy || reviewRating < 1} onPress={() => void submitReview()} style={[styles.submitReviewButton, (reviewBusy || reviewRating < 1) && styles.submitReviewDisabled]}>
+                <Text style={styles.submitReviewText}>{reviewBusy ? "Submitting…" : "Submit review"}</Text>
+              </Pressable>
+            </> : <Text style={styles.reviewEligibility}>Only a completed pickup can be reviewed.</Text>}
+          </View>
+
+          <View style={styles.reviewsSection}>
+            <View style={styles.reviewsSectionHeader}>
+              <Text style={styles.listingHeading}>Reviews &amp; ratings</Text>
+              <Pressable onPress={() => onOpenReviews(shop.id)} hitSlop={8}>
+                <Text style={styles.seeAllReviews}>See all {reviewCount}</Text>
+              </Pressable>
+            </View>
+            <View style={styles.ratingSummary}>
+              <View style={styles.ratingOverview}>
+                <Text style={styles.averageRating}>{Number(shop.average_rating).toFixed(1)}</Text>
+                <Text style={styles.summaryStars}>★★★★★</Text>
+                <Text style={styles.summaryReviewCount}>{reviewCount} reviews</Text>
+              </View>
+              <View style={styles.ratingBars}>{ratingDistribution.map((count, index) => {
+                const score = 5 - index;
+                return <View key={score} style={styles.ratingBarRow}>
+                  <Text style={styles.ratingScore}>{score}</Text>
+                  <View style={styles.ratingTrack}><View style={[styles.ratingFill, { width: `${(count / maxRatingCount) * 100}%` }]} /></View>
+                </View>;
+              })}</View>
+            </View>
+            {reviews.slice(0, 2).map((review) => (
+              <View key={review.id} style={styles.reviewPreview}>
+                <View style={styles.reviewPreviewHeader}>
+                  <View style={styles.reviewerAvatar}><Text style={styles.reviewerAvatarText}>{review.author_name.slice(0, 1).toUpperCase()}</Text></View>
+                  <View style={{ flex: 1 }}><Text style={styles.reviewerName}>{review.author_name}</Text><Text style={styles.reviewMeta}>Verified order · {new Date(review.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</Text></View>
+                  <Text style={styles.reviewStars}>{"★".repeat(Number(review.rating))}{"☆".repeat(Math.max(0, 5 - Number(review.rating)))}</Text>
+                </View>
+                {review.comment ? <Text style={styles.reviewComment}>{review.comment}</Text> : null}
+              </View>
+            ))}
+            {!reviews.length ? <Text style={styles.noReviews}>No reviews yet.</Text> : null}
           </View>
 
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 20, marginBottom: 8 }}>
@@ -342,6 +432,41 @@ const styles = StyleSheet.create({
   alertCopy: { flex: 1, gap: 6 },
   alertTitle: { color: communityColors.ink, fontSize: fontSizes.caption },
   alertDescription: { color: communityColors.muted, fontSize: fontSizes.mini },
+  writeReviewCard: { borderWidth: 1, borderColor: communityColors.line, borderRadius: 20, padding: 14, marginTop: 16, gap: 8 },
+  verifiedLabel: { color: communityColors.green, fontSize: 9, fontWeight: "800", letterSpacing: 0.6 },
+  reviewPromptRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
+  reviewPrompt: { color: communityColors.ink, fontSize: fontSizes.bodySmall, fontWeight: "700" },
+  orderId: { color: communityColors.muted, fontSize: fontSizes.mini },
+  rateStarsRow: { flexDirection: "row", gap: 8 },
+  rateStar: { color: "#d9dfd9", fontSize: 23 },
+  rateStarActive: { color: "#df7c29" },
+  reviewInput: { minHeight: 54, borderWidth: 1, borderColor: communityColors.line, borderRadius: 12, padding: 10, color: communityColors.ink, fontSize: fontSizes.caption, textAlignVertical: "top" },
+  submitReviewButton: { minHeight: 39, alignItems: "center", justifyContent: "center", backgroundColor: communityColors.green, borderRadius: 21 },
+  submitReviewDisabled: { opacity: 0.5 },
+  submitReviewText: { color: communityColors.white, fontSize: fontSizes.caption, fontWeight: "700" },
+  reviewEligibility: { color: communityColors.muted, fontSize: fontSizes.caption },
+  reviewsSection: { marginTop: 19 },
+  reviewsSectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 },
+  seeAllReviews: { color: communityColors.green, fontSize: fontSizes.caption, fontWeight: "700" },
+  ratingSummary: { borderWidth: 1, borderColor: communityColors.line, borderRadius: 20, padding: 14, flexDirection: "row", alignItems: "center", gap: 18 },
+  ratingOverview: { alignItems: "center", minWidth: 100, gap: 2 },
+  averageRating: { color: communityColors.ink, fontSize: 31, fontWeight: "800" },
+  summaryStars: { color: "#df7c29", fontSize: 14, letterSpacing: 1 },
+  summaryReviewCount: { color: communityColors.muted, fontSize: fontSizes.mini },
+  ratingBars: { flex: 1, gap: 5 },
+  ratingBarRow: { flexDirection: "row", alignItems: "center", gap: 7 },
+  ratingScore: { width: 10, color: communityColors.muted, fontSize: fontSizes.mini },
+  ratingTrack: { height: 6, flex: 1, borderRadius: 4, backgroundColor: "#edf1ed", overflow: "hidden" },
+  ratingFill: { height: "100%", borderRadius: 4, backgroundColor: "#dd842e" },
+  reviewPreview: { paddingVertical: 13, borderBottomWidth: 1, borderColor: communityColors.line },
+  reviewPreviewHeader: { flexDirection: "row", alignItems: "center", gap: 9 },
+  reviewerAvatar: { width: 34, height: 34, borderRadius: 17, backgroundColor: communityColors.pale, alignItems: "center", justifyContent: "center" },
+  reviewerAvatarText: { color: communityColors.green, fontSize: fontSizes.caption, fontWeight: "800" },
+  reviewerName: { color: communityColors.ink, fontSize: fontSizes.caption, fontWeight: "700" },
+  reviewMeta: { color: communityColors.muted, fontSize: fontSizes.mini, marginTop: 2 },
+  reviewStars: { color: "#df7c29", fontSize: fontSizes.caption },
+  reviewComment: { color: communityColors.muted, fontSize: fontSizes.caption, lineHeight: 18, marginTop: 9 },
+  noReviews: { color: communityColors.muted, fontSize: fontSizes.caption, paddingVertical: 15 },
   listingHeading: { color: communityColors.ink, fontSize: fontSizes.bodyMedium, fontWeight: "600" },
   foodRow: {
     minHeight: 65,

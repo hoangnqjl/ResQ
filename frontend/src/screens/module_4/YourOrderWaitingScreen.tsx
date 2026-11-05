@@ -23,7 +23,7 @@ export default function YourOrderWaitingScreen({ food, reservation, onBack, onNa
         <Pressable onPress={onBack} style={s.backBtn} hitSlop={10}>
           <Text style={s.backIcon}>‹</Text>
         </Pressable>
-        <Text style={s.headerTitle}>Your Order (Pending)</Text>
+        <Text style={s.headerTitle}>Your Order</Text>
         <View style={{ width: 38 }} />
       </View>
 
@@ -32,6 +32,8 @@ export default function YourOrderWaitingScreen({ food, reservation, onBack, onNa
 
         {/* Stepper Status (Reserved -> On the way -> Picked up) */}
         <View style={s.stepperCard}>
+          <Text style={s.reservedTitle}>Reserved for you</Text>
+          <Text style={s.reservedTime}>{reservation ? `${Math.max(0, Math.floor((new Date(reservation.holdExpiresAt).getTime() - Date.now()) / 60000))}:${String(Math.max(0, Math.floor((new Date(reservation.holdExpiresAt).getTime() - Date.now()) / 1000) % 60)).padStart(2, "0")}` : "18:42"} left to pick up</Text>
           <View style={s.stepRow}>
             <View style={[s.stepDot, s.stepDotActive]}>
               <Ionicons name="checkmark" size={14} color={colors.white} />
@@ -52,14 +54,6 @@ export default function YourOrderWaitingScreen({ food, reservation, onBack, onNa
           </View>
         </View>
 
-        <View style={s.countdownBanner}>
-          <Ionicons name="time" size={24} color={colors.primary} />
-          <View style={{ flex: 1 }}>
-            <Text style={s.countdownTitle}>Meal held for {reservation?.holdMinutes ?? 20} minutes</Text>
-            <Text style={s.countdownSub}>Store is packing your meal</Text>
-          </View>
-        </View>
-
         <View style={s.codeCard}>
           <Text style={s.codeHeader}>QUICK PICKUP CODE</Text>
           <Text style={s.codeValue}>{reservation?.pickupCode ?? "—"}</Text>
@@ -72,28 +66,22 @@ export default function YourOrderWaitingScreen({ food, reservation, onBack, onNa
           <Text style={s.shopAddress}>{food?.address ?? "Pickup address"}</Text>
 
           <View style={s.quickActions}>
-            <Pressable style={s.quickBtn}>
+            <Pressable style={s.quickBtn} onPress={() => onNavigate("buyerMap")}>
               <Ionicons name="navigate-outline" size={18} color={colors.primary} />
               <Text style={s.quickBtnText}>Open Map</Text>
             </Pressable>
-            <Pressable style={s.quickBtn}>
+            <Pressable style={s.quickBtn} onPress={() => {}}>
               <Ionicons name="call-outline" size={18} color={colors.primary} />
               <Text style={s.quickBtnText}>Call Store</Text>
             </Pressable>
           </View>
         </View>
 
-        <View style={s.footerLinks}>
-          <Pressable style={s.linkBtn} onPress={() => onNavigate("overdueOrder")}>
-            <Text style={s.linkBtnText}>View Overdue Warning (Screen 52)</Text>
-            <Ionicons name="arrow-forward" size={16} color={colors.primary} />
-          </Pressable>
-          <Pressable style={s.linkBtn} onPress={() => onNavigate("cancelRelease")}>
-            <Text style={[s.linkBtnText, { color: colors.danger }]}>Cancel & Release Meal (Screen 53)</Text>
-            <Ionicons name="arrow-forward" size={16} color={colors.danger} />
-          </Pressable>
-        </View>
       </ScrollView>
+      <View style={s.bottom}>
+        <Pressable style={s.bottomAction} onPress={() => onNavigate("reservationTime")}><Text style={s.bottomActionText}>View timer</Text></Pressable>
+        <Pressable style={s.cancelAction} onPress={() => onNavigate("cancelRelease")}><Text style={s.cancelActionText}>Cancel reservation</Text></Pressable>
+      </View>
     </View>
   );
 }
@@ -132,7 +120,7 @@ const s = StyleSheet.create({
     flex: 1,
     textAlign: "center",
   },
-  content: { padding: 16, gap: 14, paddingBottom: 60 },
+  content: { padding: 16, gap: 14, paddingBottom: 100 },
   badgeBox: { alignItems: "flex-start" },
   badge: {
     fontSize: fontSizes.caption,
@@ -144,6 +132,8 @@ const s = StyleSheet.create({
     borderRadius: 6,
   },
   stepperCard: { backgroundColor: colors.white, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: colors.line },
+  reservedTitle: { color: colors.primary, fontSize: fontSizes.bodyLarge, fontWeight: "800", textAlign: "center", marginBottom: 5 },
+  reservedTime: { color: colors.ink, fontSize: fontSizes.titleSmall, fontWeight: "800", textAlign: "center", marginBottom: 14 },
   stepRow: { flexDirection: "row", alignItems: "center", justifyContent: "center" },
   stepDot: {
     width: 28,
@@ -199,6 +189,11 @@ const s = StyleSheet.create({
   },
   quickBtnText: { fontSize: fontSizes.bodyMedium, fontWeight: "700", color: colors.primary },
   footerLinks: { gap: 10 },
+  bottom: { position:"absolute",bottom:0,left:0,right:0,backgroundColor:colors.white,borderTopWidth:1,borderTopColor:colors.line,flexDirection:"row",gap:10,paddingHorizontal:16,paddingVertical:12 },
+  bottomAction: { flex:1,backgroundColor:colors.primary,borderRadius:24,minHeight:46,alignItems:"center",justifyContent:"center" },
+  bottomActionText: { color:colors.white,fontWeight:"700",fontSize:fontSizes.bodyMedium },
+  cancelAction: { flex:1,borderWidth:1,borderColor:colors.line,borderRadius:24,minHeight:46,alignItems:"center",justifyContent:"center" },
+  cancelActionText: { color:colors.ink,fontWeight:"700",fontSize:fontSizes.bodyMedium },
   linkBtn: {
     flexDirection: "row",
     justifyContent: "space-between",

@@ -116,8 +116,8 @@ export default function WaitlistQueueScreen({ food, waitlist, userId, onBack, on
           <Text style={s.nextBtnText}>{busy ? "Đang tham gia…" : "Tham gia danh sách chờ"}</Text>
           <Ionicons name="arrow-forward" size={18} color={colors.white} />
         </Pressable>}
-        <Pressable style={s.secondaryBtn} onPress={() => onNavigate("overdueOrder")}>
-          <Text style={s.secondaryBtnText}>Xem trạng thái quá hạn</Text>
+        <Pressable style={s.secondaryBtn} onPress={() => onNavigate("sellerManagement")}>
+          <Text style={s.secondaryBtnText}>Back</Text>
         </Pressable>
       </ScrollView>
     </View>

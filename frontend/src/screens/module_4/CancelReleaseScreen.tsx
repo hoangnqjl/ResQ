@@ -1,5 +1,4 @@
 import {
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -8,7 +7,6 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, fontSizes } from "../../theme";
-import { useState } from "react";
 import type { FoodSafetyDetail } from "../../services/foodSafetyReservationApi";
 
 type Props = {
@@ -18,27 +16,7 @@ type Props = {
   onRelease: () => Promise<{ portionsReleased: number; assignedToWaitlist: boolean; nextBuyerName?: string | null }>;
 };
 
-export default function CancelReleaseScreen({ food, onBack, onNavigate, onRelease }: Props) {
-  const [busy, setBusy] = useState(false);
-  const handleConfirm = () => {
-    Alert.alert(
-      "Xác nhận giải phóng",
-      "Đơn sẽ bị hủy và các suất được đề nghị cho người tiếp theo trong waitlist.",
-      [{ text: "Quay lại", style: "cancel" }, { text: "Xác nhận", onPress: async () => {
-        setBusy(true);
-        try {
-          const result = await onRelease();
-          const message = result.assignedToWaitlist
-            ? `${result.portionsReleased} suất đã được đề nghị cho ${result.nextBuyerName ?? "người trong danh sách chờ"}.`
-            : `${result.portionsReleased} suất đã trở lại thực đơn.`;
-          Alert.alert("Đã giải phóng", message, [{ text: "OK", onPress: () => onNavigate("home") }]);
-        } catch (error) {
-          Alert.alert("Không thể giải phóng suất", error instanceof Error ? error.message : "Vui lòng thử lại.");
-        } finally { setBusy(false); }
-      } }]
-    );
-  };
-
+export default function CancelReleaseScreen({ food, onBack, onNavigate }: Props) {
   return (
     <View style={s.container}>
       <View style={s.header}>
@@ -99,9 +77,8 @@ export default function CancelReleaseScreen({ food, onBack, onNavigate, onReleas
       </ScrollView>
 
       <View style={s.bottom}>
-        <Pressable style={[s.confirmBtn, busy && { opacity: 0.65 }]} disabled={busy} onPress={handleConfirm}>
-          <Ionicons name="checkmark-done" size={20} color={colors.white} />
-          <Text style={s.confirmBtnText}>Xác nhận giải phóng & Chuyển suất</Text>
+        <Pressable style={s.confirmBtn} onPress={() => onNavigate("autoStop")}>
+          <Text style={s.confirmBtnText}>Keep holding 5 more min</Text>
         </Pressable>
       </View>
     </View>

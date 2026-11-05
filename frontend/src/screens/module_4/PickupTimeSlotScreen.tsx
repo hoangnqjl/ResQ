@@ -16,9 +16,10 @@ type Props = {
   reservationId?: string;
   onBack: () => void;
   onChoose: (day: string, slot: string) => Promise<void>;
+  onConfirm: () => void;
 };
 
-export default function PickupTimeSlotScreen({ food, onBack, onChoose }: Props) {
+export default function PickupTimeSlotScreen({ food, onBack, onChoose, onConfirm }: Props) {
   const [selectedDay, setSelectedDay] = useState("Today");
   const [selectedSlot, setSelectedSlot] = useState("19:30 – 20:00");
   const [busy, setBusy] = useState(false);
@@ -99,11 +100,11 @@ export default function PickupTimeSlotScreen({ food, onBack, onChoose }: Props) 
       <View style={s.bottom}>
         <Pressable style={s.confirmBtn} disabled={busy} onPress={async () => {
           setBusy(true);
-          try { await onChoose(selectedDay, selectedSlot); }
+          try { await onChoose(selectedDay, selectedSlot); onConfirm(); }
           catch (error) { Alert.alert("Không thể lưu khung giờ", error instanceof Error ? error.message : "Vui lòng thử lại."); }
           finally { setBusy(false); }
         }}>
-          <Text style={s.confirmBtnText}>{busy ? "Đang lưu…" : "Xác nhận khung giờ"}</Text>
+          <Text style={s.confirmBtnText}>{busy ? "Saving…" : "Confirm time slot"}</Text>
           <Ionicons name="arrow-forward" size={18} color={colors.white} />
         </Pressable>
       </View>

@@ -67,6 +67,7 @@ import RescueHotspotsScreen from "./src/screens/module_2/RescueHotspotsScreen";
 
 // Module 3 (US-C1 -> C3)
 import FoodSafetyCountdownScreen from "./src/screens/module_3/FoodSafetyCountdownScreen";
+import FoodProductDetailScreen from "./src/screens/module_3/FoodProductDetailScreen";
 import ActualProductLabelScreen from "./src/screens/module_3/ActualProductLabelScreen";
 import ExpirationInfoScreen from "./src/screens/module_3/ExpirationInfoScreen";
 import StorageInstructionsScreen from "./src/screens/module_3/StorageInstructionsScreen";
@@ -80,6 +81,8 @@ import ComplaintRefundPolicyScreen from "./src/screens/module_3/ComplaintRefundP
 
 // Module 4 (US-D1 -> D4)
 import MealDetailReservationScreen from "./src/screens/module_4/MealDetailReservationScreen";
+import ConfirmOrderDetailsScreen from "./src/screens/module_7/ConfirmOrderDetailsScreen";
+import TransactionCompletedScreen from "./src/screens/module_7/TransactionCompletedScreen";
 import ConfirmSpotReservationScreen from "./src/screens/module_4/ConfirmSpotReservationScreen";
 import ReservationTimeScreen from "./src/screens/module_4/ReservationTimeScreen";
 import YourOrderWaitingScreen from "./src/screens/module_4/YourOrderWaitingScreen";
@@ -137,6 +140,12 @@ export type Page =
   | "saved"
   | "orders"
   | "foodDetail"
+  | "foodProductDetail"
+  | "confirmOrderDetails"
+  | "transactionCompleted"
+  | "buyerMap"
+  | "autoStop"
+  | "sellerManagement"
   | "sharing"
   | "budgetBags"
   | "mysteryBagGuide"
@@ -194,6 +203,7 @@ export type Page =
   | "sellerStudio"
   | "shiftImpact"
   | "sellerDashboard"
+  | "sellerScan"
   | "trustComplaints";
 
 const blankProfile = (id: string): Profile => ({
@@ -232,6 +242,7 @@ function ClientApp() {
   const [activeDeposit, setActiveDeposit] = useState<DepositPaymentResult | null>(null);
   const [activeWaitlist, setActiveWaitlist] = useState<WaitlistStatus | null>(null);
   const [activePickupSlot, setActivePickupSlot] = useState("");
+  const [pickupIntent, setPickupIntent] = useState<"onWay" | "scheduled">("onWay");
 
   // Status & Feedback
   const [banner, setBanner] = useState("");
@@ -752,7 +763,7 @@ function ClientApp() {
             userId={userId}
             onBack={() => { setPage("home"); setActiveTab("Home"); setHistory([]); }}
             onPostSurplus={() => navigateTo("sellerStudio")}
-            onScanQr={() => navigateTo("shiftImpact")}
+            onScanQr={() => navigateTo("sellerScan")}
             onMenuManager={() => navigateTo("sellerStudio")}
             onShiftReport={() => navigateTo("shiftImpact")}
             onOpenSettings={() => navigateTo("accountSettings")}
@@ -765,11 +776,41 @@ function ClientApp() {
             onBack={() => goBack()}
             onMenu={() => setDrawerOpen(true)}
             onSafety={() => navigateTo("foodSafetyCountdown")}
+            onOpenFullDetail={() => navigateTo("foodProductDetail")}
             onOpenShop={(shopId) => {
               setSelectedShopId(shopId);
               navigateTo("shopDetail");
             }}
-            onReserved={() => navigateTo("mealDetailReservation")}
+            onReserved={() => { setPickupIntent("onWay"); navigateTo("confirmSpotReservation"); }}
+            onSchedule={() => { setPickupIntent("scheduled"); navigateTo("confirmSpotReservation"); }}
+          />
+        )}
+
+        {page === "foodProductDetail" && selectedFood && (
+          <FoodProductDetailScreen
+            food={selectedFood}
+            safety={selectedSafetyFood}
+            onBack={() => goBack()}
+            onNavigate={(route) => {
+              if (route === "shopDetail") setSelectedShopId(selectedFood.shop_id);
+              if (route === "confirmSpotReservation") setPickupIntent("onWay");
+              navigateTo(route as Page);
+            }}
+          />
+        )}
+        {page === "confirmOrderDetails" && selectedFood && (
+          <ConfirmOrderDetailsScreen
+            food={selectedSafetyFood ?? selectedFood}
+            onBack={() => goBack()}
+            onOrderNow={() => navigateTo("transactionCompleted")}
+            onDeposit={() => navigateTo("confirmDeposit")}
+          />
+        )}
+        {page === "transactionCompleted" && selectedFood && (
+          <TransactionCompletedScreen
+            food={selectedSafetyFood ?? selectedFood}
+            onBack={() => goBack()}
+            onViewOrders={() => { setPage("orders"); setHistory([]); }}
           />
         )}
 
@@ -804,6 +845,9 @@ function ClientApp() {
         )}
 
         {page === "maps" && (
+          <HeatmapScreen userId={userId} activeTab={activeTab} onTabChange={(tab) => handleNavigate(tab.toLowerCase())} onOpenShop={(shopId) => { setSelectedShopId(shopId); navigateTo("shopDetail"); }} onOpenHotspots={() => navigateTo("rescueHotspots")} />
+        )}
+        {page === "buyerMap" && (
           <HeatmapScreen userId={userId} activeTab={activeTab} onTabChange={(tab) => handleNavigate(tab.toLowerCase())} onOpenShop={(shopId) => { setSelectedShopId(shopId); navigateTo("shopDetail"); }} onOpenHotspots={() => navigateTo("rescueHotspots")} />
         )}
 
@@ -934,7 +978,7 @@ function ClientApp() {
           <MealDetailReservationScreen food={selectedSafetyFood ?? undefined} onBack={() => goBack()} onNavigate={(r) => navigateTo(r as Page)} />
         )}
         {page === "confirmSpotReservation" && (
-          <ConfirmSpotReservationScreen food={selectedSafetyFood ?? undefined} onBack={() => goBack()} onHold={async (minutes, quantity) => {
+          <ConfirmSpotReservationScreen food={selectedSafetyFood ?? undefined} onBack={() => goBack()} onLater={() => goBack()} onHold={async (minutes, quantity) => {
             if (!selectedFood) throw new Error("Please select a meal first.");
             const reservation = await holdSpotReservation(selectedFood.id, userId, minutes, quantity);
             setActiveReservation(reservation);
@@ -960,7 +1004,15 @@ function ClientApp() {
           }} />
         )}
         {page === "depositReceipt" && (
-          <DepositReceiptScreen food={selectedSafetyFood ?? undefined} reservation={activeReservation} deposit={activeDeposit} onBack={() => goBack()} onNavigate={(r) => navigateTo(r as Page)} />
+          <DepositReceiptScreen
+            food={selectedSafetyFood ?? undefined}
+            reservation={activeReservation}
+            deposit={activeDeposit}
+            onBack={() => goBack()}
+            nextRoute="orders"
+            nextLabel="View held order"
+            onNavigate={(route) => { if (route === "orders") { setPage("orders"); setHistory([]); } else navigateTo(route as Page); }}
+          />
         )}
         {page === "pickupTimeSlot" && (
           <PickupTimeSlotScreen food={selectedSafetyFood ?? undefined} reservationId={activeReservation?.reservationId} onBack={() => goBack()} onChoose={async (day, slot) => {
@@ -974,8 +1026,7 @@ function ClientApp() {
               const result = await selectPickupSlot(activeReservation.reservationId, `${dateStr} ${start}:00`, `${dateStr} ${end}:00`, day);
               setActivePickupSlot(result.slot);
             }
-            navigateTo("orderDetailsSlot");
-          }} />
+          }} onConfirm={() => navigateTo("mealDetailReservation")} />
         )}
         {page === "orderDetailsSlot" && (
           <OrderDetailsSlotScreen food={selectedSafetyFood ?? undefined} reservation={activeReservation} deposit={activeDeposit} pickupSlot={activePickupSlot} onBack={() => goBack()} onNavigate={(r) => navigateTo(r as Page)} />
@@ -987,28 +1038,27 @@ function ClientApp() {
             if (!selectedFood) return;
             await joinFoodWaitlist(selectedFood.id, userId, 1);
             setActiveWaitlist(await getFoodWaitlist(selectedFood.id));
-          }} onNavigate={(r) => navigateTo(r as Page)} />
+          }} onNavigate={(r) => r === "sellerManagement" ? navigateTo("sellerStudio") : navigateTo(r as Page)} />
         )}
         {page === "overdueOrder" && (
-          <OverdueOrderScreen food={selectedSafetyFood ?? undefined} reservation={activeReservation} onBack={() => goBack()} onNavigate={(r) => navigateTo(r as Page)} />
+          <OverdueOrderScreen food={selectedSafetyFood ?? undefined} reservation={activeReservation} onBack={() => goBack()} onNavigate={(r) => r === "sellerDashboard" ? openSellerDashboard() : navigateTo(r as Page)} />
         )}
         {page === "cancelRelease" && (
           <CancelReleaseScreen food={selectedSafetyFood ?? undefined} onBack={() => goBack()} onRelease={async () => {
-            const result = activeReservation
-              ? await cancelAndReleaseOrder(activeReservation.reservationId)
-              : { success: true, portionsReleased: 0, assignedToWaitlist: false, depositTransferred: false };
-            setActiveReservation(null);
-            setActiveDeposit(null);
+            const result = activeReservation ? await cancelAndReleaseOrder(activeReservation.reservationId) : { success: true, portionsReleased: 0, assignedToWaitlist: false, depositTransferred: false };
+            setActiveReservation(null); setActiveDeposit(null);
             if (selectedFood) setActiveWaitlist(await getFoodWaitlist(selectedFood.id));
             return result;
           }} onNavigate={(r) => {
-            if (r === "home") { setPage("home"); setHistory([]); }
+            if (r === "autoStop") { void openSellerDashboard(); }
+            else if (r === "home") { setPage("home"); setHistory([]); }
             else navigateTo(r as Page);
           }} />
         )}
 
         {page === "sellerStudio" && <SellerStudioScreen userId={userId} onBack={() => goBack()} />}
-        {page === "shiftImpact" && <ShiftImpactScreen userId={userId} onBack={() => goBack()} />}
+        {page === "sellerScan" && <ShiftImpactScreen userId={userId} onBack={() => goBack()} mode="scan" />}
+        {page === "shiftImpact" && <ShiftImpactScreen userId={userId} onBack={() => goBack()} mode="report" />}
         {page === "trustComplaints" && <TrustComplaintsScreen userId={userId} shopId={selectedShopId} onBack={() => goBack()} />}
 
         {page === "safety" && (
@@ -1086,15 +1136,19 @@ function FoodDetailView({
   onBack,
   onMenu,
   onSafety,
+  onOpenFullDetail,
   onOpenShop,
   onReserved,
+  onSchedule,
 }: {
   food: Food;
   onBack: () => void;
   onMenu: () => void;
   onSafety: () => void;
+  onOpenFullDetail: () => void;
   onOpenShop: (shopId: string) => void;
   onReserved: () => void;
+  onSchedule: () => void;
 }) {
   const [quantity, setQuantity] = useState(1);
   const original = Number(food.original_price);
@@ -1188,8 +1242,8 @@ function FoodDetailView({
         {food.description || food.storage_instructions ? <Pressable style={s.foodSafetyLink} onPress={onSafety}><Text style={s.foodSafetyLinkText}>Food details & safety</Text><Ionicons name="chevron-forward" size={16} color={colors.primary} /></Pressable> : null}
         <View style={s.foodActions}>
           <Pressable style={s.primaryPillAction} onPress={onReserved}><Text style={s.primaryPillActionText}>I’m on my way</Text></Pressable>
-          <Pressable style={s.secondaryPillAction} onPress={onReserved}><Text style={s.secondaryPillActionText}>Schedule pickup</Text></Pressable>
-          <Pressable style={s.detailsAction} onPress={onSafety}><Text style={s.primaryPillActionText}>View detail</Text></Pressable>
+          <Pressable style={s.secondaryPillAction} onPress={onSchedule}><Text style={s.secondaryPillActionText}>Schedule pickup</Text></Pressable>
+          <Pressable style={s.detailsAction} onPress={onOpenFullDetail}><Text style={s.primaryPillActionText}>View detail</Text></Pressable>
         </View>
       </ScrollView>
     </View>

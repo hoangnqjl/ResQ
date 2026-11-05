@@ -17,10 +17,11 @@ import { imageUrl } from "../../services/communityApi";
 type Props = {
   food?: FoodSafetyDetail;
   onBack: () => void;
+  onLater: () => void;
   onHold: (minutes: number, quantity: number) => Promise<void>;
 };
 
-export default function ConfirmSpotReservationScreen({ food, onBack, onHold }: Props) {
+export default function ConfirmSpotReservationScreen({ food, onBack, onLater, onHold }: Props) {
   const [minutes, setMinutes] = useState(20);
   const [quantity, setQuantity] = useState(1);
   const [busy, setBusy] = useState(false);
@@ -123,17 +124,14 @@ export default function ConfirmSpotReservationScreen({ food, onBack, onHold }: P
       </ScrollView>
 
       <View style={s.bottom}>
-        <View>
-          <Text style={s.cọcNotice}>Deposit: 10,000đ (100% Refundable)</Text>
-          <Text style={s.bottomTotal}>{money(price * quantity)}</Text>
-        </View>
+        <Pressable style={s.laterBtn} onPress={onLater}><Text style={s.laterText}>Later</Text></Pressable>
         <Pressable style={[s.actionBtn, busy && { opacity: 0.65 }]} disabled={busy} onPress={async () => {
           setBusy(true);
           try { await onHold(minutes, quantity); }
           catch (error) { Alert.alert("Unable to hold spot", error instanceof Error ? error.message : "Please try again."); }
           finally { setBusy(false); }
         }}>
-          <Text style={s.actionBtnText}>{busy ? "Reserving spot…" : "Hold Spot & Proceed to Deposit"}</Text>
+          <Text style={s.actionBtnText}>{busy ? "Reserving spot…" : "I'm on my way"}</Text>
           <Ionicons name="arrow-forward" size={18} color={colors.white} />
         </Pressable>
       </View>
@@ -267,15 +265,17 @@ const s = StyleSheet.create({
     borderTopColor: colors.line,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    gap: 10,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
   cọcNotice: { fontSize: fontSizes.micro, color: colors.muted },
   bottomTotal: { fontSize: fontSizes.title, fontWeight: "800", color: colors.primary },
   actionBtn: {
+    flex: 1,
     backgroundColor: colors.primary,
     flexDirection: "row",
+    justifyContent: "center",
     alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 18,
@@ -283,5 +283,7 @@ const s = StyleSheet.create({
     gap: 8,
   },
   actionBtnText: { color: colors.white, fontWeight: "700", fontSize: fontSizes.body },
+  laterBtn: { flex: 1, alignItems: "center", justifyContent: "center", minHeight: 46, borderRadius: 24, backgroundColor: colors.pale },
+  laterText: { color: colors.primary, fontWeight: "700", fontSize: fontSizes.body },
 });
 
